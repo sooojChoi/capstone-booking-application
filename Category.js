@@ -1,6 +1,6 @@
 // category.js
 
-class user {
+export class user {
     constructor(id, name, phone, registerDate, allowDate){
         this.id = id;
         this.name = name;
@@ -10,7 +10,7 @@ class user {
     }
 }
 
-class facility {
+export class facility {
     constructor(id, name, openTime, closeTime, unitTime, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3){
         this.id = id;
         this.name = name;
@@ -26,5 +26,17 @@ class facility {
         this.cost3 = cost3;
     }
 }
-
-export default Category;
+export class permission{
+    constructor(userid, facilityid, grade){
+        this.id=userid
+        this.facility=facilityid
+        this.grade=grade
+    }
+}
+export class discountrate{
+    constructor(facilityId,time,rate){
+        this.facility=facilityId
+        this.time=time 
+        this.rate=rate
+    }
+}
