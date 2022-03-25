@@ -4,12 +4,12 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>깃허브 테스트(PSB)</Text>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Text>테스트33333</Text>
       <StatusBar style="auto" />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
