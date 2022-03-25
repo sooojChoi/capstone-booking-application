@@ -1,1 +1,3 @@
 // category.js
+
+const x = ""
