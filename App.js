@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>깃허브 커밋 테스트!!!!</Text>
+      <Text>깃허브 테스트(PSB)</Text>
       <StatusBar style="auto" />
     </View>
   );
