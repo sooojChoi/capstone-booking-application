@@ -1,7 +1,7 @@
-// category.js
+// Category.js
 
 export class user {
-    constructor(id, name, phone, registerDate, allowDate){
+    constructor(id, name, phone, registerDate, allowDate) {
         this.id = id;
         this.name = name;
         this.phone = phone;
@@ -11,7 +11,7 @@ export class user {
 }
 
 export class facility {
-    constructor(id, name, openTime, closeTime, unitTime, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3){
+    constructor(id, name, openTime, closeTime, unitTime, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3) {
         this.id = id;
         this.name = name;
         this.openTime = openTime;
@@ -26,17 +26,37 @@ export class facility {
         this.cost3 = cost3;
     }
 }
-export class permission{
-    constructor(userid, facilityid, grade){
-        this.id=userid
-        this.facility=facilityid
-        this.grade=grade
+export class permission {
+    constructor(userId, facilityId, grade) {
+        this.user = userId
+        this.facility = facilityId
+        this.grade = grade
     }
 }
-export class discountrate{
-    constructor(facilityId,time,rate){
-        this.facility=facilityId
-        this.time=time 
-        this.rate=rate
+export class discountRate {
+    constructor(facilityId, time, rate) {
+        this.facility = facilityId
+        this.time = time 
+        this.rate = rate
+    }
+}
+
+export class allocation {
+    constructor(facilityId, usingTime, discountRateTime, available) {
+        this.facility = facilityId
+        this.usingTime = usingTime
+        this.rate = discountRateTime
+        this.available = available
+    }
+}
+
+export class booking {
+    constructor(userId, facilityId, allocationUsingTime, bookingTime, usedPlayers, cancel) {
+        this.user = userId
+        this.facility = facilityId
+        this.usingTime = allocationUsingTime
+        this.bookingTIme = bookingTime
+        this.usedPlayers = usedPlayers
+        this.cancel = cancel
     }
 }
