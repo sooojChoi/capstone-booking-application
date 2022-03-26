@@ -28,7 +28,7 @@ export class facility {
 }
 export class permission {
     constructor(userId, facilityId, grade) {
-        this.user = userId
+        this.userId = userId
         this.facility = facilityId
         this.grade = grade
     }
@@ -52,7 +52,7 @@ export class allocation {
 
 export class booking {
     constructor(userId, facilityId, allocationUsingTime, bookingTime, usedPlayers, cancel) {
-        this.user = userId
+        this.userId = userId
         this.facility = facilityId
         this.usingTime = allocationUsingTime
         this.bookingTIme = bookingTime
