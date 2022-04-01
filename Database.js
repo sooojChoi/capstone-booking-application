@@ -1,4 +1,5 @@
 // Database.js
+//
 import { user, facility,permission, discountRate, allocation, booking } from "./Category";
 
 export const USER = [

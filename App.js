@@ -2,7 +2,6 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions } from 'react-native';
 import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from './Database';
 
-
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -10,7 +9,7 @@ export default function App() {
   const firstUser = USER[0]
   //const firstFac = FACILITY[0]
  // const perm = PERMISSION[0]
-
+//첫번째 유저 정보 
   const renderGridItem = (itemData) => {
     return <View style={{...styles.facilityFlatList, }}>
          <Text style={{fontSize:18,}}>아이디: {itemData.item.id}</Text>
@@ -22,6 +21,7 @@ export default function App() {
   }
 
   return (
+    //모든 유저 정보 나타낸것
     <View style={styles.container}>
          <View style={{margin:100,marginLeft:30,marginBottom:30,alignSelf:'flex-start'}}>
         <Text style={{fontSize:20, fontWeight: "600",}}>USER[0]의 정보</Text>
