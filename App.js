@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, FlatList, Dimensions } from 'react-native';
 import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from './Database';
 import UserPermission from './Admin/UserPermission';
 
+
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
