@@ -8,13 +8,12 @@ import React, {useEffect, useState} from "react";
 //import CheckBox from '@react-native-community/checkbox';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { AntDesign } from '@expo/vector-icons';
-import Toast, {DURATION} from 'react-native-easy-toast'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 
-export default function App() {
+export default function UserPermission() {
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
   const [userCheck, setUserCheck] = useState([]);  // 각 사용자가 현재 체크버튼이 눌린 상태인지 알기 위함.
   const newUserCheck = []  // userCheck 값을 바꾸기 위해 이용하는 전역 변수
