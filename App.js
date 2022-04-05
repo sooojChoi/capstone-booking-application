@@ -10,7 +10,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function App() {
 
-  return (<View></View>)
+  return (<UserPermission></UserPermission>)
 
 }
 
