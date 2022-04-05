@@ -3,13 +3,70 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState, createRef} from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
-export default function AdminBooking() {
+export default function App() {
   const inputRef = createRef();
 
   const [value, setValue] = useState('');
 
-  var num = 0;
+
+  // datepicker
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    console.warn("A date has been picked: ", date);
+    hideDatePicker();
+    onChangeText(date.format("yyyy/MM/dd"))
+  };
+
+  const [text, onChangeText] = useState("");
+
+  Date.prototype.format = function(f) {
+    if (!this.valueOf()) return " ";
+ 
+    var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+    var d = this;
+     
+    return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
+        switch ($1) {
+            case "yyyy": return d.getFullYear();
+            case "yy": return (d.getFullYear() % 1000).zf(2);
+            case "MM": return (d.getMonth() + 1).zf(2);
+            case "dd": return d.getDate().zf(2);
+            case "E": return weekName[d.getDay()];
+            case "HH": return d.getHours().zf(2);
+            case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
+            case "mm": return d.getMinutes().zf(2);
+            case "ss": return d.getSeconds().zf(2);
+            case "a/p": return d.getHours() < 12 ? "오전" : "오후";
+            default: return $1;
+        }
+    });
+};
+
+ 
+String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
+String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
+Number.prototype.zf = function(len){return this.toString().zf(len);};
+
+
+/* 출처: https://stove99.tistory.com/46 [스토브 훌로구] */
+
+
+  //인원 선택
+  const [count, setCount] = useState(0);
+
+
+  
 
   return (
     <View style={styles.container}>
@@ -45,23 +102,32 @@ export default function AdminBooking() {
 
     <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 150,}}>
     
+    
     <View style={{flexDirection:'row'}}>
-      <Text style={styles.text3}>예약 날짜</Text> 
-      <Button title='날짜선택'></Button>
+      <Text style={styles.text3}>예약 날짜: {text}</Text> 
+      
+      <Button title='날짜선택' onPress={showDatePicker}/>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+      />
       </View>
 
       <View style={{flexDirection:'row'}}>
-      <Text style={styles.text3}>예약 시간</Text>
-      <Button title='시간선택'></Button>
+      <Text style={styles.text3}>예약 시간: </Text>
+      <Button title='시간선택'/>
       </View>
+
+
 
       <View style={{flexDirection:'row'}}>
-      <Text style={styles.text3}>예약 인원</Text>
-      <Button title='-'></Button>
-      <Text style={styles.text3}>{num}</Text>
-      <Button title='+'></Button>
+      <Text style={styles.text3}>예약 인원:</Text>
+      <Button title='-' onPress={() => setCount(count - 1)}></Button>
+      <Text style={styles.text3}>{count}</Text>
+      <Button title='+' onPress={() => setCount(count + 1)}></Button>
       </View>
-
       <Button title='예약하기'></Button>
     </View>
     </View>
@@ -107,5 +173,8 @@ const styles = StyleSheet.create({
     width: 256,
     marginLeft: 5,
   },
+  button1: {
+
+  }
 
 });
