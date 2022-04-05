@@ -29,7 +29,7 @@ export class facility {
 export class permission {
     constructor(userId, facilityId, grade) {
         this.userId = userId
-        this.facility = facilityId
+        this.facilityId = facilityId
         this.grade = grade
     }
 }
