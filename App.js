@@ -1,14 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions } from 'react-native';
 import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from './Database';
-import UserPermission from './Admin/UserPermission';
-
+//import LogIn from './User/LogIn'
+//import BookingFacility from './User/BookingFacility';
+//import SignIn from './User/SignIn'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function App() {
-  return (<UserPermission></UserPermission>)
+  //return (<LogIn></LogIn>)
+  //return (<BookingFacility></BookingFacility>)
+  //return (<SignIn></SignIn>)
 }
 
 
