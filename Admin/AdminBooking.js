@@ -1,16 +1,15 @@
-// 대리예약화면 (관리자)
+// 대리 예약(관리자) -> 유진
 
 import { StatusBar } from 'expo-status-bar';
 import React, {useState, createRef} from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
-export default function App() {
+export default function AdminBooking() {
   const inputRef = createRef();
 
   const [value, setValue] = useState('');
 
   var num = 0;
-
 
   return (
     <View style={styles.container}>

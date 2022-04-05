@@ -1,13 +1,12 @@
-// 시설 예약(사용자ㅣ)
+// 시설 예약(사용자) -> 혜림
+
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View,Button } from 'react-native';
 import React,{useState} from "react";
 import DropDownPicker from 'react-native-dropdown-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
-
-
-export default function App() {
+export default function BookingFacility() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([

@@ -1,5 +1,5 @@
-
-// 일단 USER를 '승인 요청한 사용자 목록' 이라고 가정하고 코드 구현하였음.
+// 사용자 승인(관리자) -> 수진
+// 일단 USER를 '승인 요청한 사용자 목록' 이라고 가정하고 코드 구현하였음
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
@@ -11,7 +11,6 @@ import { AntDesign } from '@expo/vector-icons';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-
 
 export default function UserPermission() {
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.

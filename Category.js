@@ -26,6 +26,7 @@ export class facility {
         this.cost3 = cost3;
     }
 }
+
 export class permission {
     constructor(userId, facilityId, grade) {
         this.userId = userId
@@ -33,6 +34,7 @@ export class permission {
         this.grade = grade
     }
 }
+
 export class discountRate {
     constructor(facilityId, time, rate) {
         this.facility = facilityId

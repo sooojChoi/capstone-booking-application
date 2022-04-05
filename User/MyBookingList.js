@@ -1,7 +1,7 @@
-// 얘역 내역(사용지ㅏ)
+// 얘역 내역(사용자) -> 유진
 
 import { StatusBar } from 'expo-status-bar';
-import { images } from '../images';
+import { Images } from '../Images';
 import React, {useState, createRef} from 'react';
 import { Button, StyleSheet, Text, TextInput, View, FlatList } from 'react-native';
 import IconButton from '../IconButton';
@@ -17,7 +17,7 @@ export default function App() {
 
     <View style={{flexDirection:'row',}}>
       <Text style={styles.text3}>가격 {}W, 인원{}명</Text>
-      <IconButton type={images.delete} />
+      <IconButton type={Images.delete} />
     </View>
   </View>
   
