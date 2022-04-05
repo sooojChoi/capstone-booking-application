@@ -1,10 +1,10 @@
 // 얘역 내역(사용지ㅏ)
 
 import { StatusBar } from 'expo-status-bar';
-import { images } from '../images';
+import { images } from './images';
 import React, {useState, createRef} from 'react';
 import { Button, StyleSheet, Text, TextInput, View, FlatList } from 'react-native';
-import IconButton from '../IconButton';
+import IconButton from './IconButton';
 
 export default function App() {
   const inputRef = createRef();
