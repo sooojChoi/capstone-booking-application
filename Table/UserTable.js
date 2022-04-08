@@ -27,8 +27,8 @@ export class UserTable {
 
     modify(user){
         for(var i=0;i<this.users.length;i++){
-            if(users[i].id == user.id){
-                users[i] = user
+            if(this.users[i].id == user.id){
+                this.users[i] = user
                 return
             }
         }
@@ -36,7 +36,7 @@ export class UserTable {
 
     remove(id){
         for(var i=0;i<this.users.length;i++){
-            if(users[i].id == id){
+            if(this.users[i].id == id){
                 this.users.splice(i, 1)
                 return
             }
@@ -44,6 +44,7 @@ export class UserTable {
     }
 
 
+    // 이름으로 user 목록 얻기
     gets(name){
         var result = []
         for(var existing of this.users){
@@ -54,6 +55,18 @@ export class UserTable {
         return result
     }
 
+    //id로 user 목록 얻기 (추가: 수진)
+    getsById(id){
+        var result = []
+        for(var existing of this.users){
+            if(existing.id == id){
+                result.push(existing)
+            }
+        }
+        return result
+    }
+
+    // allowDate가 null인 사용자 목록 불러오기
     getsAllowWithNull(){
         var result = []
         for(var existing of this.users){
