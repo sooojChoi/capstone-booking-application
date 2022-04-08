@@ -4,8 +4,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
 import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from '../Database.js';
+import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
-//import CheckBox from '@react-native-community/checkbox';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { AntDesign } from '@expo/vector-icons';
 import Modal from "react-native-modal";
@@ -19,6 +19,7 @@ const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadio
 // 사용자에게는 등급 정보가 grade배열의 index로 저장되어있음. 만약 a등급이면 gradeIndex:0 으로... (radioButton을 이용할 때를 위해서 이렇게 구현함.)
 
 export default function UserPermission() {
+  const userTable = new UserTable();
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
   const [userCheck, setUserCheck] = useState([]);  // 각 사용자가 현재 체크버튼이 눌린 상태인지 알기 위함.
   const newUserCheck = []  // userCheck 값을 바꾸기 위해 이용하는 전역 변수
@@ -107,8 +108,11 @@ export default function UserPermission() {
     // const tempUserArray = ... ;
     console.log("again------")
     var tempArray = []
+    //console.log(userTable.users);
+    const temp = userTable.getsAllowWithNull();
+    console.log(temp)
 
-    USER.map((user, index) => {
+    temp.map((user, index) => {
       const id = user.id
       const name = user.name
       const phone = user.phone
@@ -123,7 +127,7 @@ export default function UserPermission() {
       })
     });
     tempArray = newUserCheck.sort((a, b)=>a.registerDate - b.registerDate) 
-    console.log(tempArray);
+   // console.log(tempArray);
 
     setUserCheck(tempArray);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
     console.log("-------------------------")
