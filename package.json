@@ -20,6 +20,7 @@
     "react-dom": "17.0.1",
     "react-native": "0.64.3",
     "react-native-dropdown-picker": "^5.3.0",
+    "react-native-easy-toast": "^2.0.0",
     "react-native-gesture-handler": "~2.1.0",
     "react-native-modal": "^13.0.1",
     "react-native-modal-datetime-picker": "^13.1.2",
