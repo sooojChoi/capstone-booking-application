@@ -4,55 +4,103 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
 import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from '../Database.js';
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useRef, useCallback} from "react";
 //import CheckBox from '@react-native-community/checkbox';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { AntDesign } from '@expo/vector-icons';
 import Modal from "react-native-modal";
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
+import Toast, {DURATION} from 'react-native-easy-toast'
+
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const grade = ["A등급", "B등급","C등급"]
+const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
+// 사용자에게는 등급 정보가 grade배열의 index로 저장되어있음. 만약 a등급이면 gradeIndex:0 으로... (radioButton을 이용할 때를 위해서 이렇게 구현함.)
 
 export default function UserPermission() {
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
   const [userCheck, setUserCheck] = useState([]);  // 각 사용자가 현재 체크버튼이 눌린 상태인지 알기 위함.
   const newUserCheck = []  // userCheck 값을 바꾸기 위해 이용하는 전역 변수
   const [isAllChecked, setIsAllChecked] = useState(false);  // true면 "전체 선택" 버튼이 눌린 것.
-  const [gradeInfo, setGradeInfo] = useState({id: "", name:""});  // 현재 등급 수정을 위해 선택된 유저의 이름과 아이디를 담은 정보
+  const [gradeInfo, setGradeInfo] = useState({id: "", name:"", gradeIndex:0});  // 현재 등급 수정을 위해 선택된 유저의 이름과 아이디를 담은 정보
   const [radioGrade, setRadioGrade] = useState();  // 등급 수정 모달에서 현재 몇 번째 등급이 눌려있는지 알기 위한 변수
-
-  const [isModalVisible, setModalVisible] = useState(false);   //사용자 등급 수정할 때 열리는 modal을 위한 변수
+  const [isModalVisible, setModalVisible] = useState(false);   // 한 명의 사용자 등급 수정할 때 열리는 modal을 위한 변수
+  const [modalVisibleForUsers, setModalVisibleForUsers] = useState(false); // 여러명의 사용자 등급을 수정할 때 열리는 modal을 위한 변수
   const gradeRadioProps = [
-    {label: grade[0], value: grade[0]},
-    {label: grade[1], value: grade[1]},
-    {label: grade[2], value: grade[2]},
+    {label: grade[0], value: 0},
+    {label: grade[1], value: 1},
+    {label: grade[2], value: 2},
   ]
+  const toastRef = useRef(); // toast ref 생성
+
+   // Toast 메세지 출력
+   const showCopyToast = useCallback(() => {
+    toastRef.current.show('사용자를 먼저 선택해주세요. ');
+  }, []);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+  const toggleModalUsers = () => {
+    setModalVisibleForUsers(!modalVisibleForUsers);
+  }
 
-  // 등급을 선택하고 '확인'버튼을 눌렀을 때 호출되는 함수
-  const setSaveGradeInfo = () => {
+  // 등급을 선택하고 '확인'버튼을 눌렀을 때 호출되는 함수 (한명의 경우)
+  const saveGradeInfo = () => {
     resetUserCheck(null)
     newUserCheck.find((user)=>{
-      if(user.id===gradeInfo.id){
-        user.grade = radioGrade
+      if(user.id===gradeInfo.id){  //gradeInfo에 id, name, grade정보가 있음(현재 등급이 수정되고 있는 사람의 정보)
+        user.gradeIndex = radioGrade
       }
     })
+    
    setUserCheck(newUserCheck);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
    toggleModal();  // 모달을 없애주기 위한 함수
   }
 
+  // 등급을 선택하고 '확인'버튼을 눌렀을 때 호출되는 함수 (여러명의 경우)
+  const saveGradeInfoForUsers = () => {
+    resetUserCheck(null)
+    newUserCheck.find((user)=>{
+      if(user.isCheck===true){
+        user.gradeIndex = radioGrade
+      }
+    })
+
+    setUserCheck(newUserCheck);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
+    toggleModalUsers();  // 모달을 없애주기 위한 함수
+  }
+
   // 등급을 수정하기 위해 등급 버튼이 눌리면 불리는 함수 (모달을 화면에 나타냄)
-  const gradeButtonClicked = (userId, userName) =>{
-    const array = {id:userId, name: userName}
+  const gradeButtonClicked = (userId, userName, gradeIndex) =>{
+    const array = {id:userId, name: userName, gradeIndex: gradeIndex}
     setGradeInfo(array);
 
     toggleModal();
   }
+
+  // 체크된 유저들의 등급을 바꾸는 함수("등급 수정"버튼 눌리면 불리는 함수)
+  const checkedUserGradeButtonClicked = () => {
+    const temp = []
+    userCheck.map((user)=>{
+      if(user.isCheck === true){
+        temp.push(user.id); 
+      }
+    })
+    // 현재 선택된 사용자가 0명이라면 "사용자를 먼저 선택해주세요." 라는 토스트를 띄운다.
+    if(temp.length === 0){
+      showCopyToast();
+    }else{
+      // 선택된 사용자가 있다면, 사용자 등급을 수정하는 모달을 띄운다.
+      const index = grade.length-1
+      const array = {id:0, name: "선택된 사용자들", gradeIndex: index}
+      setGradeInfo(array);
+  
+      toggleModalUsers();
+    }
+  }
+
   // 처음에 DB 또는 특정 파일에서 승인 요청한 사용자 리스트를 가져오는 함수
   const getAllUsers = async() => {
     // 어디서 가져오든, 깊은 복사(원본 데이터가 바뀌지 않도록)해야할 것 같음. 아직 구현 못함.
@@ -67,10 +115,11 @@ export default function UserPermission() {
       const registerDate = user.registerDate
       const allowDate = user.allowDate
       const isCheck = false
+      const gradeIndex = grade.length-1
       newUserCheck.push({
         id: id, name : name, phone : phone,
         registerDate: registerDate, allowDate : allowDate, 
-        isCheck : isCheck, grade: grade[grade.length-1],   // 원래 배열에서 새로 추가한 것.
+        isCheck : isCheck, gradeIndex: gradeIndex,   // 원래 배열에서 새로 추가한 것.
       })
     });
     tempArray = newUserCheck.sort((a, b)=>a.registerDate - b.registerDate) 
@@ -184,7 +233,7 @@ export default function UserPermission() {
       const phone = user.phone
       const registerDate = user.registerDate
       const allowDate = user.allowDate
-      const grade = user.grade
+      const gradeIndex = user.gradeIndex
       let isCheck = user.isCheck
       if(isCheckMode===false){
         isCheck = false
@@ -194,7 +243,7 @@ export default function UserPermission() {
       newUserCheck.push({
         id: id, name : name, phone : phone,
         registerDate: registerDate, allowDate : allowDate, isCheck : isCheck,
-        grade: grade,
+        gradeIndex: gradeIndex,
       })
     })
     setUserCheck(newUserCheck);  // 모든 사용자의 check 상태를 해제함.
@@ -239,8 +288,8 @@ export default function UserPermission() {
               <Text style={{fontSize:15, color:'#373737'}}>{itemData.item.phone}</Text>
             </View>
             <TouchableOpacity  style={styles.ButtonStyle2} 
-            onPress={()=>gradeButtonClicked(itemData.item.id, itemData.item.name)}>
-            <Text style={{fontSize:15, color:'#373737'}}>{itemData.item.grade}</Text>
+            onPress={()=>gradeButtonClicked(itemData.item.id, itemData.item.name, itemData.item.gradeIndex)}>
+            <Text style={{fontSize:15, color:'#373737'}}>{grade[itemData.item.gradeIndex]}</Text>
             </TouchableOpacity>
             <Text style={{fontSize:15, color:'#373737'}}>{year}년 {month}월{day}일</Text>
           </View>
@@ -262,8 +311,8 @@ export default function UserPermission() {
               <Text style={{fontSize:18, color:'#373737'}}>{itemData.item.phone}</Text>
             </View>
             <TouchableOpacity  style={styles.ButtonStyle2}
-            onPress={()=>gradeButtonClicked(itemData.item.id, itemData.item.name)}>
-            <Text style={{fontSize:15, color:'#373737'}}>{itemData.item.grade}</Text>
+            onPress={()=>gradeButtonClicked(itemData.item.id, itemData.item.name, itemData.item.gradeIndex)}>
+            <Text style={{fontSize:15, color:'#373737'}}>{grade[itemData.item.gradeIndex]}</Text>
             </TouchableOpacity>
             <Text style={{fontSize:17, color:'#373737'}}>{year}년 {month}월{day}일</Text>
           </View>
@@ -303,19 +352,19 @@ export default function UserPermission() {
               animation={false}
               buttonSize={15}
               radio_props={gradeRadioProps}
-              initial={2}
+              initial={gradeInfo.gradeIndex}
               labelStyle={{fontSize: 16, color: 'black', paddingBottom:8,paddingTop:4}}
               onPress={(value) => {setRadioGrade(value)}}
               />
             </View>
             <View style={{flexDirection:'row', justifyContent:'flex-end'}}>
-            <TouchableOpacity  style={styles.smallButtonStyle} 
-                onPress={setSaveGradeInfo}>
+            <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
+                onPress={()=>saveGradeInfo()}>
             <Text style={{fontSize:14}}>
               확인
             </Text>
             </TouchableOpacity>
-            <TouchableOpacity  style={styles.smallButtonStyle} 
+            <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
                 onPress={toggleModal}>
             <Text style={{fontSize:14}}>
               취소
@@ -324,14 +373,51 @@ export default function UserPermission() {
             </View>
           </View>
         </Modal>
+        <Modal isVisible={modalVisibleForUsers}
+        onBackdropPress={() => setModalVisibleForUsers(false)}>
+          <View style={{ padding:10, backgroundColor:'white', justifyContent:'center'}}>
+            <Text style={{fontSize: 17,  fontWeight: "600", marginLeft:10,marginBottom:15, marginTop:5}}>{gradeInfo.name}의 등급</Text>
+            <View style={{margin:10, alignItems:'center'}}>
+              <RadioForm
+              animation={false}
+              buttonSize={15}
+              radio_props={gradeRadioProps}
+              initial={gradeInfo.gradeIndex}
+              labelStyle={{fontSize: 16, color: 'black', paddingBottom:8,paddingTop:4}}
+              onPress={(value) => {setRadioGrade(value)}}
+              />
+            </View>
+            <View style={{flexDirection:'row', justifyContent:'flex-end'}}>
+            <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
+                onPress={()=>saveGradeInfoForUsers()}>
+            <Text style={{fontSize:14}}>
+              확인
+            </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
+                onPress={toggleModalUsers}>
+            <Text style={{fontSize:14}}>
+              취소
+            </Text>
+          </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
+      <Toast ref={toastRef}
+             positionValue={SCREEN_HEIGHT * 0.55}
+             fadeInDuration={100}
+             fadeOutDuration={700}
+             style={{backgroundColor:'grey'}}
+             textStyle={{color:'white'}}
+          />
       <View style={{alignSelf:'center',borderBottomColor: '#a6a6a6', borderBottomWidth:2,width: SCREEN_WIDTH*0.95}}>
         <View style={{flexDirection:'row', justifyContent:'space-between', 
         alignItems:'center', marginTop:60, marginBottom:10}}>
           <Text style={{...styles.TitleText,marginStart: 5, marginBottom:0}}>승인 요청 내역</Text>
          {checkMode === true ? (
           <View style={{flexDirection:'row',}}>
-          <TouchableOpacity  style={styles.smallButtonStyle} 
+          <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
           onPress={()=>cancelPermission()}>
             <Text style={{fontSize:14}}>
               취소
@@ -347,7 +433,7 @@ export default function UserPermission() {
       {checkMode === true ? (
       <View style={{flexDirection:'row', justifyContent:'space-between', padding:6,
         paddingBottom:8}}>
-        <View>
+        <View style={{flexDirection:'row'}}>
           {isAllChecked === false ?(
             <TouchableOpacity  style={styles.smallButtonStyle} 
             onPress={()=>setAllUserCheckState(true)}>
@@ -363,15 +449,21 @@ export default function UserPermission() {
             </Text>
           </TouchableOpacity>
           )}
+           <TouchableOpacity  style={styles.smallButtonStyle} 
+            onPress={()=>checkedUserGradeButtonClicked()}>
+            <Text style={{fontSize:14}}>
+              등급 수정
+            </Text>
+          </TouchableOpacity>
         </View>
         <View style={{flexDirection:'row',}}>
-          <TouchableOpacity  style={styles.smallButtonStyle} 
+          <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
             onPress={()=>AllowUsers()}>
             <Text style={{fontSize:14}}>
               승인
             </Text>
           </TouchableOpacity>
-         <TouchableOpacity  style={styles.smallButtonStyle} 
+         <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
             onPress={()=>denyUsers()}>
             <Text style={{fontSize:14}}>
               거절
@@ -453,8 +545,8 @@ smallButtonStyle:{
  // borderWidth: 2,
   borderRadius:8,
   padding: 8,
-  paddingStart:20,
-  paddingEnd:20
+  paddingLeft:10,
+  paddingRight:10
 },
 ButtonStyle2:{
   backgroundColor:'#c5c7c9',
