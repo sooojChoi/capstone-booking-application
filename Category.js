@@ -30,14 +30,14 @@ export class facility {
 export class permission {
     constructor(userId, facilityId, grade) {
         this.userId = userId
-        this.facility = facilityId
+        this.facilityId = facilityId
         this.grade = grade
     }
 }
 
 export class discountRate {
     constructor(facilityId, time, rate) {
-        this.facility = facilityId
+        this.facilityId = facilityId
         this.time = time 
         this.rate = rate
     }
@@ -45,9 +45,9 @@ export class discountRate {
 
 export class allocation {
     constructor(facilityId, usingTime, discountRateTime, available) {
-        this.facility = facilityId
+        this.facilityId = facilityId
         this.usingTime = usingTime
-        this.rate = discountRateTime
+        this.discountRateTime = discountRateTime
         this.available = available
     }
 }
@@ -55,7 +55,7 @@ export class allocation {
 export class booking {
     constructor(userId, facilityId, allocationUsingTime, bookingTime, usedPlayers, cancel) {
         this.userId = userId
-        this.facility = facilityId
+        this.facilityId = facilityId
         this.usingTime = allocationUsingTime
         this.bookingTIme = bookingTime
         this.usedPlayers = usedPlayers
