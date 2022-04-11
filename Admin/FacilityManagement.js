@@ -2,15 +2,21 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
-import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from '../Database.js';
+import React, { useState } from "react";
+import { FacilityTable } from '../Table/FacilityTable'
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function BookingFacility() {
+  const facilityTable = new FacilityTable();
+  const facility = facilityTable.facilitys
+
   const renderItem = (itemData) => {
     return (
-    <TouchableOpacity style={styles.facility}>
+    <TouchableOpacity style={styles.name}>
       <Text style={{fontSize: 28}}>{itemData.item.name}</Text>
     </TouchableOpacity>
     );
@@ -21,10 +27,9 @@ export default function BookingFacility() {
       <View>
         <Text style={{fontSize: 32, fontWeight: "bold"}}>공공 시설 예약</Text>
       </View>
-      <FlatList keyExtracter={(item, index) => item.id} 
-        data={FACILITY} 
-        renderItem={renderItem} 
-        numColumns={1}/>
+      <FlatList
+        data={facility}
+        renderItem={renderItem}/>
     </SafeAreaView>
   );
 }
@@ -36,7 +41,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   
-  facility: {
+  name: {
     width: SCREEN_WIDTH * 0.9,
     height: SCREEN_HEIGHT * 0.1,
     marginTop: 15,

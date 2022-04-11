@@ -1,13 +1,37 @@
 // 상세 시설 관리(관리자) -> 수빈
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, Button, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, Button, ScrollView } from 'react-native';
+import React, { useState } from "react";
 import { FACILITY } from '../Database.js';
+import { FacilityTable } from '../Table/FacilityTable'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailFacilityManagement() {
+  const facilityTable = new FacilityTable();
+  const [value, setValue] = useState('hante1'); // 시설 ID -> 시설 관리 화면에서 받아오기
+
+  const temp = facilityTable.getsById(value);
+
+  let id, name, openTime, closeTime, unitTime, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3;
+
+  temp.map((facility) => {
+    id = facility.id
+    name = facility.name
+    openTime = facility.openTime
+    closeTime = facility.closeTime
+    unitTime = facility.unitTime
+    maxPlayers = facility.maxPlayers
+    booking1 = facility.booking1
+    booking2 = facility.booking2
+    booking3 = facility.booking3
+    cost1 = facility.cost1
+    cost2 = facility.cost2
+    cost3 = facility.cost3
+  });
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{alignItems: 'center'}}>
@@ -17,57 +41,57 @@ export default function DetailFacilityManagement() {
         <View style={{marginTop:20}}>
           <View style={styles.list}>
             <Text style={styles.category}>ID</Text>
-            <Text style={styles.id}>hante1</Text>
+            <Text style={styles.id}>{id}</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>NAME</Text>
-            <TextInput style={styles.name}></TextInput>
+            <TextInput style={styles.name}>{name}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>OPEN TIME</Text>
-            <TextInput style={styles.timeTInput}></TextInput>
+            <TextInput style={styles.timeTInput}>{openTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>CLOSE TIME</Text>
-            <TextInput style={styles.timeTInput}></TextInput>
+            <TextInput style={styles.timeTInput}>{closeTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>UNIT TIME</Text>
-            <TextInput style={styles.timeTInput}></TextInput>
+            <TextInput style={styles.timeTInput}>{unitTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>수용 인원</Text>
-            <TextInput style={styles.name}></TextInput>
+            <TextInput style={styles.name}>{maxPlayers}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>예약 허용 날짜</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput}></TextInput>
+            <TextInput style={styles.gradeTInput}>{booking1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput}></TextInput>
+            <TextInput style={styles.gradeTInput}>{booking2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput}></TextInput>
+            <TextInput style={styles.gradeTInput}>{booking3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>등급별 사용료</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput}></TextInput>
+            <TextInput style={styles.gradeTInput}>{cost1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput}></TextInput>
+            <TextInput style={styles.gradeTInput}>{cost2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput}></TextInput>
+            <TextInput style={styles.gradeTInput}>{cost3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>시설 사진</Text>
