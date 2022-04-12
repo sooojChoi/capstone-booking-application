@@ -1,16 +1,29 @@
 // 시설 예약(사용자) -> 혜림
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,Button,TouchableOpacity,FlatList,Image } from 'react-native';
+import { StyleSheet, Text, View,Image,ScrollView,TouchableOpacity } from 'react-native';
 import React,{useState} from "react";
+import { Dimensions } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { NavigationContainer } from '@react-navigation/native'; 
-import { createStackNavigator } from '@react-navigation/stack'; 
+import CalendarPicker from 'react-native-calendar-picker';
 import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from '../Database.js';
 
-const HomeScreen = ({navigation}) => {
-  const firstfacility = FACILITY[0]
+
+/*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. styles:FacilityImageStyle*/
+const {height,width}=Dimensions.get("window");
+
+export default function BookingFacility() {
+
+  const minDate = new Date(); // Today
+  //최대 7일 뒤까지 예약 가능
+  var now = new Date();
+  var bookinglimit = new Date(now.setDate(now.getDate() + 7));
+  const maxDate = new Date(bookinglimit);
+
+  //날짜 선택했는지 안했는지 확인하는
+  const [ selectedStartDate,onDateChange]=useState(null);
+  const startDate = selectedStartDate ? selectedStartDate.toString() : '';
+
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
@@ -18,18 +31,8 @@ const HomeScreen = ({navigation}) => {
     {label: FACILITY[1].name, value: FACILITY[1].id},
     {label: FACILITY[2].name, value: FACILITY[2].id},
   ]);
-  const Item = ({ title }) => (
-    <View>
-     <TouchableOpacity
-     onPress={ () => navigation.navigate('Details')}
-    >
-        <Text style={styles.itemText}>{title}</Text>
-        </TouchableOpacity>
-    </View>
-  );
-  const renderItem = ({ item }) => (
-    <Item title={item.title} />
-  );
+  
+ 
   {/* dropdown으로 선택한 시설과, 버튼으로 선택된 시간이 반영된 결과가 이 DATA에 담겨야 한다.*/}
   const DATA = [
     {
@@ -50,23 +53,23 @@ const HomeScreen = ({navigation}) => {
   ];
 
 
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
-  const handleConfirm = (date) => {
-    console.warn("A date has been picked: ", date);
-    hideDatePicker();
-  };
+
 
  
   return (
     <View style={styles.container}>
+     
+      <View>
+      {/*시설 이미지*/}
+      <Image
+      style={styles.FacilityImageStyle}
+        source={require('../assets/library1.png')}
+      />
+
+      </View>
       <View style={{flex:1.2}}>
-      <Text style={styles.title}>시설예약</Text>
+        {/*페이지 제목을 예약 시설 이름으로 변경*/}
+      <Text style={styles.title}>{FACILITY[0].name}</Text>
     </View>
       <View style={styles.DropDownPicker}>
       <DropDownPicker
@@ -77,90 +80,40 @@ const HomeScreen = ({navigation}) => {
       setValue={setValue}
       setItems={setItems}
     />
-        <View style={styles.DateBtn}>
-      <Button title="🗓 날짜 선택"  onPress={showDatePicker} />
-      <Button title="🔽"  onPress={showDatePicker} />
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleConfirm}
-        onCancel={hideDatePicker}
-      />
-    </View>
-
-    <View style={styles.timeBtn}>
-      <TouchableOpacity><Text style={styles.itemText}>13:00~</Text></TouchableOpacity>
-      <TouchableOpacity><Text style={styles.itemText}>14:00~</Text></TouchableOpacity>
-      <TouchableOpacity><Text style={styles.itemText}>15:00~</Text></TouchableOpacity>
-      <TouchableOpacity><Text style={styles.itemText}>16:00~</Text></TouchableOpacity>
-      </View>
+    {/*달력 테스트해보는중 */}
     <View>
-      <Text style={{fontSize:20, padding:15}} >예약할 수 있는 시간들</Text>
-    </View>
-      <View>
-        <View style={styles.bookingItem}> 
-        <FlatList
-        data={DATA}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-      />
-            </View>
-      </View>
-
-
-    </View>
    
+    <CalendarPicker
+          onDateChange={onDateChange}
+          weekdays={['일', '월', '화', '수', '목', '금', '토']}
+          minDate={minDate}
+          maxDate={maxDate}
+          previousTitle="<"
+          nextTitle=">"
+          disabledDates={[minDate,new Date(2022, 3, 15)]}
+        />
+    <Text>SELECTED DATE:{ startDate }</Text>
+
+      <View style={{height:selectedStartDate?30:0,width:selectedStartDate?400:0}}>
+        <Text style={{fontSize:25}}>date selected! now select timetable</Text>
+    </View>
+    </View>
+    
+    </View>
+
+    
     </View>
     );
 }
-const DetailsScreen = ({navigation}) => {
-  return (
-    <View style={styles.screen}>
-      {/*사진이 시설별로 달라지도록 고쳐야한다.*/}
-      <Image style={{flex:1}}source={require('../assets/library1.png')}/>
-      <View style={{flex:3}}>
-      <Button
-        title="Go to Details again"
-        onPress={ () => navigation.push('Details')}
-      />
-      <Button 
-        title="Go to Home"
-        onPress={ () => navigation.navigate('Home')}
-      />
-      <Button
-        title="Go Back"
-        onPress={() => navigation.goBack()}
-      />
-      <Button 
-        title="Go back to first screen in stack"
-        onPress={() => navigation.popToTop()}
-      />
-      </View>
-    </View>
-  )
-}
-// 앱이 각 화면이 전환될 수 있는 기본 틀을 제공한다.
-const Stack = createStackNavigator();
 
-const BookingFacility=({navigation})=> {
-  return(
-    <NavigationContainer>
-
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen}/>
-        <Stack.Screen name="Details" component={DetailsScreen}/>
-      </Stack.Navigator>
-    </NavigationContainer>
-
-  );
-}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  /*예약 대상 시설 이름*/
   title:{
-    paddingTop:10,
+    paddingTop:20,
     paddingHorizontal:20,
     fontWeight:'bold',
     fontSize:30,
@@ -168,38 +121,17 @@ const styles = StyleSheet.create({
   //dropdownpicker스타일
   DropDownPicker:{
     flex:8.8, 
-    backgroundColor:"beige"
+    //backgroundColor:"beige"
   },
-  DateBtn:{// datePicker 버튼 담고있는 view의 스타일
-    justifyContent:'space-between',
-    marginHorizontal:20,
-    flexDirection:"row",
-    borderWidth:1,
-    padding:10,
+ 
 
-  },
-  timeBtn:{//예약 가능한 시간 필터링 버튼 을 담고있는 view의 스타일
-    backgroundColor:"orange",
-    justifyContent:'space-between',
-    flexDirection:"row",
-    paddingHorizontal:5,
-  },
-  bookingItem:{//예약 리스트 항목 1개의 스타일
-
-    backgroundColor:"white",
-    justifyContent:'space-between',
-    flexDirection:"row",
-    marginHorizontal:20,
-  },
-  /*예약 리스트 텍스트의 스타일 */
-  itemText:{
-    fontSize:20,
-  },
   screen: {
     flex:1,
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  FacilityImageStyle:{
+    width: width,
+    height:height/3,
   }
 });
-
-export default BookingFacility;
