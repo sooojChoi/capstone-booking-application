@@ -41,8 +41,6 @@ export class FacilityTable {
         }
     }
 
-
-
     gets(name){
         var result = []
         for(var existing of this.facilitys){
@@ -62,5 +60,4 @@ export class FacilityTable {
         }
         return result
     }
-
 }

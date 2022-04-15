@@ -57,7 +57,7 @@ export class booking {
         this.userId = userId
         this.facilityId = facilityId
         this.usingTime = allocationUsingTime
-        this.bookingTIme = bookingTime
+        this.bookingTime = bookingTime
         this.usedPlayers = usedPlayers
         this.cancel = cancel
     }

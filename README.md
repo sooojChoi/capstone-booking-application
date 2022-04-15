@@ -6,12 +6,29 @@ User 파일에 사용자와 관련된 화면들이 있고, Admin 파일에 관�
 
 < 설치 목록 >
 - Date&Time Picker
+
     npm i react-native-modal-datetime-picker @react-native-community/datetimepicker
 
 - Dropdown Picker
+
     npm install react-native-dropdown-picker
 
 - Navigation
+
     npm install @react-navigation/native
+
     expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
+    
     npm install @react-navigation/stack
+
+- Modal
+
+    npm i react-native-modal
+
+- Radio Button
+
+    npm i react-native-simple-radio-button --save
+
+- Toast
+
+    npm i react-native-easy-toast --save
