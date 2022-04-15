@@ -11,10 +11,9 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailFacilityManagement() {
   const facilityTable = new FacilityTable();
-  const [value, setValue] = useState('hante1'); // 시설 ID -> 시설 관리 화면에서 받아오기
+  const [fid, setId] = useState('hante1'); // 시설 ID -> FacilityManagement에서 값 받아오기(수정사항)
 
-  const temp = facilityTable.getsById(value);
-
+  const temp = facilityTable.getsById(fid);
   let id, name, openTime, closeTime, unitTime, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3;
 
   temp.map((facility) => {
@@ -32,6 +31,9 @@ export default function DetailFacilityManagement() {
     cost3 = facility.cost3
   });
 
+  const [fname, setName] = useState(id)
+  console.log(fname)
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{alignItems: 'center'}}>
@@ -45,7 +47,7 @@ export default function DetailFacilityManagement() {
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>NAME</Text>
-            <TextInput style={styles.name}>{name}</TextInput>
+            <TextInput style={styles.name} onChangeText={text=>setName(text)}>{name}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>OPEN TIME</Text>

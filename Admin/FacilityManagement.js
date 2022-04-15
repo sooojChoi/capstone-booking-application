@@ -3,15 +3,13 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useState } from "react";
-import { FacilityTable } from '../Table/FacilityTable'
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { FacilityTable } from '../Table/FacilityTable';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function BookingFacility() {
-  const facilityTable = new FacilityTable();
+  const facilityTable = new FacilityTable()
   const facility = facilityTable.facilitys
 
   const renderItem = (itemData) => {
