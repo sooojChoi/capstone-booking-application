@@ -2,17 +2,17 @@ import { permission } from "../Category";
 
 export class PermissionTable {
     permissions = [
-        new permission("yjb", "hante1", 1),
+        new permission("yjb", "hante1", 0),
         new permission("sbp", "hante2", 2),
-        new permission("hrr", "hante3", 3),
+        new permission("hrr", "hante3", 2),
         new permission("gt33", "hante1", 2),
         new permission("ookk33", "hante1", 1),
         new permission("sdfwqq2", "hante1", 2),
-        new permission("leemz22", "hante1", 3),
+        new permission("leemz22", "hante1", 0),
         new permission("ssm11", "hante1", 2),
-        new permission("chmsoo", "hante1", 3),
-        new permission("kyh", "hante1", 3),
-        new permission("sjc", "hante1", 3),
+        new permission("chmsoo", "hante1", 2),
+        new permission("kyh", "hante1", 2),
+        new permission("sjc", "hante1", 1),
     ];
 
     add(permission){

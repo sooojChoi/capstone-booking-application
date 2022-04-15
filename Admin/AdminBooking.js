@@ -2,8 +2,63 @@
 
 import { StatusBar } from 'expo-status-bar';
 import React, {useState, createRef} from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, FlatList} from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { FACILITY } from '../Database.js';
+
+//실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함
+const DATA = [
+  {
+    id: "1",
+    title: "First Item",
+    time: "10"
+  },
+  {
+    id: "2",
+    title: "Second Item",
+    time: "11"
+  },
+  {
+    id: "3",
+    title: "Third Item",
+    time: "12"
+  },
+  {
+    id: "4",
+    title: "Third Item",
+    time: "13"
+  },
+  {
+    id: "5",
+    title: "Third Item",
+    time: "14"
+  },
+  {
+    id: "6",
+    title: "Third Item",
+    time: "15"
+  },
+  {
+    id: "7",
+    title: "Third Item",
+    time: "16"
+  },
+  {
+    id: "8",
+    title: "Third Item",
+    time: "10"
+  },
+];
+
+const Item = ({ item, onPress, backgroundColor, textColor }) => (
+  <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
+    <View><Text style>{item.time}</Text></View>
+    <View style={{padding: 5, margin: 4, width: 70, height: 40,}}>
+    <Text style={[styles.title, textColor,{fontSize:18}]}>5000{}</Text>
+    </View>
+  </TouchableOpacity>
+);
 
 export default function App() {
   const inputRef = createRef();
@@ -61,10 +116,45 @@ Number.prototype.zf = function(len){return this.toString().zf(len);};
 
 /* 출처: https://stove99.tistory.com/46 [스토브 훌로구] */
 
+// //시간선택
+// const timeItem = (item) => {
+
+//   return <View>
+//     <Text style>시간{}</Text>
+//     <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 5, margin: 4, width: 70, height: 40,}}>
+//   <View style={{flexDirection:'row',}}>
+//   <Text style={styles.text3}>5000{}</Text>
+//   </View>
+// </View>
+// </View>
+// }
+
+const [selectedId, setSelectedId] = useState(null);
+
+const renderItem = ({ item }) => {
+  const backgroundColor = item.id === selectedId ? "#A9E2F3" : "white";
+  const color = item.id === selectedId ? '#2E9AFE' : 'black';
+
+  return (
+    <Item
+      item={item}
+      onPress={() => setSelectedId(item.id)}
+      backgroundColor={{ backgroundColor }}
+      textColor={{ color }}
+    />
+  );
+};
+
+
+// //실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함
+// const arr = [];
+// for (let i = 0; i < 10; i++) {
+//   arr.push(i);
+// }
+
 
   //인원 선택
   const [count, setCount] = useState(0);
-
 
   
 
@@ -84,27 +174,13 @@ Number.prototype.zf = function(len){return this.toString().zf(len);};
       </View>
     </View>
 
-    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 240,}}>
-      <Text style={styles.text2}>시설 정보</Text>
-      <View style={{flexDirection:'row'}}>
-      <Text style={styles.text3}>NAME</Text>
-      <TextInput style={styles.textinput2} placeholder="시설 이름을 넣어주세요."
-      value={value}
-      onChangeText={setValue}
-        inputRef={inputRef}
-      ></TextInput>
-      </View>
-      <Text style={styles.text3}>ID:{value}</Text>
-      <Text style={styles.text3}>{}~{}</Text>
-      <Text style={styles.text3}>사용 시간:{}분</Text>
-      <Text style={styles.text3}>수용 인원: {}명</Text>
-    </View>
-
-    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 150,}}>
+    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 400,}}>
     
-    
+    <Text style={styles.text2}>시설 정보</Text>
     <View style={{flexDirection:'row'}}>
-      <Text style={styles.text3}>예약 날짜: {text}</Text> 
+      
+      {/* 혜림이꺼 사용하기 */}
+      <Text style={styles.text3}>시설선택 + 예약 날짜 {text}</Text> 
       
       <Button title='날짜선택' onPress={showDatePicker}/>
       <DateTimePickerModal
@@ -115,18 +191,44 @@ Number.prototype.zf = function(len){return this.toString().zf(len);};
       />
       </View>
 
-      <View style={{flexDirection:'row'}}>
-      <Text style={styles.text3}>예약 시간: </Text>
-      <Button title='시간선택'/>
+      <View>
+      <Text style={styles.text3}>시간 선택</Text>
+      {/* <View style={{height:70}}>
+      <FlatList
+      data={arr}
+      renderItem={timeItem}
+      //keyExtractor={(item) => item.id}
+      //extraData={selectedId}
+      horizontal = { true }
+      />
+      </View> */}
+      <View>
+      <FlatList
+        data={DATA}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        extraData={selectedId}
+        horizontal = { true }
+      />
+      </View>
       </View>
 
-
+      <View>
+      <Text style={styles.text3}>예약자 전화번호</Text>
+      <TextInput style={styles.textinput1} placeholder="전화번호를 입력해주세요."></TextInput>
+      </View>
+      
 
       <View style={{flexDirection:'row'}}>
       <Text style={styles.text3}>예약 인원:</Text>
-      <Button title='-' onPress={() => setCount(count - 1)}></Button>
+      <Button title='-' onPress={() => {if(count > 0) setCount(count - 1)}}></Button>
       <Text style={styles.text3}>{count}</Text>
       <Button title='+' onPress={() => setCount(count + 1)}></Button>
+      </View>
+
+      <View>
+      <Text style={styles.text3}>공간사용료</Text>
+      <Text style={styles.text4}>₩ {}</Text>
       </View>
       <Button title='예약하기'></Button>
     </View>
@@ -153,6 +255,10 @@ const styles = StyleSheet.create({
   },
   text3: {
     fontSize: 18,
+    margin: 5,
+  },
+  text4: {
+    fontSize: 25,
     margin: 5,
   },
   textinput1: {

@@ -3,7 +3,6 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
-import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from '../Database.js';
 import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -62,6 +61,7 @@ export default function UserPermission() {
 
   // 등급을 선택하고 '확인'버튼을 눌렀을 때 호출되는 함수 (여러명의 경우)
   const saveGradeInfoForUsers = () => {
+    console.log(radioGrade)
     resetUserCheck(null)
     newUserCheck.find((user)=>{
       if(user.isCheck===true){
@@ -93,6 +93,9 @@ export default function UserPermission() {
     if(temp.length === 0){
       showCopyToast();
     }else{
+      // 선택된 사용자가 있는 경우.
+      //등급 수정하는 모달이 띄워지면 기본적으로 grade를 가장 낮은 등급으로 설정시킨다.
+      setRadioGrade(grade.length-1)  
       // 선택된 사용자가 있다면, 사용자 등급을 수정하는 모달을 띄운다.
       const index = grade.length-1
       const array = {id:0, name: "선택된 사용자들", gradeIndex: index}
@@ -496,7 +499,7 @@ export default function UserPermission() {
                numColumns={1}/>
            </View>
           ) : (
-            <View style={{height: SCREEN_HEIGHT*0.85}}>
+            <View style={{height: SCREEN_HEIGHT*0.87}}>
             <FlatList keyExtracter={(item) => item.id} 
                 data={userCheck} 
                 renderItem={renderGridItem} 
