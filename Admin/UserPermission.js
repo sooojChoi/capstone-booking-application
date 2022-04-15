@@ -3,7 +3,6 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
-import { PERMISSION, USER, FACILITY, DISCOUNTRATE, ALLOCATION, BOOKING } from '../Database.js';
 import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -500,7 +499,7 @@ export default function UserPermission() {
                numColumns={1}/>
            </View>
           ) : (
-            <View style={{height: SCREEN_HEIGHT*0.85}}>
+            <View style={{height: SCREEN_HEIGHT*0.87}}>
             <FlatList keyExtracter={(item) => item.id} 
                 data={userCheck} 
                 renderItem={renderGridItem} 
