@@ -1,3 +1,4 @@
+
 // 시설 예약(사용자) -> 혜림
 
 import { StatusBar } from 'expo-status-bar';
@@ -56,48 +57,51 @@ export default function BookingFacility() {
 
 
  
+
   return (
-    <View style={styles.container}>
-     
-      <View>
-      {/*시설 이미지*/}
-      <Image
-      style={styles.FacilityImageStyle}
-        source={require('../assets/library1.png')}
-      />
-
-      </View>
-      <View style={{flex:1.2}}>
-        {/*페이지 제목을 예약 시설 이름으로 변경*/}
-      <Text style={styles.title}>{FACILITY[0].name}</Text>
-    </View>
-      <View style={styles.DropDownPicker}>
-      <DropDownPicker
-      open={open}
-      value={value}
-      items={items}
-      setOpen={setOpen}
-      setValue={setValue}
-      setItems={setItems}
-    />
-    {/*달력 테스트해보는중 */}
     <View>
-   
-    <CalendarPicker
-          onDateChange={onDateChange}
-          weekdays={['일', '월', '화', '수', '목', '금', '토']}
-          minDate={minDate}
-          maxDate={maxDate}
-          previousTitle="<"
-          nextTitle=">"
-          disabledDates={[minDate,new Date(2022, 3, 15)]}
-        />
-    <Text>SELECTED DATE:{ startDate }</Text>
 
-      <View style={{height:selectedStartDate?30:0,width:selectedStartDate?400:0}}>
-        <Text style={{fontSize:25}}>date selected! now select timetable</Text>
-    </View>
-    </View>
+{/*시설 이미지*/}
+      <View> 
+          <Image
+          style={styles.FacilityImageStyle}
+            source={require('../assets/library1.png')}
+          />
+      </View>
+
+{/*페이지 제목을 예약 시설 이름으로 변경*/}
+      <View>
+            <Text style={styles.title}>{FACILITY[0].name}</Text>
+      </View>
+
+{/*달력과 picker의 부모뷰. 여기에 style을 주지 않으면 picker와 달력이 겹쳐서 선택이 안된다. */}
+      <View style={{backgroundColor:'white'}}>
+
+            <DropDownPicker
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+          />
+
+
+          <CalendarPicker
+                onDateChange={onDateChange}
+                weekdays={['일', '월', '화', '수', '목', '금', '토']}
+                minDate={minDate}
+                maxDate={maxDate}
+                previousTitle="<"
+                nextTitle=">"
+                disabledDates={[minDate,new Date(2022, 3, 15)]}
+              />
+            <Text>SELECTED DATE:{ startDate }</Text>
+
+          <View style={{height:selectedStartDate?30:0,width:selectedStartDate?400:0}}>
+              <Text style={{fontSize:25}}>date selected! now select timetable</Text>
+          </View>
+    
     
     </View>
 
@@ -106,32 +110,21 @@ export default function BookingFacility() {
     );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+
   /*예약 대상 시설 이름*/
   title:{
-    paddingTop:20,
+    paddingVertical:15,
     paddingHorizontal:20,
     fontWeight:'bold',
     fontSize:30,
   },
-  //dropdownpicker스타일
-  DropDownPicker:{
-    flex:8.8, 
-    //backgroundColor:"beige"
-  },
  
 
-  screen: {
-    flex:1,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
+
   FacilityImageStyle:{
     width: width,
     height:height/3,
   }
 });
+
