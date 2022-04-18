@@ -89,6 +89,7 @@ export default function UserManagement() {
     console.log(newDictionary);
 
     toggleModal();
+    setValue(grade); 
   }
   // 모달을 띄우고 사라지게 하기 위한 함수
   const toggleModal = () => {
@@ -100,7 +101,10 @@ export default function UserManagement() {
     console.log(grade[value]);
     console.log(selectedDate);
 
+    toggleModal();
+  }
 
+  const cancelButtonClicked = () => {
     toggleModal();
   }
 
@@ -136,19 +140,19 @@ export default function UserManagement() {
 
     return <View style={styles.container}>
       <Modal isVisible={isModalVisible} 
-        style={{alignSelf:'center', width:'95%'}}>
+        style={{alignSelf:'center', width:'100%',justifyContent:'center'}}>
           <View style={{ padding:10, backgroundColor:'white', justifyContent:'center'}}>
             <View style={{borderBottomColor:'#a6a6a6', borderBottomWidth:1,marginTop:5, marginBottom:10}}>
               <Text style={{fontSize: 18,  fontWeight: "600",
-              marginLeft:10,marginBottom:10,}}>{userInfoForModal.name}의 등급</Text>
+              marginLeft:10,marginBottom:10,}}>{userInfoForModal.name}</Text>
             </View>
-            <Text style={{fontSize:17, marginLeft:10, marginBottom:10}}>
-              등급 수정
+            <Text style={{fontSize:17, margin:10}}>
+            {grade[userInfoForModal.grade]}
             </Text>
             <View>
               <DropDownPicker
-                style={{width:SCREEN_WIDTH*0.5, marginLeft:10}}
-                placeholder={grade[userInfoForModal.grade]}
+                style={{width:SCREEN_WIDTH*0.5, marginLeft:5}}
+                placeholder="등급 수정"
                 open={open}
                 value={value}
                 items={items}
@@ -168,7 +172,7 @@ export default function UserManagement() {
               )
             }
               <CalendarPicker
-                width={SCREEN_WIDTH*0.93}
+                width={SCREEN_WIDTH}
                 onDateChange={onDateChange}
                 weekdays={['일', '월', '화', '수', '목', '금', '토']}
                 minDate={minDate}
@@ -180,7 +184,7 @@ export default function UserManagement() {
             <View style={{flexDirection:'row', justifyContent:'flex-end'}}>
               <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16, 
               marginTop:25, marginBottom:5}} 
-                onPress={toggleModal}>
+                onPress={cancelButtonClicked}>
                 <Text style={{fontSize:14}}>
                   취소
                 </Text>
