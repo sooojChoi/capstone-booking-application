@@ -32,3 +32,13 @@ User 파일에 사용자와 관련된 화면들이 있고, Admin 파일에 관�
 - Toast
 
     npm i react-native-easy-toast --save
+
+- Calendar Picker
+
+    npm install --save react-native-calendar-picker
+
+    npm install --save moment
+
+- Image Picker
+
+    expo install expo-image-picker
