@@ -14,12 +14,15 @@ import Toast, {DURATION} from 'react-native-easy-toast'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 // 사용자에게는 등급 정보가 grade배열의 index로 저장되어있음. 만약 a등급이면 gradeIndex:0 으로... (radioButton을 이용할 때를 위해서 이렇게 구현함.)
+const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
+const flexNotChecked = 5.5
+const flexChecked = 5
 
 export default function UserPermission() {
   const userTable = new UserTable();
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
+  const [flexByMode,setFlexByMode] = useState(6)  // ui(flatlist)의 flex값을 조절하기 위함.(체크모드가 true이면 flex:5, false이면 flex:6)
   const [userCheck, setUserCheck] = useState([]);  // 각 사용자가 현재 체크버튼이 눌린 상태인지 알기 위함.
   const newUserCheck = []  // userCheck 값을 바꾸기 위해 이용하는 전역 변수
   const [isAllChecked, setIsAllChecked] = useState(false);  // true면 "전체 선택" 버튼이 눌린 것.
@@ -190,6 +193,7 @@ export default function UserPermission() {
         const newarray = newUserCheck.filter((value)=>value.isCheck === false)
         setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
         setCheckMode(false);  // 체크 버튼을 사라지게 한다.
+        setFlexByMode(flexNotChecked);
         setIsAllChecked(false);  //"전체 선택" 버튼 해제
       },},
     ]);
@@ -214,6 +218,7 @@ export default function UserPermission() {
         const newarray = newUserCheck.filter((value)=>value.isCheck === false)
         setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
         setCheckMode(false);  // 체크 버튼을 사라지게 한다.
+        setFlexByMode(flexNotChecked);
         setIsAllChecked(false);  //"전체 선택" 버튼 해제
       },},
     ]);
@@ -226,6 +231,7 @@ export default function UserPermission() {
   // '취소' 버튼을 눌러서 체크모드를 해제하는 함수
   const cancelPermission = () => {
     setCheckMode(false);  // 체크모드 해제
+    setFlexByMode(flexNotChecked);
     resetUserCheck(false);   // 모든 사용자의 checkmode를 false로 초기화시켜주는 함수
     setIsAllChecked(false);  //"전체 선택" 버튼 해제
   }
@@ -273,6 +279,10 @@ export default function UserPermission() {
    setUserCheck(newUserCheck);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
   }
 
+  const longPressForUsers = () =>{
+    setCheckMode(true);
+    setFlexByMode(flexChecked);
+  }
 
   const renderGridItem = (itemData, index) => {
     const date = itemData.item.registerDate;
@@ -283,7 +293,7 @@ export default function UserPermission() {
     return    checkMode === false ? (
     <TouchableOpacity  style={{...styles.facilityFlatList,  }} 
     onPress={()=>AllowOneUser(itemData.item.id, itemData.item.name)}
-    onLongPress={()=>setCheckMode(true)}>
+    onLongPress={()=>longPressForUsers()}>
       <View style={{flexDirection:'row', justifyContent:'space-between',alignItems:'center'}}>
         <View style={{flexDirection:'row', alignItems:'center'}}>
           <View style={{marginEnd:10}}>
@@ -418,7 +428,7 @@ export default function UserPermission() {
              style={{backgroundColor:'grey'}}
              textStyle={{color:'white'}}
           />
-      <View style={{alignSelf:'center',borderBottomColor: '#a6a6a6', borderBottomWidth:2,width: SCREEN_WIDTH*0.95}}>
+      <View style={{flex:1,alignSelf:'center',borderBottomColor: '#a6a6a6', borderBottomWidth:2,width: SCREEN_WIDTH*0.95}}>
         <View style={{flexDirection:'row', justifyContent:'space-between', 
         alignItems:'center', marginTop:60, marginBottom:10}}>
           <Text style={{...styles.TitleText,marginStart: 5, marginBottom:0}}>승인 요청 내역</Text>
@@ -490,16 +500,16 @@ export default function UserPermission() {
           </Text>
         </View>
       ) : (
-        <View>
+        <View style={{flex:flexByMode}}>
           { checkMode === true ? (
-           <View style={{height: SCREEN_HEIGHT*0.8}}>
+           <View style={{}}>
            <FlatList keyExtracter={(item) => item.id} 
                data={userCheck} 
                renderItem={renderGridItem} 
                numColumns={1}/>
            </View>
           ) : (
-            <View style={{height: SCREEN_HEIGHT*0.87}}>
+            <View style={{}}>
             <FlatList keyExtracter={(item) => item.id} 
                 data={userCheck} 
                 renderItem={renderGridItem} 

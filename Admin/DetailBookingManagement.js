@@ -1,7 +1,7 @@
 // 상세 예약 관리(관리자) -> 수빈
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useState } from "react";
 import { BookingTable } from '../Table/BookingTable';
 
@@ -28,17 +28,17 @@ export default function DetailBookingManagement() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.top}>
-        <Text style={{fontSize: 32, fontWeight: "bold",}}>예약 세부 내역</Text>
+        <Text style={{ fontSize: 32, fontWeight: "bold", }}>예약 세부 내역</Text>
       </View>
-      <View style={{alignSelf: 'flex-start', marginTop: 10, marginLeft : 22}}>
-        <Text style={{fontSize: 28, fontWeight: "bold", marginBottom: 10}}>{facilityId}</Text>
+      <View style={{ alignSelf: 'flex-start', marginTop: 10, marginLeft: 22 }}>
+        <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 10 }}>{facilityId}</Text>
         <Text style={styles.detail}>예약자 : {userId}</Text>
-        <Text style={styles.detail}>전화번호 : {}</Text>
+        <Text style={styles.detail}>전화번호 : { }</Text>
         <Text style={styles.detail}>인원 : {usedPlayers}명</Text>
         <Text style={styles.detail}>시간 : {usingTime}</Text>
-        <Text style={styles.detail}>금액 : {}원</Text>
+        <Text style={styles.detail}>금액 : { }원</Text>
       </View>
-      <TouchableOpacity style={{marginTop: 50}}>
+      <TouchableOpacity style={{ marginTop: 50 }}>
         <Text style={styles.button}>예약 취소</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
   },
-  
+
   top: {
     width: SCREEN_WIDTH * 0.9,
     borderColor: 'gray',

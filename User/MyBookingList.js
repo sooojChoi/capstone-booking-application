@@ -5,30 +5,46 @@ import { Images } from '../Images';
 import React, {useState, createRef} from 'react';
 import { Button, StyleSheet, Text, TextInput, View, FlatList } from 'react-native';
 import IconButton from '../IconButton';
+import {FacilityTable} from '../Table/FacilityTable';
+import {BookingTable} from '../Table/BookingTable';
 
 export default function App() {
   const inputRef = createRef();
 
   const [value, setValue] = useState('');
+
+  const facilityTable = new FacilityTable();
+  const bookingTable = new BookingTable();
+
+  //시설, 유저아이디 임의로 지정
+  const facilities = facilityTable.getsById("hante1")
+  console.log(facilities.cost1)
+  
+  const bookings = bookingTable.getByUserIdNotCancle("yjb")
+
   
   const yItem = (itemData) => {
+    const cost = facilityTable.getsById(itemData.item.facilityId).cost
+    console.log(cost)
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
-    <Text style={styles.text3}>시설이름{} 오픈시간{}~닫는시간{}</Text>
+    <Text style={styles.text3}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text3}>가격 {}W, 인원{}명</Text>
+      <Text style={styles.text3}>가격 {cost}W, 인원{itemData.item.usedPlayers}명</Text>
       <IconButton type={Images.delete} />
     </View>
   </View>
   
   }
 
+  const bookingCancle = bookingTable.getByUserIdCancle("yjb")
+
   const nItem = (itemData) => {
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
-    <Text style={styles.text4}>시설이름{} 오픈시간{}~닫는시간{}</Text>
+    <Text style={styles.text4}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text4}>가격 {}W, 인원{}명</Text>
+      <Text style={styles.text4}>가격 {}W, 인원{itemData.item.usedPlayers}명</Text>
     </View>
   </View>
   
@@ -49,7 +65,7 @@ for (let i = 0; i < 100; i++) {
 
       <View style={{height:300}}>
       <FlatList
-      data={arr}
+      data={bookings}
       renderItem={yItem}
       />
       </View>
@@ -62,7 +78,7 @@ for (let i = 0; i < 100; i++) {
       <Text style={styles.text2}>취소내역</Text>
       <View style={{height:300}}>
       <FlatList
-      data={arr}
+      data={bookingCancle}
       renderItem={nItem}
       />
       </View>
