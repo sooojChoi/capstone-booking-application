@@ -38,7 +38,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return <MyBookingList></MyBookingList> // 예약 내역(유진)
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
-  return (<SignIn></SignIn>) // 회원가입(혜림)
+  //return (<SignIn></SignIn>) // 회원가입(혜림)
   
   return (<View></View>)
 

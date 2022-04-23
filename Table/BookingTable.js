@@ -4,7 +4,11 @@ import { booking, user } from "../Category";
 export class BookingTable {
     bookings = [
         new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, false),
+        new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, true),
+        new booking("yjb", "hante1", "2022-03-26-12:00", "2022-03-25-09:00", 4, false),
+        new booking("yjb", "hante1", "2022-03-27-12:00", "2022-03-25-09:00", 4, false),
         new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, false),
+        new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, true),
         new booking("sbp", "hante2", "2022-03-28-12:00", "2022-03-25-12:00", 6, true),
     ];
 
@@ -78,6 +82,27 @@ export class BookingTable {
                 if(existing.facilityId == facilityId){
                     result.push(existing)
                 }
+            }
+        }
+        return result
+    }
+
+    getByUserIdNotCancle(userId){
+        var result = []
+        for(var existing of this.bookings){
+            if(existing.userId == userId && existing.cancel == false){
+                result.push(existing)
+            }
+        }
+        return result
+    }
+
+    //취소내역 userId로 가져오기
+    getByUserIdCancle(userId){
+        var result = []
+        for(var existing of this.bookings){
+            if(existing.userId == userId && existing.cancel == true){
+                result.push(existing)
             }
         }
         return result
