@@ -7,15 +7,14 @@ import DetailFacilityManagement from './Admin/DetailFacilityManagement';
 import FacilityManagement from './Admin/FacilityManagement';
 import UserManagement from './Admin/UserManagement';
 import UserPermission from './Admin/UserPermission';
-import DetailUserManagement from './Admin/DetailUserManagement';
 import BookingFacility from './User/BookingFacility';
 import DeleteAccount from './User/DeleteAccount';
 import LogIn from './User/LogIn';
 import MyBookingList from './User/MyBookingList';
 import MyInfoManagement from './User/MyInfoManagement';
+import DetailUserManagement from './Admin/DetailUserManagement';
 import SignIn from './User/SignIn';
-import MyInfoManagement from './User/MyInfoManagement';
-import DeleteAccount from './User/DeleteAccount';
+import UserManagementNavigation from './Admin/UserManagement';
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 관리자(Admin) UI
@@ -25,7 +24,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<DetailFacilityManagement></DetailFacilityManagement>) // 상세 시설 관리(수빈)
   //return (<FacilityManagement></FacilityManagement>) // 시설 관리(수빈)
 
-  //return (<UserManagement></UserManagement>) // 사용자 관리(수진)
+ // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
   //return (<DetailUserManagement></DetailUserManagement>) // 상세 사용자 관리(수진)
 
   //return (<UserPermission></UserPermission>) // 사용자 승인(수진)
@@ -38,8 +37,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
   //return (<SignIn></SignIn>) // 회원가입(혜림)
-  
-  return (<View></View>)
+
 
 }
 
