@@ -2,32 +2,87 @@
 
 import { StatusBar } from 'expo-status-bar';
 import React, {useState, createRef} from 'react';
-import { Button, StyleSheet, Text, TextInput, View, FlatList} from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, FlatList, ScrollView,} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import DropDownPicker from 'react-native-dropdown-picker';
+import CalendarPicker from 'react-native-calendar-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { FACILITY } from '../Database.js';
+import {FacilityTable} from '../Table/FacilityTable';
+
+
+
+const Item = ({ item, onPress, backgroundColor, textColor }) => (
+  <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
+    <View><Text style>{item.time}</Text></View>
+    <View style={{padding: 5, margin: 4, width: 70, height: 40,}}>
+    <Text style={[styles.title, textColor,{fontSize:18}]}>5000{}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+export default function App() {
+//혜림이꺼
+facilityTable=new FacilityTable()
+
+const minDate = new Date(); // Today
+//최대 7일 뒤까지 예약 가능
+var now = new Date();
+var bookinglimit = new Date(now.setDate(now.getDate() + 7));
+const maxDate = new Date(bookinglimit);
+
+//날짜 선택했는지 안했는지 확인하는
+const [ selectedStartDate,onDateChange]=useState(null);
+const startDate = selectedStartDate ? selectedStartDate.toString() : '';
+
+const [open, setOpen] = useState(false);
+const [value, setValue] = useState(null);
+const [items, setItems] = useState([
+  {label: facilityTable.facilitys[0].name, value: facilityTable.facilitys[0].id},
+  {label: facilityTable.facilitys[1].name, value: facilityTable.facilitys[1].id},
+  {label: facilityTable.facilitys[2].name, value: facilityTable.facilitys[2].id},
+]);
+
+
+{/* dropdown으로 선택한 시설과, 버튼으로 선택된 시간이 반영된 결과가 이 DATA에 담겨야 한다.*/}
+const DATA1 = [
+  {
+    id: facilityTable.facilitys[0].id,
+    title: facilityTable.facilitys[0].name+ '\n<open time>:'+facilityTable.facilitys[0].openTime+  
+    '\n<cost1>:' +facilityTable.facilitys[0].cost1+'\n',
+  },
+  {
+    id: facilityTable.facilitys[1].id,
+    title: facilityTable.facilitys[1].name+ '\n<open time>:'+facilityTable.facilitys[1].openTime+  
+    '\n<cost1>:' +facilityTable.facilitys[1].cost1+'\n',
+  },
+  {
+    id: facilityTable.facilitys[2].id,
+    title: facilityTable.facilitys[2].name+ '\n<open time>:'+facilityTable.facilitys[2].openTime+  
+    '\n<cost1>:' +facilityTable.facilitys[2].cost1+'\n',
+  },
+];
 
 //실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함
 const DATA = [
   {
     id: "1",
     title: "First Item",
-    time: "10"
+    time: facilityTable.facilitys[0].openTime
   },
   {
     id: "2",
     title: "Second Item",
-    time: "11"
+    time: facilityTable.facilitys[0].openTime+1
   },
   {
     id: "3",
     title: "Third Item",
-    time: "12"
+    time: facilityTable.facilitys[0].openTime+2
   },
   {
     id: "4",
     title: "Third Item",
-    time: "13"
+    time: facilityTable.facilitys[0].openTime+3
   },
   {
     id: "5",
@@ -51,62 +106,52 @@ const DATA = [
   },
 ];
 
-const Item = ({ item, onPress, backgroundColor, textColor }) => (
-  <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
-    <View><Text style>{item.time}</Text></View>
-    <View style={{padding: 5, margin: 4, width: 70, height: 40,}}>
-    <Text style={[styles.title, textColor,{fontSize:18}]}>5000{}</Text>
-    </View>
-  </TouchableOpacity>
-);
+//   const inputRef = createRef();
 
-export default function App() {
-  const inputRef = createRef();
-
-  const [value, setValue] = useState('');
+//   const [value, setValue] = useState('');
 
 
-  // datepicker
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+//   // datepicker
+//   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
+//   const showDatePicker = () => {
+//     setDatePickerVisibility(true);
+//   };
 
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
+//   const hideDatePicker = () => {
+//     setDatePickerVisibility(false);
+//   };
 
-  const handleConfirm = (date) => {
-    console.warn("A date has been picked: ", date);
-    hideDatePicker();
-    onChangeText(date.format("yyyy/MM/dd"))
-  };
+//   const handleConfirm = (date) => {
+//     console.warn("A date has been picked: ", date);
+//     hideDatePicker();
+//     onChangeText(date.format("yyyy/MM/dd"))
+//   };
 
-  const [text, onChangeText] = useState("");
+//   const [text, onChangeText] = useState("");
 
-  Date.prototype.format = function(f) {
-    if (!this.valueOf()) return " ";
+//   Date.prototype.format = function(f) {
+//     if (!this.valueOf()) return " ";
  
-    var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-    var d = this;
+//     var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+//     var d = this;
      
-    return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
-        switch ($1) {
-            case "yyyy": return d.getFullYear();
-            case "yy": return (d.getFullYear() % 1000).zf(2);
-            case "MM": return (d.getMonth() + 1).zf(2);
-            case "dd": return d.getDate().zf(2);
-            case "E": return weekName[d.getDay()];
-            case "HH": return d.getHours().zf(2);
-            case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
-            case "mm": return d.getMinutes().zf(2);
-            case "ss": return d.getSeconds().zf(2);
-            case "a/p": return d.getHours() < 12 ? "오전" : "오후";
-            default: return $1;
-        }
-    });
-};
+//     return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
+//         switch ($1) {
+//             case "yyyy": return d.getFullYear();
+//             case "yy": return (d.getFullYear() % 1000).zf(2);
+//             case "MM": return (d.getMonth() + 1).zf(2);
+//             case "dd": return d.getDate().zf(2);
+//             case "E": return weekName[d.getDay()];
+//             case "HH": return d.getHours().zf(2);
+//             case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
+//             case "mm": return d.getMinutes().zf(2);
+//             case "ss": return d.getSeconds().zf(2);
+//             case "a/p": return d.getHours() < 12 ? "오전" : "오후";
+//             default: return $1;
+//         }
+//     });
+// };
 
  
 String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
@@ -159,6 +204,7 @@ const renderItem = ({ item }) => {
   
 
   return (
+    
     <View style={styles.container}>
       <Text style={styles.text1}>BBOOKING</Text>
       <StatusBar style="auto" />
@@ -174,13 +220,14 @@ const renderItem = ({ item }) => {
       </View>
     </View>
 
-    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 400,}}>
+    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 500,}}>
     
     <Text style={styles.text2}>시설 정보</Text>
+    <ScrollView>
     <View style={{flexDirection:'row'}}>
       
       {/* 혜림이꺼 사용하기 */}
-      <Text style={styles.text3}>시설선택 + 예약 날짜 {text}</Text> 
+      {/* <Text style={styles.text3}>시설선택 + 예약 날짜 {text}</Text> 
       
       <Button title='날짜선택' onPress={showDatePicker}/>
       <DateTimePickerModal
@@ -188,7 +235,37 @@ const renderItem = ({ item }) => {
         mode="date"
         onConfirm={handleConfirm}
         onCancel={hideDatePicker}
-      />
+      /> */}
+      {/*달력과 picker의 부모뷰. 여기에 style을 주지 않으면 picker와 달력이 겹쳐서 선택이 안된다. */}
+      <View style={{backgroundColor:'white'}}>
+
+            <DropDownPicker
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+          />
+
+
+          <CalendarPicker
+                onDateChange={onDateChange}
+                weekdays={['일', '월', '화', '수', '목', '금', '토']}
+                minDate={minDate}
+                maxDate={maxDate}
+                previousTitle="<"
+                nextTitle=">"
+                disabledDates={[minDate,new Date(2022, 3, 15)]}
+              />
+            <Text>SELECTED DATE:{ startDate }</Text>
+
+          <View style={{height:selectedStartDate?30:0,width:selectedStartDate?400:0}}>
+              <Text style={{fontSize:25}}>date selected! now select timetable</Text>
+          </View>
+    
+    
+    </View>
       </View>
 
       <View>
@@ -230,9 +307,11 @@ const renderItem = ({ item }) => {
       <Text style={styles.text3}>공간사용료</Text>
       <Text style={styles.text4}>₩ {}</Text>
       </View>
-      <Button title='예약하기'></Button>
+      </ScrollView>
     </View>
+    <Button title='예약하기'></Button>
     </View>
+
     
   );
 }
