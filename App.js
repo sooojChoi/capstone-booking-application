@@ -14,14 +14,14 @@ import LogIn from './User/LogIn';
 import MyBookingList from './User/MyBookingList';
 import MyInfoManagement from './User/MyInfoManagement';
 import SignIn from './User/SignIn';
-import MyInfoManagement from './User/MyInfoManagement';
-import DeleteAccount from './User/DeleteAccount';
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 관리자(Admin) UI
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
+
   //return (<BookingManagement></BookingManagement>) // 예약 관리(수빈)
   //return (<DetailBookingManagement></DetailBookingManagement>) //// 상세 예약 관리(수빈)
+
   //return (<DetailFacilityManagement></DetailFacilityManagement>) // 상세 시설 관리(수빈)
   //return (<FacilityManagement></FacilityManagement>) // 시설 관리(수빈)
 
@@ -34,10 +34,11 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)
   //return (<LogIn></LogIn>) // 로그인(혜림)
+
   //return <MyBookingList></MyBookingList> // 예약 내역(유진)
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
-  //return (<SignIn></SignIn>) // 회원가입(혜림)
+  return (<SignIn></SignIn>) // 회원가입(혜림)
   
   return (<View></View>)
 

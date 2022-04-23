@@ -1,7 +1,7 @@
 // 상세 예약 관리(관리자) -> 수빈
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useState } from "react";
 import { BookingTable } from '../Table/BookingTable';
 
