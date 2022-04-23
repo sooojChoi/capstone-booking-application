@@ -5,7 +5,9 @@ import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOp
 import React, { useState } from "react";
 import Modal from "react-native-modal";
 import CalendarPicker from 'react-native-calendar-picker';
+import { AntDesign } from '@expo/vector-icons';
 import { BookingTable } from '../Table/BookingTable';
+import { FacilityTable } from '../Table/FacilityTable';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -14,11 +16,31 @@ export default function BookingManagement() {
   // DB Table
   const bookingTable = new BookingTable()
   const booking = bookingTable.bookings
+  const facilityTable = new FacilityTable()
+  const facility = facilityTable.facilitys
 
-  // Modal
-  const [isModalVisible, setModalVisible] = useState(false);
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
+  // 시설 선택 Modal
+  const [facilityModalVisible, setFacilityModalVisible] = useState(false);
+  const facilityModal = () => {
+    setFacilityModalVisible(!facilityModalVisible);
+  };
+
+  // 시설 출력 Flatlist
+  const renderFacility = (itemData) => {
+    return (
+      <View style={styles.facility}>
+        <TouchableOpacity style={{ alignSelf: 'center' }}>
+          <AntDesign name="checksquareo" size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={{ fontSize: 28, marginLeft: 10 }}>{itemData.item.name}</Text>
+      </View>
+    );
+  }
+
+  // 날짜 선택 Modal
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const dateModal = () => {
+    setDateModalVisible(!dateModalVisible);
   };
 
   // Calendar Picker -> 날짜 범위 지정?
@@ -31,7 +53,13 @@ export default function BookingManagement() {
 
   // 날짜 선택 화면
   const showCalendar = () => {
-    toggleModal();
+    dateModal();
+  }
+
+  // 날짜 필터링
+  const selectedDate = () => {
+    console.log(startDate);
+    dateModal();
   }
 
   // 예약 날짜 출력 -> 수정 필요(중첩 FlatList?)
@@ -39,7 +67,7 @@ export default function BookingManagement() {
   const year = today.getFullYear(); // 년
   const month = '0' + (today.getMonth() + 1);  // 월
   const day = today.getDate();  // 일
-  const date = year + '.' + month + '.' + day
+  const date = year + '.' + month + '.' + day;
 
   // 예약 내역 출력(Flatlist)
   const renderItem = (itemData) => {
@@ -60,7 +88,29 @@ export default function BookingManagement() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Modal isVisible={isModalVisible} style={{ alignSelf: 'center', width: '95%' }}>
+      <Modal isVisible={facilityModalVisible} style={{ alignSelf: 'center', width: '95%' }}>
+        <View style={{ padding: 20, backgroundColor: 'white' }}>
+          <View style={{ alignSelf: 'center' }}>
+            <FlatList
+              data={facility}
+              renderItem={renderFacility}
+              keyExtracter={(item) => item.id}
+              style={{ width: SCREEN_WIDTH * 0.9, height: 300, flexGrow: 0 }} />
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={facilityModal}>
+              <Text>취소</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.smallButton} onPress={facilityModal}>
+              <Text>확인</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+
+      <Modal isVisible={dateModalVisible} style={{ alignSelf: 'center', width: '95%' }}>
         <View style={{ padding: 20, backgroundColor: 'white' }}>
           <View style={{ alignSelf: 'center' }}>
             <CalendarPicker
@@ -73,11 +123,12 @@ export default function BookingManagement() {
               nextTitle=">"
             />
           </View>
+
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={toggleModal}>
+            <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={dateModal}>
               <Text>취소</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.smallButton} onPress={toggleModal}>
+            <TouchableOpacity style={styles.smallButton} onPress={selectedDate}>
               <Text>확인</Text>
             </TouchableOpacity>
           </View>
@@ -85,7 +136,7 @@ export default function BookingManagement() {
       </Modal>
       <Text style={{ fontSize: 32, fontWeight: "bold" }}>예약 내역</Text>
       <View style={styles.top}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={facilityModal}>
           <Text style={styles.button}>시설</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={showCalendar}>
@@ -99,7 +150,7 @@ export default function BookingManagement() {
         data={booking}
         renderItem={renderItem}
         keyExtracter={(item) => item.id} />
-        <View>
+      <View>
       </View>
     </SafeAreaView>
   );
@@ -155,6 +206,14 @@ const styles = StyleSheet.create({
     padding: 8,
     paddingStart: 20,
     paddingEnd: 20,
+  },
+
+  facility: {
+    flexDirection: 'row',
+    borderColor: 'gray',
+    borderBottomWidth: 1,
+    marginTop: 10,
+    paddingBottom: 10
   },
 
   date: {

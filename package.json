@@ -34,7 +34,8 @@
     "react-native-safe-area-context": "3.3.2",
     "react-native-screens": "~3.10.1",
     "react-native-simple-radio-button": "^2.7.4",
-    "react-native-web": "0.17.1"
+    "react-native-web": "0.17.1",
+    "rn-checkbox-list": "^1.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"
