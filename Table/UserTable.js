@@ -45,7 +45,7 @@ export class UserTable {
 
 
     // 이름으로 user 목록 얻기
-    gets(name){
+    getsByName(name){
         var result = []
         for(var existing of this.users){
             if(existing.name == name){

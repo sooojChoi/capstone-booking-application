@@ -41,7 +41,7 @@ export class FacilityTable {
         }
     }
 
-    gets(name){
+    getsByName(name){
         var result = []
         for(var existing of this.facilitys){
             if(existing.name == name){
