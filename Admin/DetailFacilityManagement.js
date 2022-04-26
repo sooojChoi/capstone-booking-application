@@ -9,10 +9,10 @@ import { FacilityTable } from '../Table/FacilityTable'
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function DetailFacilityManagement() {
+export default function DetailFacilityManagement({ route }) {
   // DB Table
   const facilityTable = new FacilityTable();
-  const [fid, setId] = useState('hante1'); // 시설 ID -> FacilityManagement에서 값 받아오기(수정사항)
+  const fid = route.params.facilityId;
 
   // 시설 정보 가져오기
   const temp = facilityTable.getsById(fid);
@@ -124,13 +124,10 @@ export default function DetailFacilityManagement() {
               <Text style={{ fontSize: 32, alignSelf: 'center', paddingTop: 5 }}>+</Text>     
             </TouchableOpacity>
           </View>
-          {/*} 시설 설명
           <View style={styles.list}>
             <Text style={styles.category}>시설 설명</Text>
-          </View>
-          
+          </View>         
           <TextInput style={styles.explain} multiline={true}></TextInput>
-*/}
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
             <TouchableOpacity style={{ ...styles.button, backgroundColor: 'skyblue' }}>
               <Text style={{ fontSize: 18 }}>수정</Text>
