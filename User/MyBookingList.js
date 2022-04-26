@@ -18,19 +18,18 @@ export default function App() {
 
   //시설, 유저아이디 임의로 지정
   const facilities = facilityTable.getsById("hante1")
-  console.log(facilities.cost1)
   
   const bookings = bookingTable.getByUserIdNotCancle("yjb")
 
   
   const yItem = (itemData) => {
-    const cost = facilityTable.getsById(itemData.item.facilityId).cost
-    console.log(cost)
+    const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
+   //console.log('cost1 ' + facilitieCost)
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
     <Text style={styles.text3}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text3}>가격 {cost}W, 인원{itemData.item.usedPlayers}명</Text>
+      <Text style={styles.text3}>{facilitieCost}W, 인원{itemData.item.usedPlayers}명</Text>
       <IconButton type={Images.delete} />
     </View>
   </View>
@@ -40,11 +39,12 @@ export default function App() {
   const bookingCancle = bookingTable.getByUserIdCancle("yjb")
 
   const nItem = (itemData) => {
+    const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
     <Text style={styles.text4}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text4}>가격 {}W, 인원{itemData.item.usedPlayers}명</Text>
+      <Text style={styles.text4}>{facilitieCost}W, 인원{itemData.item.usedPlayers}명</Text>
     </View>
   </View>
   

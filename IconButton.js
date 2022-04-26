@@ -12,7 +12,7 @@ const IconButton = ({ type }) => {
 const styles = StyleSheet.create({
   iconbutton: {
     margin: 5,
-    marginStart: 180,
+    marginStart: 170,
   },
 });
 

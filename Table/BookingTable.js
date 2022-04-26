@@ -10,6 +10,7 @@ export class BookingTable {
         new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, false),
         new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, true),
         new booking("sbp", "hante2", "2022-03-28-12:00", "2022-03-25-12:00", 6, true),
+        new booking("yjb", "hante3", "2022-03-28-12:00", "2022-03-25-12:00", 6, true),
     ];
 
     add(booking){
