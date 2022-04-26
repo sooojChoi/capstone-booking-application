@@ -1,14 +1,16 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PermissionTable } from '../Table/PermissionTable.js';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { UserTable } from '../Table/UserTable.js';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
-import Modal from "react-native-modal";
 import { Entypo } from '@expo/vector-icons';
+import Toast, {DURATION} from 'react-native-easy-toast'
+import { permission } from '../Category';
+import { user } from '../Category';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -20,9 +22,6 @@ export default function DetailUserManagement({ route, navigation }) {
   const userTable = new UserTable();
   const myFacilityId = "hante1"  // 내 facility의 id이다. (실제로는 어디 다른데서 가져올 값)
   const [userInfo, setUserInfo] = useState({});  
-  const tempUsersArray = []  // users 값을 바꾸기 위해 이용하는 전역 변수
-  const [isModalVisible, setModalVisible] = useState(false);   // 사용자 정보 수정할 때 뜨는 모달 관련 변수
-  const [userInfoForModal, setUserInfoForModal] = useState({});  // 수정되기 위해 모달에 띄워지는 사용자 정보 (한 명의 정보)
   const [allowDateInfo, setAllowDateInfo] = useState("");
   const [dateForAllow, setDateForAllow] = useState();
 
@@ -33,6 +32,14 @@ export default function DetailUserManagement({ route, navigation }) {
     {label: grade[1], value: 1},
     {label: grade[2], value: 2},
   ]);
+  const toastRef = useRef(); // toast ref 생성
+   // Toast 메세지 출력
+   const showGradeIsNullToast = useCallback(() => {
+    toastRef.current.show('변경할 등급이 선택되지 않았습니다. ');
+  }, []);
+  const showDateIsNullToast = useCallback(() => {
+    toastRef.current.show('날짜가 선택되지 않았습니다. ');
+  }, []);
   
   const minDate = new Date(); // Today
   const now = new Date();
@@ -48,19 +55,19 @@ export default function DetailUserManagement({ route, navigation }) {
         const phone = user.phone
         const name = user.name
         const allowDate = user.allowDate
+        const registerDate = user.registerDate
         
         const temp  = {
-          userId: userId, name: name, grade: grade, phone: phone, allowDate: allowDate
+          userId: userId, name: name, grade: grade, phone: phone, 
+          registerDate: registerDate,allowDate: allowDate
         }
         setUserInfo(temp);
-
-        setDateForAllow(new Date(allowDate));
-        console.log(new Date(allowDate));
         
         if(allowDate === null){
           setAllowDateInfo("예약 금지일이 설정되지 않았습니다.")
         }else{
           setAllowDateInfo("예약 금지일: "+allowDate);
+          setDateForAllow(new Date(allowDate));
         }
 
       }
@@ -72,58 +79,116 @@ export default function DetailUserManagement({ route, navigation }) {
       setInfoAtFirst();
     },[])
 
+    // 사용자 등급 변경하는 버튼 눌렸을 때 호출되는 함수.
     const changeUserGrade = () => {
-      // 만약 value가 null이면 "등급을 먼저 선택해주세요. "라는 토스트가 띄워지도록 하기.
-      Alert.alert("등급을 수정하시겠습니까?",grade[value] ,[
+      // 만약 value가 null일 때 눌렸다면 "등급을 먼저 선택해주세요. "라는 토스트가 띄워지도록 하기.
+      if(value === null){
+        showGradeIsNullToast();
+        return;
+      }
+      const subTitle = grade[value]+"(으)로 수정하시겠습니까?"
+      Alert.alert(subTitle,"" ,[
         {text:"취소"},
         {text: "확인", onPress: () => {
           // 여기서 등급 테이블 수정
+          permissionTable.modify(new permission(userInfo.userId, myFacilityId, value))
+          console.log(permissionTable.getsByUserId(userInfo.userId));
 
+          // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
+          const tempArray = userInfo
+          tempArray.grade = value
+          setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
         },},
       ]);
       console.log(value)
     }
+
+
+    // 예약 금지일 변경하는 버튼 눌렀을 때 호출되는 함수
     const changeUserAllowDate = () => {
-      // 날짜가 null이면 "날짜를 먼저 선택해주세요." 라는 토스트가 띄워지도록 하기
+      // 날짜가 null일 때 눌렸다면 "날짜를 먼저 선택해주세요." 라는 토스트가 띄워지도록 하기
+      if(selectedDate === null){
+        showDateIsNullToast();
+        return;
+      }
+      const dateForString = new Date(selectedDate);
+      const year = dateForString.getFullYear();
+      const month = dateForString.getMonth()+1;
+      const date = dateForString.getDate();
+      const string = year+"년 "+month+"월"+date+"일"
+      const result = year+'-'+(month >= 10 ? month: '0'+month)+'-'+(date >= 10 ? date : '0'+date);
       
-  //    const d = selectedDate.getFullYear()+'-'+(selectedDate.getMonth()+1)+'-'+selectedDate.getDate()
-      Alert.alert("예약 금지일을 부여하시겠습니까?",selectedDate.toString(),[
+      Alert.alert("예약 금지일을 부여하시겠습니까?",string,[
         {text:"취소"},
         {text: "확인", onPress: () => {
-          // 여기서 allocation table 수정
-        
+          // 여기서 user table 수정
+          userTable.modify(new user(userInfo.userId, userInfo.name, 
+            userInfo.phone, userInfo.registerDate, result));
+
+          console.log(userTable.getsById(userInfo.userId))
+
+          setAllowDateInfo([..."예약 금지일: "+result]);
+          setDateForAllow(...[new Date(selectedDate)]);
           
+           // userInfo를 수정한다.
+           const tempArray = userInfo
+           tempArray.allowDate = result
+           setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
         },},
       ]);
-      console.log(selectedDate)
     }
 
     return <View style={styles.container}>
+        <Toast ref={toastRef}
+             positionValue={SCREEN_HEIGHT * 0.55}
+             fadeInDuration={200}
+             fadeOutDuration={1000}
+             style={{backgroundColor:'grey'}}
+             textStyle={{color:'white'}}
+          />
         <View style={{ backgroundColor:'white', justifyContent:'center'}}>
-            <View style={{borderBottomColor:'#a6a6a6', borderBottomWidth:1,marginTop:5, margin:5,
-             flexDirection:'row', alignItems:'center', paddingBottom:10, paddingTop:5}}>
-              <Text style={{fontSize: 18,  fontWeight: "600",
-              marginLeft:10,}}>{userInfo.name}</Text>
-              <Text style={{...styles.infoTextStyle, marginBottom:0, marginTop:0}}>{userInfo.userId}</Text>
-            </View>
             <View>
                 <Text style={{fontSize:18,marginTop:10, marginLeft:10}}>
                 사용자 정보
                 </Text>
             </View>
-            <View style={{flexDirection:'row',marginTop:10}}>
-              <Entypo style={{marginLeft:10, marginBottom:0}} name="phone" size={24} color="black" />
-              <Text style={{...styles.infoTextStyle, marginTop:5}}>{userInfo.phone}</Text>
+            <View style={{marginTop:5, margin:0,
+             flexDirection:'row', alignItems:'center', paddingBottom:0, paddingTop:5}}>
+              <Text style={{ color:'#464646', fontSize: 15,  fontWeight: "600",
+              marginLeft:15}}>이름: {userInfo.name}</Text>
+              
+            </View>
+            <Text style={{color:'#464646', fontSize: 15, marginLeft:15,marginTop:3 }}>아이디: {userInfo.userId}</Text>
+            <View style={{flexDirection:'row',marginTop:3}}>
+              {//<Entypo style={{marginLeft:10}} name="phone" size={24} color="black" />
+              }
+              <Text style={{...styles.infoTextStyle, marginTop:0}}>전화번호: {userInfo.phone}</Text>
             </View>
             
-            <View style={{borderTopWidth:1, borderTopColor:'#a6a6a6', marginLeft:5, marginRight:5}}>
+            <View style={{flexDirection:'row',borderTopWidth:1, borderTopColor:'#a6a6a6', marginLeft:5, marginRight:5}}>
                 <Text style={{fontSize:18, margin:10, marginLeft:10}}>
                     등급 관리
-                </Text>
+                </Text>{
+                  value === null ?(
+                    <TouchableOpacity style={{...styles.smallButtonStyle2, marginTop:8, marginBottom:5}} 
+                      onPress={() => changeUserGrade()} disabled={true}>
+                      <Text style={{fontSize:15, color:"white"}}>
+                        변경하기
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity style={{...styles.smallButtonStyle2,backgroundColor:'#1a4490', borderColor:'#1a4490',marginTop:8, marginBottom:5}} 
+                      onPress={() => changeUserGrade()} disabled={false}>
+                      <Text style={{fontSize:15, color:"white"}}>
+                        변경하기
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                }
             </View>
             <View style={{marginTop:10,marginBottom:10, marginLeft:0}}>
-                <Text style={{fontSize:15, color:'#464646', marginLeft:15}}>현재 등급 A</Text>
-              <DropDownPicker
+                <Text style={{fontSize:15, color:'#464646', marginLeft:15}}>현재 등급: {grade[userInfo.grade]}</Text>
+                <DropDownPicker
                 containerStyle={{width:'50%', marginTop:10, marginBottom:15, marginLeft:15}}
                 placeholder="등급 선택"
                 open={open}
@@ -133,17 +198,28 @@ export default function DetailUserManagement({ route, navigation }) {
                 setValue={setValue}
                 setItems={setItems}
               />
-              <TouchableOpacity style={{...styles.smallButtonStyle,
-              alignSelf:'flex-end', marginBottom:10, marginRight:15}} 
-                onPress={() => changeUserGrade()}>
-                <Text style={{fontSize:15}}>
-                  저장
-                </Text>
-              </TouchableOpacity>
-              <View style={{borderTopWidth:1, borderTopColor:'#a6a6a6', marginLeft:5, marginRight:5}}>
-                <Text style={{fontSize:18,marginTop:10, marginLeft:10}}>
+              <View style={{flexDirection:'row',borderTopWidth:1, borderTopColor:'#a6a6a6', marginLeft:5, marginRight:5}}>
+                <Text style={{fontSize:18,margin:10, marginLeft:10}}>
                 예약 금지
-                </Text>
+                </Text>{
+                  selectedDate === null ? (
+                    <TouchableOpacity style={{...styles.smallButtonStyle2,marginTop:8, marginBottom:5}} 
+                      onPress={() => changeUserAllowDate()} disabled={true}>
+                      <Text style={{fontSize:15, color:"white"}}>
+                        변경하기
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity style={{...styles.smallButtonStyle2,
+                      backgroundColor:'#1a4490', borderColor:'#1a4490',marginTop:8, marginBottom:5}} 
+                      onPress={() => changeUserAllowDate()} disabled={false}>
+                      <Text style={{fontSize:15, color:"white"}}>
+                      변경하기
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                }
+                
               </View>
               <View>  
                 <Text style={styles.infoTextStyle}>
@@ -152,6 +228,7 @@ export default function DetailUserManagement({ route, navigation }) {
                 {
                   userInfo.allowDate === null ? (
                     <CalendarPicker
+                    todayBackgroundColor='white'
                     width={SCREEN_WIDTH*0.93}
                     onDateChange={onDateChange}
                     weekdays={['일', '월', '화', '수', '목', '금', '토']}
@@ -162,6 +239,9 @@ export default function DetailUserManagement({ route, navigation }) {
                   />
                   ) : (
                     <CalendarPicker
+                    todayBackgroundColor='white'
+                    selectedDayColor="#4eba4b"
+                    customDatesStyles={[{date: dateForAllow, containerStyle: [], style: {backgroundColor:'#3879bc'}, textStyle: {color:'white'}, allowDisabled: true}]}
                     initialDate={dateForAllow}
                     width={SCREEN_WIDTH*0.93}
                     onDateChange={onDateChange}
@@ -173,13 +253,14 @@ export default function DetailUserManagement({ route, navigation }) {
                   />
                   )
                 }
-                 <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10,
-                alignSelf:'flex-end', marginBottom:10, marginRight:15}} 
-                onPress={() => changeUserAllowDate()}>
-                <Text style={{fontSize:15}}>
-                  저장
-                </Text>
-              </TouchableOpacity>
+               <View style={{margintop:10, marginRight:20, alignItems:'flex-end'}}>
+                 <View style={{flexDirection:'row', marginTop:20}}>
+                  <View style={{...styles.circleStyle, backgroundColor:'#3879bc'}}></View>
+                  <Text style={{marginLeft:5, fontSize:14}}>현재 예약 금지일</Text> 
+                  <View style={{...styles.circleStyle, backgroundColor:'#4eba4b', marginLeft:20}}></View>
+                  <Text style={{marginLeft:5, fontSize:14}}>선택된 날짜</Text> 
+                 </View>
+               </View>
               </View>
             </View>
           </View>
@@ -222,11 +303,29 @@ const styles = StyleSheet.create({
       paddingLeft:20,
       paddingRight:20, 
     },
+    smallButtonStyle2:{
+      backgroundColor:'#acb9d2',
+      marginLeft:5,
+      marginRight:5,
+      justifyContent:'center',
+      borderRadius:8,
+      borderColor:'#acb9d2',
+      borderWidth:1,
+      //padding: 8,
+      paddingLeft:15,
+      paddingRight:15, 
+    },
     infoTextStyle: {
       marginTop:10,
       marginLeft:15, 
       marginBottom:15,
       fontSize:15, 
       color:'#464646'
+    },
+    circleStyle:{
+      
+      width: 20,
+      height: 20,
+      borderRadius: 20/2
     }
   });

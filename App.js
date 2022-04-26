@@ -27,8 +27,8 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<DetailFacilityManagement></DetailFacilityManagement>) // 상세 시설 관리(수빈)
   //return (<FacilityManagement></FacilityManagement>) // 시설 관리(수빈)
 
- // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
-  //return (<DetailUserManagement></DetailUserManagement>) // 상세 사용자 관리(수진)
+  return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
+ // return (<DetailUserManagement></DetailUserManagement>) // 상세 사용자 관리(수진)
 
   //return (<UserPermission></UserPermission>) // 사용자 승인(수진)
 
