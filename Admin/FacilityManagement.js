@@ -4,24 +4,43 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useState } from "react";
 import { FacilityTable } from '../Table/FacilityTable';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import DetailFacilityManagement from './DetailFacilityManagement';
+
+const Stack = createStackNavigator();
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function BookingFacility() {
+export default function FacilityManagementNavigation() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="management">
+        <Stack.Screen
+          name="FacilityManagement"
+          component={FacilityManagement}
+          options={{ title: '시설 관리' }}
+        />
+        <Stack.Screen
+          name="DetailFacilityManagement"
+          component={DetailFacilityManagement}
+          options={{ title: '세부 시설 관리' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
+}
+
+function FacilityManagement({ navigation }) {
   // DB Table
   const facilityTable = new FacilityTable()
   const facility = facilityTable.facilitys
 
-  const hi = (name) => {
-    console.log(name)
-  }
-
   // 시설 목록 출력
   const renderItem = (itemData) => {
     return (
-      <TouchableOpacity style={styles.name} onPress={hi(itemData.item.name)}>
+      <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailFacilityManagement', { facilityId: itemData.item.id })}>
         <Text style={{ fontSize: 28 }}>{itemData.item.name}</Text>
       </TouchableOpacity>
     );

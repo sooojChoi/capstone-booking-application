@@ -1,3 +1,4 @@
+// 상세 사용자 관리(관리자) -> 수진
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
