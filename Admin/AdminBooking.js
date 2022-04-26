@@ -10,12 +10,12 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {FacilityTable} from '../Table/FacilityTable';
 
 
-
+//시간선택
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
     <View><Text style>{item.time}</Text></View>
     <View style={{padding: 5, margin: 4, width: 70, height: 40,}}>
-    <Text style={[styles.title, textColor,{fontSize:18}]}>5000{}</Text>
+    <Text style={[styles.title, textColor,{fontSize:18}]}>{item.cost}</Text>
     </View>
   </TouchableOpacity>
 );
@@ -44,7 +44,7 @@ const [items, setItems] = useState([
 
 
 {/* dropdown으로 선택한 시설과, 버튼으로 선택된 시간이 반영된 결과가 이 DATA에 담겨야 한다.*/}
-const DATA1 = [
+const facilityDATA = [
   {
     id: facilityTable.facilitys[0].id,
     title: facilityTable.facilitys[0].name+ '\n<open time>:'+facilityTable.facilitys[0].openTime+  
@@ -67,42 +67,50 @@ const DATA = [
   {
     id: "1",
     title: "First Item",
-    time: facilityTable.facilitys[0].openTime
+    time: facilityTable.facilitys[0].openTime,
+    cost: 3000
   },
   {
     id: "2",
     title: "Second Item",
-    time: facilityTable.facilitys[0].openTime+1
+    time: facilityTable.facilitys[0].openTime+1,
+    cost: 4000
   },
   {
     id: "3",
     title: "Third Item",
-    time: facilityTable.facilitys[0].openTime+2
+    time: facilityTable.facilitys[0].openTime+2,
+    cost: 5000
   },
   {
     id: "4",
     title: "Third Item",
-    time: facilityTable.facilitys[0].openTime+3
+    time: facilityTable.facilitys[0].openTime+3,
+    cost: 6000
   },
   {
     id: "5",
     title: "Third Item",
-    time: "14"
+    time: "14",
+    cost: 6000
   },
   {
     id: "6",
     title: "Third Item",
-    time: "15"
+    time: "15",
+    cost: 6000
   },
   {
     id: "7",
     title: "Third Item",
-    time: "16"
+    time: "16",
+    cost: 6000
   },
   {
     id: "8",
     title: "Third Item",
-    time: "10"
+    time: "17",
+    cost: 6000
   },
 ];
 
@@ -154,9 +162,9 @@ const DATA = [
 // };
 
  
-String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
-String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
-Number.prototype.zf = function(len){return this.toString().zf(len);};
+// String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
+// String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
+// Number.prototype.zf = function(len){return this.toString().zf(len);};
 
 
 /* 출처: https://stove99.tistory.com/46 [스토브 훌로구] */
@@ -174,11 +182,13 @@ Number.prototype.zf = function(len){return this.toString().zf(len);};
 // </View>
 // }
 
+//시간선택
 const [selectedId, setSelectedId] = useState(null);
 
 const renderItem = ({ item }) => {
   const backgroundColor = item.id === selectedId ? "#A9E2F3" : "white";
   const color = item.id === selectedId ? '#2E9AFE' : 'black';
+  if(item.id === selectedId) setCost(item.cost);
 
   return (
     <Item
@@ -191,16 +201,11 @@ const renderItem = ({ item }) => {
 };
 
 
-// //실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함
-// const arr = [];
-// for (let i = 0; i < 10; i++) {
-//   arr.push(i);
-// }
-
-
   //인원 선택
   const [count, setCount] = useState(0);
 
+  //가격
+  const [cost, setCost] = useState(0);
   
 
   return (
@@ -208,7 +213,7 @@ const renderItem = ({ item }) => {
     <View style={styles.container}>
       <Text style={styles.text1}>BBOOKING</Text>
       <StatusBar style="auto" />
-      <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 150,}}>
+      <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 400, height: 150,}}>
       <Text style={styles.text2}>예약자 정보</Text>
       <View style={{flexDirection:'row'}}>
       <Text style={styles.text3}>ID</Text>
@@ -220,11 +225,11 @@ const renderItem = ({ item }) => {
       </View>
     </View>
 
-    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 500,}}>
+    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 400, height: 500,}}>
     
     <Text style={styles.text2}>시설 정보</Text>
     <ScrollView>
-    <View style={{flexDirection:'row'}}>
+    <View>
       
       {/* 혜림이꺼 사용하기 */}
       {/* <Text style={styles.text3}>시설선택 + 예약 날짜 {text}</Text> 
@@ -258,11 +263,7 @@ const renderItem = ({ item }) => {
                 nextTitle=">"
                 disabledDates={[minDate,new Date(2022, 3, 15)]}
               />
-            <Text>SELECTED DATE:{ startDate }</Text>
-
-          <View style={{height:selectedStartDate?30:0,width:selectedStartDate?400:0}}>
-              <Text style={{fontSize:25}}>date selected! now select timetable</Text>
-          </View>
+            {/* <Text>SELECTED DATE:{ startDate }</Text> */}
     
     
     </View>
@@ -305,7 +306,7 @@ const renderItem = ({ item }) => {
 
       <View>
       <Text style={styles.text3}>공간사용료</Text>
-      <Text style={styles.text4}>₩ {}</Text>
+      <Text style={styles.text4}>₩ {cost}</Text>
       </View>
       </ScrollView>
     </View>
@@ -346,7 +347,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     height: 38,
-    width: 300,
+    width: 350,
     marginLeft: 5,
   },
   textinput2: {
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     height: 38,
-    width: 256,
+    width: 305,
     marginLeft: 5,
   },
   button1: {
