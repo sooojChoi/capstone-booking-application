@@ -12,12 +12,35 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
 import Modal from "react-native-modal";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import DetailUserManagement from './DetailUserManagement.js';
 
+const Stack = createStackNavigator();
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 
-export default function UserManagement() {
+export default function UserManagementNavigation() {
+  return(
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="management">
+        <Stack.Screen
+          name="UserManagement"
+          component={UserManagement}
+          options={{ title: '사용자 정보' }} 
+        />
+        <Stack.Screen
+          name="DetailUserManagement"
+          component={DetailUserManagement}
+          options={{ title: '사용자 관리' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
+}
+
+ function UserManagement({navigation}) {
   const permissionTable = new PermissionTable();
   const userTable = new UserTable();
   const myFacilityId = "hante1"  // 내 facility의 id이다. (실제로는 어디 다른데서 가져올 값)
@@ -89,6 +112,7 @@ export default function UserManagement() {
     console.log(newDictionary);
 
     toggleModal();
+    setValue(grade); 
   }
   // 모달을 띄우고 사라지게 하기 위한 함수
   const toggleModal = () => {
@@ -100,7 +124,10 @@ export default function UserManagement() {
     console.log(grade[value]);
     console.log(selectedDate);
 
+    toggleModal();
+  }
 
+  const cancelButtonClicked = () => {
     toggleModal();
   }
 
@@ -124,7 +151,7 @@ export default function UserManagement() {
             </View>
           </View>
           <View style={{marginRight:8}}>
-            <TouchableOpacity onPress={() => changeUserInfoForMadal(itemData.item.userId)}>
+            <TouchableOpacity onPress={() => navigation.navigate('DetailUserManagement', {userId: itemData.item.userId, userGrade: itemData.item.grade})}>
                 <View style={{padding:10,paddingLeft:12,paddingRight:12, borderWidth:1, borderRadius:10}}>
                   <Text style={{fontSize:14}}>수정</Text>
                 </View>
@@ -136,19 +163,19 @@ export default function UserManagement() {
 
     return <View style={styles.container}>
       <Modal isVisible={isModalVisible} 
-        style={{alignSelf:'center', width:'95%'}}>
+        style={{alignSelf:'center', width:'100%',justifyContent:'center'}}>
           <View style={{ padding:10, backgroundColor:'white', justifyContent:'center'}}>
             <View style={{borderBottomColor:'#a6a6a6', borderBottomWidth:1,marginTop:5, marginBottom:10}}>
               <Text style={{fontSize: 18,  fontWeight: "600",
-              marginLeft:10,marginBottom:10,}}>{userInfoForModal.name}의 등급</Text>
+              marginLeft:10,marginBottom:10,}}>{userInfoForModal.name}</Text>
             </View>
-            <Text style={{fontSize:17, marginLeft:10, marginBottom:10}}>
-              등급 수정
+            <Text style={{fontSize:17, margin:10}}>
+            {grade[userInfoForModal.grade]}
             </Text>
             <View>
               <DropDownPicker
-                style={{width:SCREEN_WIDTH*0.5, marginLeft:10}}
-                placeholder={grade[userInfoForModal.grade]}
+                style={{width:SCREEN_WIDTH*0.5, marginLeft:5}}
+                placeholder="등급 수정"
                 open={open}
                 value={value}
                 items={items}
@@ -168,7 +195,7 @@ export default function UserManagement() {
               )
             }
               <CalendarPicker
-                width={SCREEN_WIDTH*0.93}
+                width={SCREEN_WIDTH}
                 onDateChange={onDateChange}
                 weekdays={['일', '월', '화', '수', '목', '금', '토']}
                 minDate={minDate}
@@ -180,7 +207,7 @@ export default function UserManagement() {
             <View style={{flexDirection:'row', justifyContent:'flex-end'}}>
               <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16, 
               marginTop:25, marginBottom:5}} 
-                onPress={toggleModal}>
+                onPress={cancelButtonClicked}>
                 <Text style={{fontSize:14}}>
                   취소
                 </Text>
@@ -197,13 +224,13 @@ export default function UserManagement() {
         </Modal>
         <View style={{alignSelf:'center',borderBottomColor: '#a6a6a6', borderBottomWidth:2,width: SCREEN_WIDTH*0.95}}>
             <View style={{flexDirection:'row', justifyContent:'space-between', 
-            alignItems:'center', marginTop:60, marginBottom:10}}>
+            alignItems:'center', marginTop:0, marginBottom:10}}>
                 <Text style={{...styles.TitleText,marginStart: 5, marginBottom:0}}>사용자 정보</Text>
             </View>
         </View>
         <View>
           <View style={{height:SCREEN_HEIGHT*0.87}}>
-          <FlatList keyExtracter={(item) => item.id} 
+          <FlatList keyExtracter={(item, index) => index.toString()} 
                 data={users} 
                 renderItem={renderGridItem} 
                 numColumns={1}/>

@@ -3,9 +3,9 @@ import { facility } from "../Category";
 
 export class FacilityTable {
     facilitys = [
-        new facility("hante1", "한성테니스장1", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hante1", "한성테니스장1", 10 , 22 , 1, 6, 21, 14, 7, 4000, 7000, 10000),
         new facility("hante2", "한성테니스장2", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
-        new facility("hante3", "한성테니스장3", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("hante3", "한성테니스장3", 10 , 22 , 1, 6, 21, 14, 7, 6000, 7000, 10000), 
         new facility("hanfs1", "한성풋살장1", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000),
         new facility("hanfs2", "한성풋살장2", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
         new facility("hanfs3", "한성풋살장3", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
@@ -41,7 +41,7 @@ export class FacilityTable {
         }
     }
 
-    gets(name){
+    getsByName(name){
         var result = []
         for(var existing of this.facilitys){
             if(existing.name == name){
@@ -56,6 +56,15 @@ export class FacilityTable {
         for(var existing of this.facilitys){
             if(existing.id == id){
                 result.push(existing)
+            }
+        }
+        return result
+    }
+    getCostById(id){
+        var result = []
+        for(var existing of this.facilitys){
+            if(existing.id == id){
+                result.push(existing.cost1)
             }
         }
         return result
