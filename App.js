@@ -11,13 +11,13 @@ import LogIn from './User/LogIn';
 import MyBookingList from './User/MyBookingList';
 import MyInfoManagement from './User/MyInfoManagement';
 import SignIn from './User/SignIn';
-import UserManagementNavigation from './Admin/UserManagement';
 import DetailUserDeny from './Admin/DetailUserDeny';
 
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 관리자(Admin) UI
-  //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
+ // return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
+
 
 
   //return (<BookingManagement></BookingManagement>) // 예약 관리(수빈)
@@ -29,8 +29,8 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
  // return (<DetailUserManagement></DetailUserManagement>) // 상세 사용자 관리(수진)
 
-// return (<UserPermission></UserPermission>) // 사용자 승인(수진)
- // return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진)
+ //return (<UserPermission></UserPermission>) // 사용자 승인(수진)
+//  return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진)
 
  // return (<DetailUserManagement></DetailUserManagement>) // 상세 사용자 관리(수진)
 

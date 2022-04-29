@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity } from 'react-native';
 import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -16,40 +16,46 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailUserDeny() {
-    return <View>
-        
+    const [text, onChangeText] = useState("");
+
+    return <View style={{flex:1, backgroundColor: '#fff', marginTop:SCREEN_HEIGHT*0.2}}>
+        <View style={{alignItems:'center'}}>
+            <Text style={{fontSize:17, marginBottom:50}}>정말 거절하시겠습니까?</Text>
+            <TextInput 
+            style={styles.textinput}
+            onChangeText={onChangeText}
+            placeholder="거절 사유를 입력해주세요. (50자 이내)"
+            maxLength={50}
+            ></TextInput>
+            {
+                text === "" ? (
+                    <TouchableOpacity 
+                    style={{...styles.smallButtonStyle, marginTop:30,backgroundColor:"#a0a0a0"}}
+                    disabled={true}
+                    >
+                        <Text style={{color:'white', fontSize:14}}>거절하기</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity 
+                    style={{...styles.smallButtonStyle, marginTop:30}}
+                    disabled={false}>
+                      <Text style={{color:'white', fontSize:14}}>거절하기</Text>
+                     </TouchableOpacity>
+                )
+            }
+        </View>
     </View>
 }
 
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-   //   alignItems: 'center',
-     // justifyContent: 'center',
+    textinput:{
+        borderBottomWidth:1,
+        borderBottomColor:"#a0a0a0",
+        fontSize:15,
+        width:SCREEN_WIDTH*0.7,
+        padding:8
     },
-    TitleText: {
-      fontSize: 25,
-      fontWeight: "600"
-    },
-    gridItem: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center' ,
-      height: 150,
-      margin: 15,
-   },
-   facilityFlatList:{
-    margin:3,
-   // paddingTop:10,
-    paddingVertical:5,
-    paddingHorizontal: 10,
-  //  backgroundColor:"#d5d5d5",
-   // borderRadius: 10,
-    borderBottomColor: '#d5d5d5',
-     borderBottomWidth:2
-  },
   smallButtonStyle:{
     backgroundColor:'#3262d4',
     marginStart:5,
@@ -58,18 +64,8 @@ const styles = StyleSheet.create({
    // borderColor:"black",
    // borderWidth: 2,
     borderRadius:8,
-    padding: 8,
-    paddingLeft:10,
-    paddingRight:10
-  },
-  ButtonStyle2:{
-    backgroundColor:'#3262d4',
-   // justifyContent:'space-around',
-    alignSelf:'flex-start',
-    borderRadius:8,
-    padding: 5,
-    paddingLeft:10,
-    paddingRight:10,
-    marginBottom:5
-  },
+    padding: 10,
+    paddingLeft:70,
+    paddingRight:70
+  }
   });
