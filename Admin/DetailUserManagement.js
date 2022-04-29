@@ -92,6 +92,8 @@ export default function DetailUserManagement({ route, navigation }) {
         {text: "확인", onPress: () => {
           // 여기서 등급 테이블 수정
           permissionTable.modify(new permission(userInfo.userId, myFacilityId, value))
+          console.log("######################")
+          console.log("사용자 등급 수정됨.")
           console.log(permissionTable.getsByUserId(userInfo.userId));
 
           // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
@@ -100,7 +102,7 @@ export default function DetailUserManagement({ route, navigation }) {
           setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
         },},
       ]);
-      console.log(value)
+     // console.log(value)
     }
 
 
@@ -125,6 +127,8 @@ export default function DetailUserManagement({ route, navigation }) {
           userTable.modify(new user(userInfo.userId, userInfo.name, 
             userInfo.phone, userInfo.registerDate, result));
 
+          console.log("######################")
+          console.log("사용자 allow date 수정됨.")
           console.log(userTable.getsById(userInfo.userId))
 
           setAllowDateInfo([..."예약 금지일: "+result]);

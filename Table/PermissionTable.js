@@ -18,7 +18,7 @@ export class PermissionTable {
     add(permission){
         for(var existing of this.permissions){
             if(existing.userId == permission.userId){
-                if(exsting.facilityId == permission.facilityId){
+                if(existing.facilityId == permission.facilityId){
                     return
                 }
             }
