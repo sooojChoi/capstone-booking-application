@@ -8,11 +8,35 @@ import CalendarPicker from 'react-native-calendar-picker';
 import { AntDesign } from '@expo/vector-icons';
 import { BookingTable } from '../Table/BookingTable';
 import { FacilityTable } from '../Table/FacilityTable';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import DetailBookingManagement from './DetailBookingManagement';
+
+const Stack = createStackNavigator();
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function BookingManagement() {
+export default function BookingManagementNavigation() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="BookingManagement">
+        <Stack.Screen
+          name="BookingManagement"
+          component={BookingManagement}
+          options={{ title: '예약 내역' }}
+        />
+        <Stack.Screen
+          name="DetailBookingManagement"
+          component={DetailBookingManagement}
+          options={{ title: '예약 세부 내역' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
+}
+
+function BookingManagement({ navigation }) {
   // DB Table
   const bookingTable = new BookingTable()
   const booking = bookingTable.bookings
@@ -29,10 +53,11 @@ export default function BookingManagement() {
   const renderFacility = (itemData) => {
     return (
       <View style={styles.facility}>
-        <TouchableOpacity style={{ alignSelf: 'center' }}>
-          <AntDesign name="checksquareo" size={24} color="black" />
+        <TouchableOpacity style={{ flexDirection: 'row' }}>
+          <AntDesign name="checksquareo" size={24} color="black" style={{ alignSelf: 'center' }} />
+          <Text style={{ fontSize: 28, marginLeft: 10 }}>{itemData.item.name}</Text>
         </TouchableOpacity>
-        <Text style={{ fontSize: 28, marginLeft: 10 }}>{itemData.item.name}</Text>
+
       </View>
     );
   }
@@ -77,7 +102,7 @@ export default function BookingManagement() {
 
     if (time == "12:00") // 10, 12, 12 중 12만 출력하기(조건 출력) -> 날짜 출력으로 변경
       return (
-        <TouchableOpacity style={styles.name}>
+        <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime })}>
           <Text style={{ fontSize: 28, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
           <Text style={{ fontSize: 28 }}>시간 : {time}</Text>
           <Text style={{ fontSize: 28 }}>인원 : {itemData.item.usedPlayers}명</Text>
@@ -86,7 +111,7 @@ export default function BookingManagement() {
       );
   }
 
-  return (
+  return ( // Modal 초기화(선택 해제) 수정하기
     <SafeAreaView style={styles.container}>
       <Modal isVisible={facilityModalVisible} style={{ alignSelf: 'center', width: '95%' }}>
         <View style={{ padding: 20, backgroundColor: 'white' }}>
@@ -99,6 +124,10 @@ export default function BookingManagement() {
           </View>
 
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+              <AntDesign name="reload1" size={24} color="black" />
+              <Text style={styles.reset}>초기화</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={facilityModal}>
               <Text>취소</Text>
             </TouchableOpacity>
@@ -125,6 +154,10 @@ export default function BookingManagement() {
           </View>
 
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+              <AntDesign name="reload1" size={24} color="black" />
+              <Text style={styles.reset}>초기화</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={dateModal}>
               <Text>취소</Text>
             </TouchableOpacity>
@@ -206,6 +239,11 @@ const styles = StyleSheet.create({
     padding: 8,
     paddingStart: 20,
     paddingEnd: 20,
+  },
+
+  reset: {
+    fontSize: 16,
+    marginStart: 5,
   },
 
   facility: {
