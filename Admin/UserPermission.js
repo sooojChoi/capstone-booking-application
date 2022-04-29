@@ -200,16 +200,28 @@ export default function UserPermission() {
   // '승인'버튼을 눌러서 다수의 사용자를 승인하는 함수
   const AllowUsers = () => {
     const subtitle = ""
+    // 어떠한 사용자도 선택하지 않았을 경우에는 사용자를 먼저 선택해달라는 토스트를 띄운다.
     const usersForPermission = []
+    resetUserCheck(null);   // newUserCheck 초기화
+    newUserCheck.map((userFind)=>{
+      if(userFind.isCheck === true){
+        usersForPermission.push(userFind.id);
+      }
+    })
+    if(usersForPermission.length === 0){
+      showCopyToast();
+      return;
+    }
+
+    // 사용자를 선택했을 경우 정말 승인할 것인지 다시 물어보는 alert를 띄운다.
     Alert.alert("승인하시겠습니까?", subtitle ,[
       {text:"취소"},
       {text: "확인", onPress: () => {
-        resetUserCheck(null);   // newUserCheck 초기화
+        //resetUserCheck(null);   // newUserCheck 초기화
 
         // 여기서 모두 승인하고 userCheck에서 제거함. (승인되었으니까 배열에서 제거)
         newUserCheck.map((userFind)=>{
           if(userFind.isCheck === true){
-           // usersForPermission.push(user.id);  // 승인될 사람 id를 배열에 넣어준다.
             // 승인 되었으므로 permissionTable에 추가..
             permissionTable.add(new permission(userFind.id, thisFacilityId, userFind.gradeIndex))
             // userTable에서 allow date를 수정 (null이면 아직 승인되지 않은 user니까)
@@ -219,6 +231,7 @@ export default function UserPermission() {
             console.log(userTable.getsById(userFind.id))
           }
         })
+       
         console.log("------시설 "+thisFacilityId+"의 현재 등록 인원------")
         console.log(permissionTable.getsByFacilityId(thisFacilityId));
 
@@ -236,10 +249,24 @@ export default function UserPermission() {
   const denyUsers = () => {
     const subtitle = ""
     const usersForDeny = []
+    const usersForPermission = []
+    // 어떠한 사용자도 선택하지 않았을 경우에는 사용자를 먼저 선택해달라는 토스트를 띄운다.
+    resetUserCheck(null);   // newUserCheck 초기화
+    newUserCheck.map((userFind)=>{
+      if(userFind.isCheck === true){
+        usersForPermission.push(userFind.id);
+      }
+    })
+    if(usersForPermission.length === 0){
+      showCopyToast();
+      return;
+    }
+
+     // 사용자를 선택했을 경우 정말 거절할 것인지 다시 물어보는 alert를 띄운다.
     Alert.alert("거절하시겠습니까?", subtitle ,[
       {text:"취소"},
       {text: "확인", onPress: () => {
-        resetUserCheck(null);   // newUserCheck 초기화
+   //     resetUserCheck(null);   // newUserCheck 초기화
 
         // 여기서 모두 거절하고 userCheck에서 제거함. (거절되었으니까 배열에서 제거)
         newUserCheck.map((user)=>{
