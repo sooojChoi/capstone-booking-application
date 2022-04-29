@@ -17,7 +17,7 @@ import DetailUserDeny from './Admin/DetailUserDeny';
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 관리자(Admin) UI
-  return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
+  //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
 
   //return (<BookingManagement></BookingManagement>) // 예약 관리(수빈)
