@@ -1,8 +1,8 @@
 // 사용자 승인(관리자) -> 수진
 // 일단 USER를 '승인 요청한 사용자 목록' 이라고 가정하고 코드 구현하였음
 
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, 
+  StatusBar, Alert, Button, SafeAreaView, Platform } from 'react-native';
 import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -13,19 +13,43 @@ import Toast, {DURATION} from 'react-native-easy-toast'
 import { PermissionTable } from '../Table/PermissionTable';
 import { permission } from '../Category';
 import { user } from '../Category';
-
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import DetailUserDeny from './DetailUserDeny';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 // 사용자에게는 등급 정보가 grade배열의 index로 저장되어있음. 만약 a등급이면 gradeIndex:0 으로... (radioButton을 이용할 때를 위해서 이렇게 구현함.)
 const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
-const flexNotChecked = 5.5
+//const flexNotChecked = 5.5
 const flexChecked = 5
 const thisFacilityId = "hante2"
-const userTable = new UserTable();
 const permissionTable = new PermissionTable();  //function안에 두면 안됨.
+const userTable = new UserTable();
+const Stack = createStackNavigator();
 
-export default function UserPermission() {
+export default function UserPermissionNavigation() {
+  return(
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="permission"
+        screenOptions={{headerTitleAlign: 'center'}}>
+        <Stack.Screen
+          name="UserPermission"
+          component={UserPermission}
+          options={{ title: '사용자 승인 요청 목록' }} 
+        />
+        <Stack.Screen
+          name="DetailUserDeny"
+          component={DetailUserDeny}
+          options={{ title: '사용자 거절' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
+}
+
+
+function UserPermission({navigation, route}) {
  // const userTable = new UserTable();
   //const permissionTable = new PermissionTable();   
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
@@ -55,6 +79,7 @@ export default function UserPermission() {
   const toggleModalUsers = () => {
     setModalVisibleForUsers(!modalVisibleForUsers);
   }
+
 
   // 등급을 선택하고 '확인'버튼을 눌렀을 때 호출되는 함수 (한명의 경우)
   const saveGradeInfo = () => {
@@ -115,16 +140,17 @@ export default function UserPermission() {
     }
   }
 
-  // 처음에 DB 또는 특정 파일에서 승인 요청한 사용자 리스트를 가져오는 함수
-  const getAllUsers = async() => {
+  // DB 또는 특정 파일에서 승인 요청한 사용자 리스트를 가져오는 함수
+  const getAllUsers = () => {
     // 어디서 가져오든, 깊은 복사(원본 데이터가 바뀌지 않도록)해야할 것 같음. 아직 구현 못함.
     // const tempUserArray = ... ;
     console.log("again------")
     var tempArray = []
     //console.log(userTable.users);
     const temp = userTable.getsAllowWithNull();
-    console.log(temp)
+  //  console.log(temp)
 
+    newUserCheck.length = 0
     temp.map((user, index) => {
       const id = user.id
       const name = user.name
@@ -141,9 +167,8 @@ export default function UserPermission() {
     });
     // register date(등록일)이 오래된 순서대로 정렬함.
     tempArray = newUserCheck.sort((a, b)=>a.registerDate - b.registerDate) 
-   // console.log(tempArray);
-
-    setUserCheck(tempArray);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
+    setUserCheck(...[tempArray]);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
+   // console.log(tempArray)
     console.log("-------------------------")
   }
 
@@ -183,16 +208,19 @@ export default function UserPermission() {
           }
         })
         // 승인된 사용자는 목록에서 제외.
-        const newarray = newUserCheck.filter((value)=>value.id !== userId)
-        setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+       // const newarray = newUserCheck.filter((value)=>value.id !== userId)
+       // setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+
+          getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
       },},
       {text: "거절", onPress:() => {
-       // 여기서 거절하는 작업을 구현하면 된다. 일단 로그 출력하게만 했음.
         console.log(userName+' 거절 완료 (id: '+userId+')')
+        navigation.navigate('DetailUserDeny', {deletedUser: userId, userOrUsers: "user"})
 
-        resetUserCheck(null);  //newUserCheck 초기화
-        const newarray = newUserCheck.filter((value)=>value.id !== userId)
-        setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+        // 거절 화면 구현하면서 코드 막아둠.
+        // resetUserCheck(null);  //newUserCheck 초기화
+        // const newarray = newUserCheck.filter((value)=>value.id !== userId)
+        // setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
       }}
     ]);
   }
@@ -236,10 +264,11 @@ export default function UserPermission() {
         console.log(permissionTable.getsByFacilityId(thisFacilityId));
 
         // check값이 true인 것들은 배열에서 모두 제거한다. (승인된 사용자는 목록에서 제외)
-        const newarray = newUserCheck.filter((value)=>value.isCheck === false)
-        setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+      //  const newarray = newUserCheck.filter((value)=>value.isCheck === false)
+      //  setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+        getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
         setCheckMode(false);  // 체크 버튼을 사라지게 한다.
-        setFlexByMode(flexNotChecked);
+       // setFlexByMode(flexNotChecked);
         setIsAllChecked(false);  //"전체 선택" 버튼 해제
       },},
     ]);
@@ -249,15 +278,14 @@ export default function UserPermission() {
   const denyUsers = () => {
     const subtitle = ""
     const usersForDeny = []
-    const usersForPermission = []
     // 어떠한 사용자도 선택하지 않았을 경우에는 사용자를 먼저 선택해달라는 토스트를 띄운다.
     resetUserCheck(null);   // newUserCheck 초기화
     newUserCheck.map((userFind)=>{
       if(userFind.isCheck === true){
-        usersForPermission.push(userFind.id);
+        usersForDeny.push(userFind.id);
       }
     })
-    if(usersForPermission.length === 0){
+    if(usersForDeny.length === 0){
       showCopyToast();
       return;
     }
@@ -268,18 +296,12 @@ export default function UserPermission() {
       {text: "확인", onPress: () => {
    //     resetUserCheck(null);   // newUserCheck 초기화
 
-        // 여기서 모두 거절하고 userCheck에서 제거함. (거절되었으니까 배열에서 제거)
-        newUserCheck.map((user)=>{
-          if(user.isCheck === true){
-            usersForDeny.push(user.id);  // 거절될 사람 id를 배열에 넣어준다.
-          }
-        })
         // check값이 true인 것들은 배열에서 모두 제거한다. (승인된 사용자는 목록에서 제외)
-        const newarray = newUserCheck.filter((value)=>value.isCheck === false)
-        setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+    //    const newarray = newUserCheck.filter((value)=>value.isCheck === false)
+     //   setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
         setCheckMode(false);  // 체크 버튼을 사라지게 한다.
-        setFlexByMode(flexNotChecked);
         setIsAllChecked(false);  //"전체 선택" 버튼 해제
+        navigation.navigate('DetailUserDeny', {deletedUser: usersForDeny, userOrUsers: "users"})
       },},
     ]);
 
@@ -287,11 +309,79 @@ export default function UserPermission() {
     setIsAllChecked(false);  //"전체 선택" 버튼 해제
   }
 
+  // 어떠한 사용자도 선택하지 않았을 경우에는 버튼 비활성화
+  const permissionAndDenyButton = () =>{
+     const usersForPermission = []
+     userCheck.map((userFind)=>{
+       if(userFind.isCheck === true){
+         usersForPermission.push(userFind.id);
+       }
+     });
+
+     if(usersForPermission.length === 0){
+       return (<View style={{flexDirection:'row',}}>
+       <TouchableOpacity  style={{...styles.smallButtonStyle, backgroundColor:'#a0a0a0',paddingLeft:16, paddingRight:16}} 
+         onPress={()=>AllowUsers()} disabled={true}>
+         <Text style={{fontSize:14, color:'white'}}>
+           승인
+         </Text>
+       </TouchableOpacity>
+      <TouchableOpacity  style={{...styles.smallButtonStyle,backgroundColor:'#a0a0a0', paddingLeft:16, paddingRight:16}} 
+         onPress={()=>denyUsers()} disabled={true}>
+         <Text style={{fontSize:14, color:'white'}}>
+           거절
+         </Text>
+       </TouchableOpacity>
+     </View>)
+     }else{
+       return ( <View style={{flexDirection:'row',}}>
+       <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
+         onPress={()=>AllowUsers()}>
+         <Text style={{fontSize:14, color:'white'}}>
+           승인
+         </Text>
+       </TouchableOpacity>
+      <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
+         onPress={()=>denyUsers()}>
+         <Text style={{fontSize:14, color:'white'}}>
+           거절
+         </Text>
+       </TouchableOpacity>
+     </View>)
+     }
+  }
+
+  // '등급수정' 버튼
+  const changeUsersGrade = () =>{
+    const usersForPermission = []
+     userCheck.map((userFind)=>{
+       if(userFind.isCheck === true){
+         usersForPermission.push(userFind.id);
+       }
+     });
+
+     if(usersForPermission.length === 0){
+      return (<TouchableOpacity  style={{...styles.smallButtonStyle, backgroundColor:'#a0a0a0'}} 
+      onPress={()=>checkedUserGradeButtonClicked()} disabled={true}>
+      <Text style={{fontSize:14, color:'white'}}>
+        등급 수정
+      </Text>
+    </TouchableOpacity>)
+     }else{
+      return (<TouchableOpacity  style={styles.smallButtonStyle} 
+        onPress={()=>checkedUserGradeButtonClicked()}>
+        <Text style={{fontSize:14, color:'white'}}>
+          등급 수정
+        </Text>
+      </TouchableOpacity>)
+     }
+  }
+
 
   // '취소' 버튼을 눌러서 체크모드를 해제하는 함수
   const cancelPermission = () => {
     setCheckMode(false);  // 체크모드 해제
-    setFlexByMode(flexNotChecked);
+   // setFlexByMode(flexNotChecked);
     resetUserCheck(false);   // 모든 사용자의 checkmode를 false로 초기화시켜주는 함수
     setIsAllChecked(false);  //"전체 선택" 버튼 해제
   }
@@ -422,8 +512,18 @@ export default function UserPermission() {
     getAllUsers();
   },[])
 
+   // 거절 사유를 입력하는 화면으로 갔다가 돌아오면 불린다.
+   useEffect(()=>{
+    if(route.params?.post !== null){
+      getAllUsers();  // 다시 userTable에서 값을 가져온다.
+      console.log("테이블에서 사용자 목록을 다시 가져옴.")
+    }
+    console.log(route.params?.post)
+    
+  },[route.params?.post]);
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={{width:SCREEN_WIDTH*0.8}}>
         <Modal isVisible={isModalVisible}
         onBackdropPress={() => setModalVisible(false)}>
@@ -493,13 +593,16 @@ export default function UserPermission() {
              style={{backgroundColor:'grey'}}
              textStyle={{color:'white'}}
           />
-      <View style={{flex:1,alignSelf:'center',borderBottomColor: '#a6a6a6', borderBottomWidth:2,width: SCREEN_WIDTH*0.95}}>
-        <View style={{flexDirection:'row', justifyContent:'space-between', 
-        alignItems:'center', marginTop:60, marginBottom:10}}>
-          <Text style={{...styles.TitleText,marginStart: 5, marginBottom:0}}>승인 요청 내역</Text>
+      <View style={{}}>
+        {
+        //   <View style={{flexDirection:'row', justifyContent:'space-between', 
+        // alignItems:'center', marginTop:60, marginBottom:10}}>
+        //   <Text style={{...styles.TitleText,marginStart: 5, }}>승인 요청 내역</Text>
+        //   </View>
+        }
          {checkMode === true ? (
-          <View style={{flexDirection:'row',}}>
-          <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
+          <View style={{alignItems:'flex-end', marginBottom:5, borderBottomColor:"#a0a0a0", borderBottomWidth:1}}>
+          <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16, marginEnd:10, marginBottom:5}} 
           onPress={()=>cancelPermission()}>
             <Text style={{fontSize:14, color:'white'}}>
               취소
@@ -510,7 +613,6 @@ export default function UserPermission() {
            <View>
            </View>
          )}
-        </View>
       </View>
       {checkMode === true ? (
       <View style={{flexDirection:'row', justifyContent:'space-between', padding:6,
@@ -531,27 +633,9 @@ export default function UserPermission() {
             </Text>
           </TouchableOpacity>
           )}
-           <TouchableOpacity  style={styles.smallButtonStyle} 
-            onPress={()=>checkedUserGradeButtonClicked()}>
-            <Text style={{fontSize:14, color:'white'}}>
-              등급 수정
-            </Text>
-          </TouchableOpacity>
+          {changeUsersGrade()}
         </View>
-        <View style={{flexDirection:'row',}}>
-          <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
-            onPress={()=>AllowUsers()}>
-            <Text style={{fontSize:14, color:'white'}}>
-              승인
-            </Text>
-          </TouchableOpacity>
-         <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
-            onPress={()=>denyUsers()}>
-            <Text style={{fontSize:14, color:'white'}}>
-              거절
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {permissionAndDenyButton()}
       </View>
       ) : (
         <View>
@@ -565,7 +649,7 @@ export default function UserPermission() {
           </Text>
         </View>
       ) : (
-        <View style={{flex:flexByMode}}>
+        <View style={{}}>
           { checkMode === true ? (
            <View style={{}}>
            <FlatList keyExtracter={(item) => item.id} 
@@ -585,8 +669,7 @@ export default function UserPermission() {
         </View>
       )
       }
-      
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -640,4 +723,9 @@ ButtonStyle2:{
   paddingRight:10,
   marginBottom:5
 },
+AndroidSafeArea: {
+  flex: 1,
+  backgroundColor: "white",
+  paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
+}
 });
