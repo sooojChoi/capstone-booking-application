@@ -1,6 +1,5 @@
 import { facility } from "../Category";
 
-
 export class FacilityTable {
     facilitys = [
         new facility("hante1", "한성테니스장1", 10 , 22 , 1, 6, 21, 14, 7, 4000, 7000, 10000),
