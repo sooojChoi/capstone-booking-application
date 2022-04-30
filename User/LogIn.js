@@ -27,31 +27,42 @@ export default function LogIn() {
         
         <View style={styles.loginForm}>
         
-            <View>
+     
           
                 <View style={styles.loginInput}>
-                    <Text style={styles.text}>ID  </Text>
-                   
-                    <TextInput style={styles.textinput}></TextInput>
-           
+                    <TextInput 
+                    style={styles.textinput}
+                    placeholder="ID를 입력해 주세요"
+                    
+                    ></TextInput>
                 </View>
+
                 <View style={styles.loginInput}>
-                      <Text style={styles.text}>PW</Text>
-                      <TextInput style={styles.textinput}></TextInput>
-                
+                      <TextInput 
+                      style={styles.textinput}
+                        placeholder="PW를 입력해 주세요"
+                      >
+                      </TextInput>
                 </View>
+
+
+        
+                <View style={{marginTop:10}}>
+                  <TouchableOpacity 
+                  style={styles.loginBtn}>
+                       <Text style={{...styles.text, color:"white"}}>로그인</Text>
+                  </TouchableOpacity>
+                </View>  
+
+
+
+
                 <View style={styles.signUpBtn}>
                       <TouchableOpacity>
                             <Text style={styles.text}>회원가입</Text>
                       </TouchableOpacity>
                 </View>
            
-            </View>
-                <View style={{marginTop:10}}>
-                  <TouchableOpacity style={{borderWidth:1,paddingHorizontal:20,paddingVertical:40}}>
-                       <Text style={styles.text}>LogIn</Text>
-                  </TouchableOpacity>
-                </View>  
          
           </View>
          
@@ -70,28 +81,38 @@ const styles = StyleSheet.create({
   logoImage:{
     width: width/2,
     height:height/4,
+
   },
   signUpBtn:{
-    alignItems:'flex-end'
+    marginTop:20,
+    alignItems:'flex-end',
   },
   textinput:{
-    height: 40,
-    width:180,
-    margin: 12,
+    height: height*0.05,
+    width:width*0.8,
     borderWidth: 1,
+    marginVertical:5,
     padding: 10,
   },
   loginInput:{
-    flexDirection:'row',
     alignItems:'center',
+    
   },
   text:{
-    fontSize:25,
+    fontSize:20,
   },
   /*입력필드와 로그인 버튼을 포함하는 전체 뷰의 스타일*/
   loginForm:{
     justifyContent:'center',
-    flexDirection:'row',
-  }
+    marginTop:30,
+  },
+  loginBtn:{
+    height: height*0.05,
+    width:width*0.8,
+    backgroundColor:"#3262D4",
+    justifyContent:'center',
+    alignItems:'center',
+
+    }
 });
 

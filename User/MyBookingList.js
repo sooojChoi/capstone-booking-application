@@ -3,10 +3,11 @@
 import { StatusBar } from 'expo-status-bar';
 import { Images } from '../Images';
 import React, {useState, createRef} from 'react';
-import { Button, StyleSheet, Text, TextInput, View, FlatList } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, FlatList, Alert } from 'react-native';
 import IconButton from '../IconButton';
 import {FacilityTable} from '../Table/FacilityTable';
 import {BookingTable} from '../Table/BookingTable';
+import { booking } from '../Category';
 
 export default function App() {
   const inputRef = createRef();
@@ -24,13 +25,30 @@ export default function App() {
   
   const yItem = (itemData) => {
     const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
+
    //console.log('cost1 ' + facilitieCost)
+   //const booking = bookingTable.getsByUserIdAndFacilityIdAndUsingTime("yjb", itemData.item.facilities, itemData.item.usingTime, itemData.item.cancel)
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
     <Text style={styles.text3}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
 
     <View style={{flexDirection:'row',}}>
       <Text style={styles.text3}>{facilitieCost}W, 인원{itemData.item.usedPlayers}명</Text>
-      <IconButton type={Images.delete} />
+      <Button title='예약취소' onPress={() => Alert.alert(                    //Alert를 띄운다
+    "주의",                    // 첫번째 text: 타이틀 제목
+    "예약을 취소하시겠습니까?",                         // 두번째 text: 그 밑에 작은 제목
+    [                              // 버튼 배열
+      {
+        text: "취소",                              // 버튼 제목
+        onPress: () => console.log("아니라는데"),     //onPress 이벤트시 콘솔창에 로그를 찍는다
+        style: "cancel"
+      },
+      { text: "확인", onPress: () => bookingTable.modifyCancle("yjb", itemData.item.facilityId, itemData.item.usingTime)}, //버튼 제목
+
+    ],
+    { cancelable: false }
+  )}/>
+      {/* <IconButton type={Images.delete} /> */}
+      
     </View>
   </View>
   

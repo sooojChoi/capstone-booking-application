@@ -10,6 +10,9 @@ import { AntDesign } from '@expo/vector-icons';
 import Modal from "react-native-modal";
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import Toast, {DURATION} from 'react-native-easy-toast'
+import { PermissionTable } from '../Table/PermissionTable';
+import { permission } from '../Category';
+import { user } from '../Category';
 
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -18,9 +21,13 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 const flexNotChecked = 5.5
 const flexChecked = 5
+const thisFacilityId = "hante2"
+const userTable = new UserTable();
+const permissionTable = new PermissionTable();  //function안에 두면 안됨.
 
 export default function UserPermission() {
-  const userTable = new UserTable();
+ // const userTable = new UserTable();
+  //const permissionTable = new PermissionTable();   
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
   const [flexByMode,setFlexByMode] = useState(6)  // ui(flatlist)의 flex값을 조절하기 위함.(체크모드가 true이면 flex:5, false이면 flex:6)
   const [userCheck, setUserCheck] = useState([]);  // 각 사용자가 현재 체크버튼이 눌린 상태인지 알기 위함.
@@ -132,6 +139,7 @@ export default function UserPermission() {
         isCheck : isCheck, gradeIndex: gradeIndex,   // 원래 배열에서 새로 추가한 것.
       })
     });
+    // register date(등록일)이 오래된 순서대로 정렬함.
     tempArray = newUserCheck.sort((a, b)=>a.registerDate - b.registerDate) 
    // console.log(tempArray);
 
@@ -157,8 +165,23 @@ export default function UserPermission() {
       {text: "승인", onPress: () => {
         // 여기서 승인하는 작업을 구현하면 된다. 일단 로그 출력하게만 했음.
         console.log(userName+' 승인 완료 (id: '+userId+')')
+        console.log(" ")
 
         resetUserCheck(null);   // newUserCheck 초기화
+        newUserCheck.find((userFind)=>{
+          if(userFind.id===userId){
+            // 승인 되었으므로 permissionTable에 추가..
+            permissionTable.add(new permission(userId, thisFacilityId, userFind.gradeIndex))
+            console.log("------시설 "+thisFacilityId+"의 현재 등록 인원------")
+            console.log(permissionTable.getsByFacilityId(thisFacilityId));
+
+            // userTable에서 allow date를 수정 (null이면 아직 승인되지 않은 user니까)
+            userTable.modify(new user(userId, userFind.name, userFind.phone, userFind.registerDate, "permission"))
+            console.log(" ")
+            console.log("-------사용자 "+userId+"("+userFind.name+") 의 정보")
+            console.log(userTable.getsById(userId))
+          }
+        })
         // 승인된 사용자는 목록에서 제외.
         const newarray = newUserCheck.filter((value)=>value.id !== userId)
         setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
@@ -177,18 +200,41 @@ export default function UserPermission() {
   // '승인'버튼을 눌러서 다수의 사용자를 승인하는 함수
   const AllowUsers = () => {
     const subtitle = ""
+    // 어떠한 사용자도 선택하지 않았을 경우에는 사용자를 먼저 선택해달라는 토스트를 띄운다.
     const usersForPermission = []
+    resetUserCheck(null);   // newUserCheck 초기화
+    newUserCheck.map((userFind)=>{
+      if(userFind.isCheck === true){
+        usersForPermission.push(userFind.id);
+      }
+    })
+    if(usersForPermission.length === 0){
+      showCopyToast();
+      return;
+    }
+
+    // 사용자를 선택했을 경우 정말 승인할 것인지 다시 물어보는 alert를 띄운다.
     Alert.alert("승인하시겠습니까?", subtitle ,[
       {text:"취소"},
       {text: "확인", onPress: () => {
-        resetUserCheck(null);   // newUserCheck 초기화
+        //resetUserCheck(null);   // newUserCheck 초기화
 
         // 여기서 모두 승인하고 userCheck에서 제거함. (승인되었으니까 배열에서 제거)
-        newUserCheck.map((user)=>{
-          if(user.isCheck === true){
-            usersForPermission.push(user.id);  // 승인될 사람 id를 배열에 넣어준다.
+        newUserCheck.map((userFind)=>{
+          if(userFind.isCheck === true){
+            // 승인 되었으므로 permissionTable에 추가..
+            permissionTable.add(new permission(userFind.id, thisFacilityId, userFind.gradeIndex))
+            // userTable에서 allow date를 수정 (null이면 아직 승인되지 않은 user니까)
+            userTable.modify(new user(userFind.id, userFind.name, userFind.phone, userFind.registerDate, "permission"))
+            console.log(" ")
+            console.log("-------사용자 "+userFind.id+"("+userFind.name+") 의 정보")
+            console.log(userTable.getsById(userFind.id))
           }
         })
+       
+        console.log("------시설 "+thisFacilityId+"의 현재 등록 인원------")
+        console.log(permissionTable.getsByFacilityId(thisFacilityId));
+
         // check값이 true인 것들은 배열에서 모두 제거한다. (승인된 사용자는 목록에서 제외)
         const newarray = newUserCheck.filter((value)=>value.isCheck === false)
         setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
@@ -203,10 +249,24 @@ export default function UserPermission() {
   const denyUsers = () => {
     const subtitle = ""
     const usersForDeny = []
+    const usersForPermission = []
+    // 어떠한 사용자도 선택하지 않았을 경우에는 사용자를 먼저 선택해달라는 토스트를 띄운다.
+    resetUserCheck(null);   // newUserCheck 초기화
+    newUserCheck.map((userFind)=>{
+      if(userFind.isCheck === true){
+        usersForPermission.push(userFind.id);
+      }
+    })
+    if(usersForPermission.length === 0){
+      showCopyToast();
+      return;
+    }
+
+     // 사용자를 선택했을 경우 정말 거절할 것인지 다시 물어보는 alert를 띄운다.
     Alert.alert("거절하시겠습니까?", subtitle ,[
       {text:"취소"},
       {text: "확인", onPress: () => {
-        resetUserCheck(null);   // newUserCheck 초기화
+   //     resetUserCheck(null);   // newUserCheck 초기화
 
         // 여기서 모두 거절하고 userCheck에서 제거함. (거절되었으니까 배열에서 제거)
         newUserCheck.map((user)=>{
@@ -301,14 +361,16 @@ export default function UserPermission() {
           </View>
           <View>
             <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
-              <Text style={{fontSize:16, fontWeight: "600", marginEnd:8}}>{itemData.item.name}</Text>
-              <Text style={{fontSize:15, color:'#373737'}}>{itemData.item.phone}</Text>
+              <Text style={{fontSize:15, fontWeight: "600", marginEnd:8}}>{itemData.item.name}</Text>
+              <Text style={{fontSize:14, color:'#373737'}}>{itemData.item.phone}</Text>
             </View>
-            <TouchableOpacity  style={styles.ButtonStyle2} 
+            <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
+            <TouchableOpacity  style={styles.ButtonStyle2}
             onPress={()=>gradeButtonClicked(itemData.item.id, itemData.item.name, itemData.item.gradeIndex)}>
-            <Text style={{fontSize:15, color:'#373737'}}>{grade[itemData.item.gradeIndex]}</Text>
+            <Text style={{fontSize:14, color:'white'}}>{grade[itemData.item.gradeIndex]}</Text>
             </TouchableOpacity>
-            <Text style={{fontSize:15, color:'#373737'}}>{year}년 {month}월{day}일</Text>
+            <Text style={{fontSize:14, color:'#373737', marginLeft:10}}>{year}년 {month}월{day}일</Text>
+            </View>
           </View>
         </View>
       <View>
@@ -324,14 +386,17 @@ export default function UserPermission() {
           </View>
           <View>
             <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
-              <Text style={{fontSize:18, fontWeight: "600", marginEnd:8}}>{itemData.item.name}</Text>
-              <Text style={{fontSize:18, color:'#373737'}}>{itemData.item.phone}</Text>
+              <Text style={{fontSize:15, fontWeight: "600", marginRight:10}}>{itemData.item.name}</Text>
+              <Text style={{fontSize:14, color:'#373737'}}>{itemData.item.phone}</Text>
             </View>
+            <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
             <TouchableOpacity  style={styles.ButtonStyle2}
             onPress={()=>gradeButtonClicked(itemData.item.id, itemData.item.name, itemData.item.gradeIndex)}>
-            <Text style={{fontSize:15, color:'#373737'}}>{grade[itemData.item.gradeIndex]}</Text>
+            <Text style={{fontSize:14, color:'white'}}>{grade[itemData.item.gradeIndex]}</Text>
             </TouchableOpacity>
-            <Text style={{fontSize:17, color:'#373737'}}>{year}년 {month}월{day}일</Text>
+            <Text style={{fontSize:14, color:'#373737', marginLeft:10}}>{year}년 {month}월{day}일</Text>
+            </View>
+           
           </View>
         </View>
       <View>
@@ -377,13 +442,13 @@ export default function UserPermission() {
             <View style={{flexDirection:'row', justifyContent:'flex-end'}}>
             <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
                 onPress={()=>saveGradeInfo()}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               확인
             </Text>
             </TouchableOpacity>
             <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
                 onPress={toggleModal}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               취소
             </Text>
           </TouchableOpacity>
@@ -407,13 +472,13 @@ export default function UserPermission() {
             <View style={{flexDirection:'row', justifyContent:'flex-end'}}>
             <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
                 onPress={()=>saveGradeInfoForUsers()}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               확인
             </Text>
             </TouchableOpacity>
             <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
                 onPress={toggleModalUsers}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               취소
             </Text>
           </TouchableOpacity>
@@ -436,7 +501,7 @@ export default function UserPermission() {
           <View style={{flexDirection:'row',}}>
           <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
           onPress={()=>cancelPermission()}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               취소
             </Text>
           </TouchableOpacity>
@@ -454,21 +519,21 @@ export default function UserPermission() {
           {isAllChecked === false ?(
             <TouchableOpacity  style={styles.smallButtonStyle} 
             onPress={()=>setAllUserCheckState(true)}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               전체 선택
             </Text>
           </TouchableOpacity>
           ) : (
             <TouchableOpacity  style={styles.smallButtonStyle} 
             onPress={()=>setAllUserCheckState(false)}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               선택 해제
             </Text>
           </TouchableOpacity>
           )}
            <TouchableOpacity  style={styles.smallButtonStyle} 
             onPress={()=>checkedUserGradeButtonClicked()}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               등급 수정
             </Text>
           </TouchableOpacity>
@@ -476,13 +541,13 @@ export default function UserPermission() {
         <View style={{flexDirection:'row',}}>
           <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
             onPress={()=>AllowUsers()}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               승인
             </Text>
           </TouchableOpacity>
          <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
             onPress={()=>denyUsers()}>
-            <Text style={{fontSize:14}}>
+            <Text style={{fontSize:14, color:'white'}}>
               거절
             </Text>
           </TouchableOpacity>
@@ -554,7 +619,7 @@ const styles = StyleSheet.create({
    borderBottomWidth:2
 },
 smallButtonStyle:{
-  backgroundColor:'#c5c7c9',
+  backgroundColor:'#3262d4',
   marginStart:5,
   marginEnd:5,
   justifyContent:'center',
@@ -566,13 +631,13 @@ smallButtonStyle:{
   paddingRight:10
 },
 ButtonStyle2:{
-  backgroundColor:'#c5c7c9',
+  backgroundColor:'#3262d4',
  // justifyContent:'space-around',
   alignSelf:'flex-start',
   borderRadius:8,
   padding: 5,
-  paddingStart:10,
-  paddingEnd:10,
+  paddingLeft:10,
+  paddingRight:10,
   marginBottom:5
 },
 });

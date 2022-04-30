@@ -68,4 +68,13 @@ export class FacilityTable {
         }
         return result
     }
+    getsPlayerById(id){
+        var result = []
+        for(var existing of this.facilitys){
+            if(existing.id == id){
+                result.push(existing.maxPlayers)
+            }
+        }
+        return result
+    }
 }
