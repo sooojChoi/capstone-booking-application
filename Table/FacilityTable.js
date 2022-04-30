@@ -1,6 +1,5 @@
 import { facility } from "../Category";
 
-
 export class FacilityTable {
     facilitys = [
         new facility("hante1", "한성테니스장1", 10 , 22 , 1, 6, 21, 14, 7, 4000, 7000, 10000),
@@ -65,6 +64,15 @@ export class FacilityTable {
         for(var existing of this.facilitys){
             if(existing.id == id){
                 result.push(existing.cost1)
+            }
+        }
+        return result
+    }
+    getsPlayerById(id){
+        var result = []
+        for(var existing of this.facilitys){
+            if(existing.id == id){
+                result.push(existing.maxPlayers)
             }
         }
         return result

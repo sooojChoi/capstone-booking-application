@@ -1,4 +1,3 @@
-
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View,Image,ScrollView,TouchableOpacity,FlatList,TextInput,Button
@@ -8,6 +7,7 @@ import { Dimensions } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
 import {FacilityTable} from '../Table/FacilityTable';
+import {AllocationTable} from '../Table/AllocationTable';
 
 /*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. styles:FacilityImageStyle*/
 const {height,width}=Dimensions.get("window");
@@ -15,6 +15,8 @@ const {height,width}=Dimensions.get("window");
 export default function BookingFacility() {
   //FacilityTable생성
   const facilityTable=new FacilityTable()
+  //AllocationTable 생성
+  const allocationTable=new AllocationTable();
   
 
   //예약 후 총 금액
@@ -61,6 +63,17 @@ export default function BookingFacility() {
   closeTime=selectedDetailedFacility[0].closeTime
   }
 
+  /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
+
+//console.log(allocationTable.allocations)
+  let selectedAllo=[];
+  allocationTable.allocations.map((i)=>{
+    if(i.facilityId===value){
+      selectedAllo.push(i);
+    }
+  });
+
+
 
 //시간선택
 //cost는 등급에 따라 달라진다.
@@ -104,11 +117,42 @@ const renderItem = ({ item }) => {
 //onsole.log(selectedId);
 
 
-
-
 //실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함 
 //배열을 만들어서 시간,가격을 넣어준다.
 const data=[]
+//시도 
+const Tdata=[]
+let availTime=[]
+//available이 true인거만 가져오는 부분
+
+if(selectedAllo){
+
+selectedAllo.map((i)=>{
+  if(i.available===true){
+    availTime.push(i);
+  }
+});
+}
+//onsole.log(startDate)선택된 날짜임
+//console.log(availTime)
+//id는 겹치면 안돼서 대충 난수 생성해서 넣어줌 (근데 난수가 겹치지 않도록 하는 코드는 귀찮아서 아직 안씀)
+//5월2일 (선택된 날짜)에 avilable이 true인 시간을 가져와서 
+//time에서 시간만 가져와서 시간만 자르기
+//이건 db연결한 후에 하는게 나을거같음
+ if(availTime){
+    availTime.map((elem)=>{
+      Tdata.push({id:Math.floor(Math.random() * 101),title:" ",time:elem.usingTime,cost:cost2})
+    })
+
+ }
+//console.log(Tdata);
+
+
+
+
+
+
+
 //오늘 예약 총 몇타임 가능한지 계산해서 반복..
 //cost는 등급에 따라 달라져야 한다.
 //여기 좀 맘에 안드는데 이거말곤 해결방법이 생각 안남
@@ -223,8 +267,8 @@ const onPressedFin=()=>{
                             data={data}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
-                            extraData={selectedId}
-                            horizontal = { true }
+                            horizontal={true}
+        
                           />
           </View>
           <View>
@@ -307,5 +351,3 @@ const styles = StyleSheet.create({
   },
 
 });
-
-

@@ -52,6 +52,49 @@ export class BookingTable {
         }
     }
 
+    //예약내역 취소내역으로 바꾸기
+    // modifyCancle(userId, facilityId, usingTime){
+    //     for(var i=0;i<this.bookings.length;i++){
+    //         if(userId == booking.userId){
+    //             if(facilityId == booking.facilityId){
+    //                 if(usingTime == booking.usingTime){
+    //                     this.bookings[i].cancel = true
+    //                     return
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // modifyCancle(booking) {
+    //     for(var existing of this.bookings){
+    //         if(existing.userId == booking.userId){
+    //             if(existing.facilityId == booking.facilityId){
+    //                 if(existing.usingTime == booking.usingTime){
+    //                     if(existing.cancel == false){
+    //                         this.bookings[existing].cancel = true
+    //                         return
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    modifyCancle(userId, facilityId, usingTime){
+        for(var existing of this.bookings){
+            if(existing.userId == userId){
+                console.log("아이디같은뎅")
+                if(existing.facilityId == facilityId){
+                    console.log("시설같은뎅")
+                    if(existing.usingTime == usingTime){
+                        console.log("시간같은뎅")
+                        //this.bookings[existing].cancel = true
+                        return
+                    }
+                }
+            }
+        }
+    }
+
 
     // userId로 예약 내역 가져오기
     getsByUserId(userId){
@@ -88,6 +131,22 @@ export class BookingTable {
         return result
     }
 
+    // 해당하는 예약내역 가져오기
+    getsByUserIdAndFacilityIdAndUsingTime(userId, facilityId, usingTime){
+        var result = []
+        for(var existing of this.bookings){
+            if(existing.userId == userId){
+                if(existing.facilityId == facilityId){
+                    if(existing.usingTime == usingTime){
+                    result.push(existing)
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    //예약내역가져오기
     getByUserIdNotCancle(userId){
         var result = []
         for(var existing of this.bookings){

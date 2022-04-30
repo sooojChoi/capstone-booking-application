@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, Dimensions, ImageStore } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import AdminBooking from './Admin/AdminBooking';
 import BookingManagementNavigation from './Admin/BookingManagement';
 import FacilityManagementNavigation from './Admin/FacilityManagement';
@@ -14,9 +14,9 @@ import SignIn from './User/SignIn';
 import DetailUserDeny from './Admin/DetailUserDeny';
 import UserPermissionNavigation from './Admin/UserPermission';
 
-
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 관리자(Admin) UI
+
  // return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
 
@@ -29,15 +29,18 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
  // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
  // return (<DetailUserManagement></DetailUserManagement>) // 상세 사용자 관리(수진)
 
- //return (<UserPermission></UserPermission>) // 사용자 승인(수진)
- return (<UserPermissionNavigation></UserPermissionNavigation>)  //사용자 승인
+ //return (<UserPermissionNavigation></UserPermissionNavigation>)  //사용자 승인
  // return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진)
 
 
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리 -> 상세 예약 관리(수빈)
   //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리 -> 상세 시설 관리(수빈)
 
-
+  //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
+ 
+  //return (<UserPermission></UserPermission>) // 사용자 승인(수진)
+  //return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진)
+ 
   ////////// 사용자(User) UI
   //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)

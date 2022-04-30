@@ -1,8 +1,8 @@
 // 상세 시설 관리(관리자) -> 수빈
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
-import React, { useState } from "react";
+import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useEffect, useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import { FacilityTable } from '../Table/FacilityTable'
 
@@ -12,31 +12,56 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function DetailFacilityManagement({ route }) {
   // DB Table
   const facilityTable = new FacilityTable();
-  const fid = route.params.facilityId;
+  const facilityId = route.params.facilityId;
+  const [facilityInfo, setFacilityInfo] = useState({});
+  const facilityArray = facilityTable.facilitys;
+  
+  const [name, setName] = useState('');
+  const [openTime, setOpenTime] = useState('');
+  const [closeTime, setCloseTime] = useState('');
+  const [unitTime, setUnitTime] = useState('');
+  const [maxPlayers, setMaxPlayers] = useState('');
+  const [booking1, setBooking1] = useState('');
+  const [booking2, setBooking2] = useState('');
+  const [booking3, setBooking3] = useState('');
+  const [cost1, setCost1] = useState('');
+  const [cost2, setCost2] = useState('');
+  const [cost3, setCost3] = useState('');
 
-  // 시설 정보 가져오기
-  const temp = facilityTable.getsById(fid);
-  let id, name, openTime, closeTime, unitTime, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3;
-  temp.map((facility) => {
-    id = facility.id
-    name = facility.name
-    openTime = facility.openTime
-    closeTime = facility.closeTime
-    unitTime = facility.unitTime
-    maxPlayers = facility.maxPlayers
-    booking1 = facility.booking1
-    booking2 = facility.booking2
-    booking3 = facility.booking3
-    cost1 = facility.cost1
-    cost2 = facility.cost2
-    cost3 = facility.cost3
-  });
+  // 시설 정보 가져오기(초기값)
+  // 사진, 설명에 대한 DB 관리는 어떻게 할 것인가?(Firebase 연동 시 고려하기)
+  const initialSetFacilityInfo = () => {
+    facilityArray.find((facility) => {
+      if (facility.id == facilityId) {
+        const temp = {
+          id: facility.id, name: facility.name, openTime: facility.openTime, closeTime: facility.closeTime,
+          unitTime: facility.unitTime, maxPlayers: facility.maxPlayers,
+          booking1: facility.booking1, booking2: facility.booking2, booking3: facility.booking3,
+          cost1: facility.cost1, cost2: facility.cost2, cost3: facility.cost3
+        }
 
-  // 시설 이름 설정
-  const [fname, setName] = useState(id)
-  console.log(fname)
+        setFacilityInfo(temp);
 
-  // 시설 사진 등록
+        setName(facility.name)
+        setOpenTime(facility.openTime)
+        setCloseTime(facility.closeTime)
+        setUnitTime(facility.unitTime)
+        setMaxPlayers(facility.maxPlayers)
+        setBooking1(facility.booking1)
+        setBooking2(facility.booking2)
+        setBooking3(facility.booking3)
+        setCost1(facility.cost1)
+        setCost2(facility.cost2)
+        setCost3(facility.cost3)
+      }
+    })
+  }
+
+  useEffect(() => {
+    initialSetFacilityInfo();
+  }, []) // 에러(무한루프) 방지
+
+  // 시설 사진 변경
   const [image, setImage] = useState(null);
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -47,14 +72,40 @@ export default function DetailFacilityManagement({ route }) {
       quality: 1,
     });
 
-    console.log(result);
+    //console.log(result);
 
     if (!result.cancelled) {
       setImage(result.uri);
     }
   };
 
-  return (
+  // 수정 버튼 선택
+  const changeInfo = () => {
+    const temp = facilityInfo
+
+    temp.name = name
+    temp.openTime = openTime
+    temp.closeTime = closeTime
+    temp.unitTime = unitTime
+    temp.maxPlayers = maxPlayers
+    temp.booking1 = booking1
+    temp.booking2 = booking2
+    temp.booking3 = booking3
+    temp.cost1 = cost1
+    temp.cost2 = cost2
+    temp.cost3 = cost3
+
+    setFacilityInfo({...temp}) // 수정 사항 반영
+    console.log("********************")
+    console.log(facilityInfo)
+    console.log("&&&&&&&&&&&&&&&&&&&&")
+    facilityTable.modify(facilityInfo) // DB 수정
+    console.log("********************")
+    console.log(facilityTable.getsById(facilityId))
+    console.log("&&&&&&&&&&&&&&&&&&&&")
+  }
+
+  return ( // TextInput 별 DB 형태에 맞춰 유효성 검사 추가하기
     <SafeAreaView style={styles.container}>
       <View style={{ alignItems: 'center' }}>
         <Text style={{ fontSize: 32, fontWeight: "bold" }}>공공 시설 예약</Text>
@@ -63,7 +114,7 @@ export default function DetailFacilityManagement({ route }) {
         <View style={{ marginTop: 5 }}>
           <View style={styles.list}>
             <Text style={styles.category}>ID</Text>
-            <Text style={styles.id}>{id}</Text>
+            <Text style={styles.id}>{facilityInfo.id}</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>NAME</Text>
@@ -71,49 +122,49 @@ export default function DetailFacilityManagement({ route }) {
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>OPEN TIME</Text>
-            <TextInput style={styles.timeTInput}>{openTime}</TextInput>
+            <TextInput style={styles.timeTInput} onChangeText={text => setOpenTime(text)}>{openTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>CLOSE TIME</Text>
-            <TextInput style={styles.timeTInput}>{closeTime}</TextInput>
+            <TextInput style={styles.timeTInput} onChangeText={text => setCloseTime(text)}>{closeTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>UNIT TIME</Text>
-            <TextInput style={styles.timeTInput}>{unitTime}</TextInput>
+            <TextInput style={styles.timeTInput} onChangeText={text => setUnitTime(text)}>{unitTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>수용 인원</Text>
-            <TextInput style={styles.name}>{maxPlayers}</TextInput>
+            <TextInput style={styles.name} onChangeText={text => setMaxPlayers(text)}>{maxPlayers}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>예약 허용 날짜</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput}>{booking1}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={text => setBooking1(text)}>{booking1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput}>{booking2}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={text => setBooking2(text)}>{booking2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput}>{booking3}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={text => setBooking3(text)}>{booking3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>등급별 사용료</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput}>{cost1}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={text => setCost1(text)}>{cost1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput}>{cost2}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={text => setCost2(text)}>{cost2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput}>{cost3}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={text => setCost3(text)}>{cost3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>시설 사진</Text>
@@ -121,19 +172,19 @@ export default function DetailFacilityManagement({ route }) {
           <View style={{ flexDirection: 'row' }}>
             {image && <Image source={{ uri: image }} style={styles.photo} />}
             <TouchableOpacity style={{ ...styles.photo, borderColor: 'lightgray', borderWidth: 1 }} onPress={pickImage}>
-              <Text style={{ fontSize: 32, alignSelf: 'center', paddingTop: 5 }}>+</Text>     
+              <Text style={{ fontSize: 32, alignSelf: 'center', paddingTop: 5 }}>+</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>시설 설명</Text>
-          </View>         
+          </View>
           <TextInput style={styles.explain} multiline={true}></TextInput>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <TouchableOpacity style={{ ...styles.button, backgroundColor: 'skyblue' }}>
+            <TouchableOpacity style={{ ...styles.button, backgroundColor: 'skyblue' }} onPress={changeInfo}>
               <Text style={{ fontSize: 18 }}>수정</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button}>
-              <Text style={{ fontSize: 18 }}>삭제</Text>
+              <Text style={{ fontSize: 18 }}>취소</Text>
             </TouchableOpacity>
           </View>
 

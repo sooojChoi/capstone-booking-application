@@ -14,17 +14,22 @@ export default function SignIn() {
 
   facilityTable=new FacilityTable()
 
+
+
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState('hante1');//초기값이 null면 db에서 null값을 가져올 수 없어 오류가 난다.
-  const [items, setItems] = useState([
-    {label: facilityTable.facilitys[0].name, value: facilityTable.facilitys[0].id},
-    {label: facilityTable.facilitys[1].name, value: facilityTable.facilitys[1].id},
-    {label: facilityTable.facilitys[2].name, value: facilityTable.facilitys[2].id},
-  ]);
+  const [value, setValue] = useState();
+  const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
+  const [items, setItems] = useState(facilityArray);
+  let selectedFacility=null;
+  let selectedFacilityname;
 
-  const array=facilityTable.getsById(value);
-  let selectedFacility=array[0] //선택된 1개의 객체만 가져옴
-
+  if(value){
+    const array=facilityTable.getsById(value);
+     selectedFacility=array[0] //선택된 1개의 객체만 가져옴
+     if (selectedFacility){
+      selectedFacilityname=selectedFacility["name"]
+    }
+  }
 
 
   function HomeScreen({ navigation }) {
@@ -38,11 +43,9 @@ export default function SignIn() {
             setOpen={setOpen}
             setValue={setValue}
             setItems={setItems}
+            placeholder="시설을 선택하세요"
           />
    
-    {console.log(selectedFacility["name"])}
- 
-    
     
     
         <TouchableOpacity onPress={() => navigation.navigate('Details')} style={{marginVertical:30}} >
@@ -53,14 +56,26 @@ export default function SignIn() {
   }
   
   function DetailsScreen() {
+
+    const [isDuplicated,setIsDuplicated]=useState("null");// id중복검사
+    const [InputId,setInputId]=useState();//입력된 id
+    const id=["hrr","csj","psb","byj"]//임시 id들
+    const checkId=()=>{
+      if (id.includes(InputId)){
+        setIsDuplicated(true);//중복되면 true
+      }
+      else{setIsDuplicated(false);}
+    }
+
+
+
     return (
       <View style={styles.container}>
       
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
      
            <Text style={styles.title}>회원가입</Text>
-
-<ScrollView>  
+<ScrollView>
 
        <View style={styles.line}>
            <Text style={styles.text}>이름</Text> 
@@ -68,11 +83,24 @@ export default function SignIn() {
        </View>
        <View style={styles.line}>
            <Text style={styles.text}>ID    </Text> 
-           <TextInput style={styles.input}/>
-           <TouchableOpacity>
+           <TextInput 
+           style={styles.input}
+           onChangeText={setInputId}
+           value={InputId}
+           />
+           <TouchableOpacity
+           onPress={checkId}
+           >
                <Text>중복확인</Text>
            </TouchableOpacity>
+          <View style={{height:isDuplicated?0:30,width:isDuplicated?0:30, justifyContent:'center'}}>
+          <Text>✅</Text>
+          </View>
+          <View style={{height:isDuplicated?30:0,width:isDuplicated?30:0, justifyContent:'center'}}>
+          <Text>❌</Text>
+          </View>
        </View>
+
        <View style={styles.line}>
              <Text style={styles.text}>비밀번호</Text> 
              <TextInput style={styles.input}/>
@@ -126,7 +154,7 @@ export default function SignIn() {
       <Stack.Screen
         name="Details"
         component={DetailsScreen}
-        options={{ title:selectedFacility["name"]}} //세부페이지 title을 선택된 시설로 지정
+        options={{ title:selectedFacilityname?selectedFacilityname:"null"}} //세부페이지 title을 선택된 시설로 지정
       />
     </Stack.Navigator>
   </NavigationContainer>

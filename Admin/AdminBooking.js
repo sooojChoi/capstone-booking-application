@@ -13,9 +13,9 @@ import {FacilityTable} from '../Table/FacilityTable';
 //시간선택
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
-    <View><Text style>{item.time}</Text></View>
+    <View><Text style>{item.time}시</Text></View>
     <View style={{padding: 5, margin: 4, width: 70, height: 40,}}>
-    <Text style={[styles.title, textColor,{fontSize:18}]}>{item.cost}</Text>
+    <Text style={[styles.title, textColor,{fontSize:18}]}>{item.cost}원</Text>
     </View>
   </TouchableOpacity>
 );
@@ -41,6 +41,9 @@ const [items, setItems] = useState([
   {label: facilityTable.facilitys[1].name, value: facilityTable.facilitys[1].id},
   {label: facilityTable.facilitys[2].name, value: facilityTable.facilitys[2].id},
 ]);
+
+ //날짜와 시설이 모두 선택된 상황에서만 시간선택 할 수 있도록 한다.
+ let showTimeSelect=selectedStartDate && value;
 
 
 {/* dropdown으로 선택한 시설과, 버튼으로 선택된 시간이 반영된 결과가 이 DATA에 담겨야 한다.*/}
@@ -200,6 +203,10 @@ const renderItem = ({ item }) => {
   );
 };
 
+//전체 인원
+// const [maxPlayer, setMaxPlayer] = useState(0);
+// const facilityTable = new FacilityTable();
+const maxPlayer = facilityTable.getsPlayerById("hante1");
 
   //인원 선택
   const [count, setCount] = useState(0);
@@ -270,32 +277,18 @@ const renderItem = ({ item }) => {
       </View>
 
       <View>
+      
+      <View style={{height:showTimeSelect?500:0, width:showTimeSelect?400:0}}>
       <Text style={styles.text3}>시간 선택</Text>
-      {/* <View style={{height:70}}>
-      <FlatList
-      data={arr}
-      renderItem={timeItem}
-      //keyExtractor={(item) => item.id}
-      //extraData={selectedId}
-      horizontal = { true }
-      />
-      </View> */}
-      <View>
       <FlatList
         data={DATA}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         extraData={selectedId}
-        horizontal = { true }
+        //horizontal = { true }
       />
-      </View>
-      </View>
-
-      <View>
-      <Text style={styles.text3}>예약자 전화번호</Text>
-      <TextInput style={styles.textinput1} placeholder="전화번호를 입력해주세요."></TextInput>
-      </View>
-      
+      <Text style={styles.text3}>실시간 예약인원</Text>
+      <Text style={styles.text3}>{}/{maxPlayer}</Text>
 
       <View style={{flexDirection:'row'}}>
       <Text style={styles.text3}>예약 인원:</Text>
@@ -304,10 +297,13 @@ const renderItem = ({ item }) => {
       <Button title='+' onPress={() => setCount(count + 1)}></Button>
       </View>
 
-      <View>
       <Text style={styles.text3}>공간사용료</Text>
-      <Text style={styles.text4}>₩ {cost}</Text>
+      <Text style={styles.text4}>₩ {cost*count}</Text>
+
+
       </View>
+      </View>
+
       </ScrollView>
     </View>
     <Button title='예약하기'></Button>
