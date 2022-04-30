@@ -9,6 +9,9 @@ import { UserTable } from '../Table/UserTable';
 const {height,width}=Dimensions.get("window");
 
 export default function MyInfoManagement(){
+  const [InputName,setInputName]=useState();//입력된 이름
+  console.log(InputName);
+
 //이 객체가 언제 생성되는거지? 사용자가 회원정보 수정 화면을 열었을때??
  const userTable=new UserTable();
  const currentUserId="hrr";//현재 user의 id(임시)
@@ -55,6 +58,8 @@ return(
          <TextInput 
          style={styles.input}
          placeholder={currentUser[0].name}
+         onChangeText={setInputName}
+         value={InputName}
          />
      </View>
      <View style={styles.line}>
