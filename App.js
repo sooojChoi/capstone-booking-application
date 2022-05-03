@@ -31,6 +31,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
 
   //return (<UserPermissionNavigation></UserPermissionNavigation>)  //사용자 승인(수진)
+
   //return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진)
 
   ////////// 사용자(User) UI
