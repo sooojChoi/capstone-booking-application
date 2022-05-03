@@ -260,8 +260,8 @@ if (data){
     <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 400, height: 500,}}>
     
     <Text style={styles.text2}>시설 정보</Text>
-    <ScrollView>
-    <View>
+    <ScrollView bounces={false}>
+    <View style={{flexDirection: 'column'}}>
       
       {/*달력과 picker의 부모뷰. 여기에 style을 주지 않으면 picker와 달력이 겹쳐서 선택이 안된다. */}
       <View style={{backgroundColor:'white'}}>
@@ -273,8 +273,12 @@ if (data){
             setOpen={setOpen}
             setValue={setValue}
             setItems={setItems}
+            placeholder="시설을 선택하세요"
+            listMode="SCROLLVIEW"
+            scrollViewProps={{
+              nestedScrollEnabled: true,
+            }}
           />
-
 
           <CalendarPicker
                 onDateChange={onDateChange}
@@ -295,6 +299,7 @@ if (data){
       
       <View style={{height:showTimeSelect?500:0, width:showTimeSelect?400:0}}>
       <Text style={styles.text3}>시간 선택</Text>
+       <ScrollView horizontal={true} style={{ width: "100%" }} bounces={false}>
       <FlatList
         data={data}
         renderItem={renderItem}
@@ -302,6 +307,7 @@ if (data){
         extraData={selectedId}
         //horizontal = { true }
       />
+      </ScrollView>
       <Text style={styles.text3}>실시간 예약인원</Text>
       <Text style={styles.text3}>{player}/{maxPlayer}</Text>
 
