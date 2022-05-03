@@ -1,13 +1,13 @@
 // 관리자 회원가입 화면
 
-import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity,Pressable, SafeAreaView, ScrollView } from 'react-native';
 import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import AdminSignUpAndAddFacility from './DetailAdminSignUp';
+import AdminSignUpAndAddFacility from './AdminSignUpAndAddFacility';
 import DetailAdminSignUp from './DetailAdminSignUp';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -125,39 +125,44 @@ function AdminSignUp({navigation}) {
             </View>
             </View>
         </ScrollView>
-        {isAllInfoEntered === true ? (
+        {(isAllInfoEntered === true) ? (
             <TouchableOpacity 
             style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
             paddingTop:20, paddingBottom:20}}
-              onPress={() => goToNextScreen()}>
+              onPress={() => goToNextScreen()} disabled={false}>
                 <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
             </TouchableOpacity>
         ) : (
             <TouchableOpacity 
             style={{alignItems:'center', justifyContent:'center', backgroundColor:'#a0a0a0',
             paddingTop:20, paddingBottom:20}} 
-             onPress={() => goToNextScreen()}>
+            disabled={true}>
                 <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
             </TouchableOpacity>
         )}
     </SafeAreaView>
 }
 
-function SelectFacilitySort({navigation}) {
-    const goToNextScreen = () =>{
-        navigation.navigate('AdminSignUpAndAddFacility')
+function SelectFacilitySort({navigation, route}) {
+    const goToDetailScene = () =>{
+      navigation.navigate('DetailAdminSignUp')
+      //navigation.reset({routes: [{name: 'AdminSignUpAndAddFacility'}]})
     }
+    const goToAddFacilityScene = () =>{
+      navigation.navigate('AdminSignUpAndAddFacility')
+      //navigation.reset({routes: [{name: 'AdminSignUpAndAddFacility'}]})
+  }
     
     return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
         <View style={{alignItems:'center',}}>
             <Text style={{marginTop:SCREEN_HEIGHT*0.15, fontSize:17, color:'#191919'}}>내부 시설이 여러 개인가요?</Text>
             <View style={{marginTop:40}}>
                 <TouchableOpacity style={{...styles.selectSortBtnStyle}}
-                onPress={() => goToNextScreen()}>
+                onPress={() => goToDetailScene()}>
                     <Text style={{fontSize:15, color:'white'}}>하나입니다.</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={{...styles.selectSortBtnStyle, marginTop:20}}
-                onPress={() => goToNextScreen()}>
+                onPress={() => goToAddFacilityScene()}>
                     <Text style={{fontSize:15, color:'white'}}>여러 개입니다.</Text>
                 </TouchableOpacity>
             </View>

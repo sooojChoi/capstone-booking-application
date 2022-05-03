@@ -10,36 +10,37 @@ import { FlatList } from 'react-native-gesture-handler';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function DetailAdminSignUp({navigation}) {
+export default function DetailAdminSignUp({navigation, route}) {
+ //   const { oneOrNot, facilityName } = route.params;
+    
     const [facName, onChangeNameText] = useState("");  // 세부 시설 등록이면 있고, 아니면 이름 입력은 안함.
     const [facInfo, setFacInfo] = useState({}); // 등록할 시설 정보를 담는 오브젝트
     const [facGradeInfo, setFacGradeInfo] = useState({})  // 시설 정보인데 등급 관련된 것. (따로 저장하는 것임)
     const [facDetailAddress, onChangeDetailAddressText] = useState("");
 
     const [gradeSetting, setGradeSetting] = useState(false);  // 등급 기능을 사용한다면 true, 아니면 false
-    const [isAllInfoEntered, setIsAllInfoEntered] = useState(false);  // true이면 아래 '입력 완료'버튼이 활성화된다.
+    const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
-    const goToNextScreen = () =>{
-        // 세부 시설 등록 중이었으면 다시 세부 시설 등록 홈으로 이동, 아니면 회원 가입 완료되는 것 구현.
+
+    const goToPreScreen = (name) =>{
+        navigation.navigate('AdminSignUpAndAddFacility', { post: name });
 
     }
 
     return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
         <ScrollView style={styles.scrollView}>
             <View style={{alignItems:'flex-start', marginTop: 10,}}>
-                {
-                    // navigation에서 넘어오는 route로 확인하고 시설 이름 넣을지 아닐지 정함.
-                }
+                
                 <Text style={{...styles.titleText, marginTop:5}}>시설 이름</Text>
-                <TextInput 
-                style={{...styles.textinput, marginBottom:0}}
-                onChangeText={onChangeNameText}
-                placeholder="시설 이름"
-                value={facName}
-                maxLength={50}
-                editable={true}
-                ></TextInput>
-                <Text style={{...styles.titleText, }}>시설 운영 시간</Text>
+                            <TextInput 
+                            style={{...styles.textinput, marginBottom:0}}
+                            onChangeText={onChangeNameText}
+                            placeholder="시설 이름"
+                            value={facName}
+                            maxLength={50}
+                            editable={true}
+                            ></TextInput>
+                        <Text style={{...styles.titleText, }}>시설 운영 시간</Text>
                 <View style={{flexDirection:'row'}}>
                     <View style={{alignItems:'center'}}>
                         <Text style={{...styles.normalTextBlack}}>오픈 시간</Text>
@@ -82,62 +83,17 @@ export default function DetailAdminSignUp({navigation}) {
             <TouchableOpacity 
             style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
             paddingTop:20, paddingBottom:20}}
-             disabled={true} onPress={() => goToNextScreen()}>
+             disabled={false} onPress={() => goToPreScreen(facName)}>
                 <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
             </TouchableOpacity>
         ) : (
             <TouchableOpacity 
             style={{alignItems:'center', justifyContent:'center', backgroundColor:'#a0a0a0',
             paddingTop:20, paddingBottom:20}} 
-            disabled={false} onPress={() => goToNextScreen()}>
+            disabled={true} >
                 <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
             </TouchableOpacity>
         )}
-    </SafeAreaView>
-}
-
-function AdminSignUpAndAddFacility({navigation}) {
-    const [facName, onChangeNameText] = useState("");  // 세부 시설 등록이면 있고, 아니면 이름 입력은 안함.
-    const [facInfo, setFacInfo] = useState({}); // 등록할 시설 정보를 담는 오브젝트
-    const [facGradeInfo, setFacGradeInfo] = useState({})  // 시설 정보인데 등급 관련된 것. (따로 저장하는 것임)
-    const [facDetailAddress, onChangeDetailAddressText] = useState("");
-
-    const [gradeSetting, setGradeSetting] = useState(false);  // 등급 기능을 사용한다면 true, 아니면 false
-    const [isAllInfoEntered, setIsAllInfoEntered] = useState(false);  // true이면 아래 '입력 완료'버튼이 활성화된다.
-    
-    const goToNextScreen = () =>{
-        navigation.navigate('DetailAdminSignUp')
-    }
-
-    return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
-        <View style={{alignItems:'center', padding:30}}>
-            <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:40, paddingRight:40}}
-            onPress={() => goToNextScreen()}>
-                <Text style={{...styles.normalText, }}>시설 추가</Text>
-            </TouchableOpacity>
-        </View>
-        <View style={{flex:1, backgroundColor: 'white'}}>
-            <FlatList>
-
-            </FlatList>
-        </View>
-        <View>
-        {isAllInfoEntered === true ? (
-            <TouchableOpacity 
-            style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
-            paddingTop:20, paddingBottom:20}}
-             disabled={true} onPress={() => goToNextScreen()}>
-                <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
-            </TouchableOpacity>
-        ) : (
-            <TouchableOpacity 
-            style={{alignItems:'center', justifyContent:'center', backgroundColor:'#a0a0a0',
-            paddingTop:20, paddingBottom:20}} 
-            disabled={false} onPress={() => goToNextScreen()}>
-                <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
-            </TouchableOpacity>
-        )}
-        </View>
     </SafeAreaView>
 }
 
