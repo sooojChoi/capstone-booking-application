@@ -41,7 +41,7 @@ export class BookingTable {
     }
 
     remove(userId, facilityId, usingTime){
-        for(var i=0;i<this.users.length;i++){
+        for(var i=0;i<this.bookings.length;i++){
             if(this.bookings[i].userId == userId){
                 if(this.bookings[i].facilityId == facilityId){
                     if(this.bookings[i].usingTime == usingTime){
