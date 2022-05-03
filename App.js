@@ -12,7 +12,6 @@ import MyBookingList from './User/MyBookingList';
 import MyInfoManagement from './User/MyInfoManagement';
 import SignIn from './User/SignIn';
 import DetailUserDeny from './Admin/DetailUserDeny';
-import UserPermissionNavigation from './Admin/UserPermission';
 import AdminSignUp from './Admin/AdminSignUp'
 import SelectFacilitySort from './Admin/AdminSignUp';
 import DetailAdminSignUp from './Admin/DetailAdminSignUp';
@@ -20,7 +19,7 @@ import DetailAdminSignUp from './Admin/DetailAdminSignUp';
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 관리자(Admin) UI
 
-  //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
+  return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
   //return (<BookingManagement></BookingManagement>) // 예약 관리(수빈)
   //return (<DetailBookingManagement></DetailBookingManagement>) //// 상세 예약 관리(수빈)
