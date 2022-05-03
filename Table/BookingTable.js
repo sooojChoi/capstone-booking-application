@@ -3,14 +3,14 @@ import { booking, user } from "../Category";
 
 export class BookingTable {
     bookings = [
-        new booking("yjb", "hante1", "2022-05-25-10:00", "2022-04-25-09:00", 4, false),
-        new booking("yjb", "hante1", "2022-05-25-12:00", "2022-04-25-09:00", 4, true),
-        new booking("sbp", "hante1", "2022-05-26-12:00", "2022-04-25-09:00", 4, false),
-        new booking("yjb", "hante1", "2022-05-27-12:00", "2022-04-25-09:00", 4, false),
-        new booking("yjb", "hante2", "2022-05-28-10:00", "2022-04-25-12:00", 6, false),
-        new booking("yjb", "hante2", "2022-05-28-12:00", "2022-04-25-12:00", 6, true),
-        new booking("sbp", "hante2", "2022-05-28-13:00", "2022-04-25-12:00", 6, true),
-        new booking("yjb", "hante3", "2022-05-28-14:00", "2022-04-25-12:00", 6, true),
+        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, false),
+        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, true),
+        new booking("yjb", "hante1", "2022-05-26T12:00", "2022-05-25T09:00", 4, false),
+        new booking("yjb", "hante1", "2022-05-27T12:00", "2022-05-25T09:00", 4, false),
+        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, false),
+        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, true),
+        new booking("sbp", "hante2", "2022-05-28T12:00", "2022-05-25T12:00", 6, true),
+        new booking("yjb", "hante3", "2022-05-28T12:00", "2022-05-25T12:00", 6, true),
     ];
 
     add(booking){
@@ -28,9 +28,10 @@ export class BookingTable {
 
     modify(booking){
         for(var i=0;i<this.bookings.length;i++){
-            if(existing.userId == booking.userId){
-                if(existing.facilityId == booking.facilityId){
-                    if(existing.usingTime == booking.usingTime){
+            if(this.bookings[i].userId == booking.userId){
+                if(this.bookings[i].facilityId == booking.facilityId){
+                    if(this.bookings[i].usingTime == booking.usingTime){
+                        console.log("시간같은뎅")
                         this.bookings[i] = booking
                         return
                     }
@@ -45,49 +46,6 @@ export class BookingTable {
                 if(this.bookings[i].facilityId == facilityId){
                     if(this.bookings[i].usingTime == usingTime){
                         this.bookings.splice(i, 1)
-                        return
-                    }
-                }
-            }
-        }
-    }
-
-    //예약내역 취소내역으로 바꾸기
-    // modifyCancle(userId, facilityId, usingTime){
-    //     for(var i=0;i<this.bookings.length;i++){
-    //         if(userId == booking.userId){
-    //             if(facilityId == booking.facilityId){
-    //                 if(usingTime == booking.usingTime){
-    //                     this.bookings[i].cancel = true
-    //                     return
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    // modifyCancle(booking) {
-    //     for(var existing of this.bookings){
-    //         if(existing.userId == booking.userId){
-    //             if(existing.facilityId == booking.facilityId){
-    //                 if(existing.usingTime == booking.usingTime){
-    //                     if(existing.cancel == false){
-    //                         this.bookings[existing].cancel = true
-    //                         return
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    modifyCancle(userId, facilityId, usingTime){
-        for(var existing of this.bookings){
-            if(existing.userId == userId){
-                console.log("아이디같은뎅")
-                if(existing.facilityId == facilityId){
-                    console.log("시설같은뎅")
-                    if(existing.usingTime == usingTime){
-                        console.log("시간같은뎅")
-                        //this.bookings[existing].cancel = true
                         return
                     }
                 }
