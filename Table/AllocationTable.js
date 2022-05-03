@@ -2,12 +2,12 @@ import { allocation } from "../Category";
 
 export class AllocationTable {
     allocations = [
-        new allocation("hante1", "2022-03-25-09:00", 9, true),
-        new allocation("hante1", "2022-03-25-10:00", 10, true),
-        new allocation("hante1", "2022-03-25-11:00", 11, true),
-        new allocation("hante2", "2022-03-28-10:00", 10, true),
-        new allocation("hante2", "2022-03-28-11:00", 11, true),
-        new allocation("hante2", "2022-03-28-12:00", 12, true),
+        new allocation("hante1", "2022-05-25T09:00", 9, true),
+        new allocation("hante1", "2022-05-25T10:00", 10, true),
+        new allocation("hante1", "2022-05-25T11:00", 11, true),
+        new allocation("hante2", "2022-05-28T10:00", 10, true),
+        new allocation("hante2", "2022-05-28T11:00", 11, true),
+        new allocation("hante2", "2022-05-28T12:00", 12, true),
     ];
 
     add(allocation){
