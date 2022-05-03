@@ -11,12 +11,13 @@ export class user {
 }
 
 export class facility {
-    constructor(id, name, openTime, closeTime, unitTime, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3) {
+    constructor(id, name, openTime, closeTime, unitTime, minPlayers, maxPlayers, booking1, booking2, booking3, cost1, cost2, cost3) {
         this.id = id;
         this.name = name;
         this.openTime = openTime;
         this.closeTime = closeTime;
         this.unitTime = unitTime;
+        this.minPlayers = minPlayers;
         this.maxPlayers = maxPlayers;
         this.booking1 = booking1;
         this.booking2 = booking2;
