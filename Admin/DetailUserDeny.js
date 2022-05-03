@@ -2,10 +2,6 @@
 import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity } from 'react-native';
 import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
-import Toast, {DURATION} from 'react-native-easy-toast'
-import { PermissionTable } from '../Table/PermissionTable';
-import { permission } from '../Category';
-import { user } from '../Category';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
