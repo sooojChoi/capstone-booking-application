@@ -1,14 +1,11 @@
 // 상세 사용자 관리(관리자) -> 수진
 
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, StatusBar,SafeAreaView,Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PermissionTable } from '../Table/PermissionTable.js';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { UserTable } from '../Table/UserTable.js';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
-import { Entypo } from '@expo/vector-icons';
 import Toast, {DURATION} from 'react-native-easy-toast'
 import { permission } from '../Category';
 import { user } from '../Category';
@@ -143,7 +140,7 @@ export default function DetailUserManagement({ route, navigation }) {
       ]);
     }
 
-    return <View style={styles.container}>
+    return <SafeAreaView style={styles.container}>
         <Toast ref={toastRef}
              positionValue={SCREEN_HEIGHT * 0.55}
              fadeInDuration={200}
@@ -182,7 +179,7 @@ export default function DetailUserManagement({ route, navigation }) {
                       </Text>
                     </TouchableOpacity>
                   ) : (
-                    <TouchableOpacity style={{...styles.smallButtonStyle2,backgroundColor:'#1a4490', borderColor:'#1a4490',marginTop:8, marginBottom:5}} 
+                    <TouchableOpacity style={{...styles.smallButtonStyle2,backgroundColor:'#3262d4', borderColor:'#3262d4',marginTop:8, marginBottom:5}} 
                       onPress={() => changeUserGrade()} disabled={false}>
                       <Text style={{fontSize:15, color:"white"}}>
                         변경하기
@@ -216,7 +213,7 @@ export default function DetailUserManagement({ route, navigation }) {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity style={{...styles.smallButtonStyle2,
-                      backgroundColor:'#1a4490', borderColor:'#1a4490',marginTop:8, marginBottom:5}} 
+                      backgroundColor:'#3262d4', borderColor:'#3262d4',marginTop:8, marginBottom:5}} 
                       onPress={() => changeUserAllowDate()} disabled={false}>
                       <Text style={{fontSize:15, color:"white"}}>
                       변경하기
@@ -269,7 +266,7 @@ export default function DetailUserManagement({ route, navigation }) {
               </View>
             </View>
           </View>
-    </View>
+    </SafeAreaView>
 }
 
 const styles = StyleSheet.create({
@@ -309,12 +306,12 @@ const styles = StyleSheet.create({
       paddingRight:20, 
     },
     smallButtonStyle2:{
-      backgroundColor:'#acb9d2',
+      backgroundColor:'#a0a0a0',
       marginLeft:5,
       marginRight:5,
       justifyContent:'center',
       borderRadius:8,
-      borderColor:'#acb9d2',
+      borderColor:'#a0a0a0',
       borderWidth:1,
       //padding: 8,
       paddingLeft:15,

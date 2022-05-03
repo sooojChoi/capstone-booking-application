@@ -1,4 +1,4 @@
-
+// 사용자 승인 요청을 관리할 때 거절 사유를 입력하는 화면
 import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity } from 'react-native';
 import {UserTable} from '../Table/UserTable'
 import React, {useEffect, useState, useRef, useCallback} from "react";
