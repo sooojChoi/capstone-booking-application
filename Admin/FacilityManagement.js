@@ -48,9 +48,9 @@ function FacilityManagement({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
+      {/* <View>
         <Text style={{ fontSize: 32, fontWeight: "bold" }}>공공 시설 예약</Text>
-      </View>
+      </View> */}
       <FlatList
         data={facility}
         renderItem={renderItem}
@@ -69,11 +69,16 @@ const styles = StyleSheet.create({
   name: {
     width: SCREEN_WIDTH * 0.9,
     height: SCREEN_HEIGHT * 0.1,
-    marginTop: 15,
+    marginTop: SCREEN_WIDTH * 0.05,
+    marginHorizontal: SCREEN_WIDTH * 0.05,
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+
+    
+    
+
   },
 });
