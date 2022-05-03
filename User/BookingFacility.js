@@ -8,17 +8,63 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
 import {FacilityTable} from '../Table/FacilityTable';
 import {AllocationTable} from '../Table/AllocationTable';
+import { UserTable } from '../Table/UserTable';
+import {PermissionTable} from '../Table/PermissionTable';
+import { DiscountRateTable } from '../Table/DiscountRateTable';
 
 /*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. styles:FacilityImageStyle*/
 const {height,width}=Dimensions.get("window");
 
 export default function BookingFacility() {
   //FacilityTable생성
-  const facilityTable=new FacilityTable()
+  const facilityTable=new FacilityTable();
   //AllocationTable 생성
   const allocationTable=new AllocationTable();
-  
+  //PermissionTable 생성
+  const permissionTable=new PermissionTable();
+  //UserTable 생성
+  const userTable=new UserTable();
+  //DiscountRateTable생성
+  const discountRateTable=new DiscountRateTable();
 
+
+
+  //dropDownPicker data받아오는 부분
+  const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState(facilityArray);
+
+//시간 할인되는거
+  const dc=discountRateTable.gets(value)
+  let rate,time;
+  if(dc[0]){
+    rate=1-(dc[0].rate*0.01)
+    time=dc[0].time+":00"
+  }
+
+
+
+  const currentUserId="yjb";//현재 user의 id(임시)
+  const currentUser=userTable.getsById(currentUserId); //현재 user의 정보 가져옴
+  let allowDate,name,phone=null;
+  console.log(currentUser);
+  if(currentUser[0]){
+    allowDate=currentUser[0].allowDate
+    name=currentUser[0].name
+    phone=currentUser[0].phone
+  }
+
+
+  const userPermission=permissionTable.getsByUserId(currentUserId)
+  const thisUserPermission=userPermission.map((elem)=>{if(elem.facilityId===value) return elem})//현재시설에서 등급 가져오기
+  console.log("-------------",thisUserPermission)
+  let grade;
+  if(thisUserPermission[0]){
+      grade=thisUserPermission[0].grade
+  }
+
+  
   //예약 후 총 금액
   let totalCost=0;
 
@@ -26,7 +72,7 @@ export default function BookingFacility() {
   const minDate = new Date(); // Today
   //최대 7일 뒤까지 예약 가능
   var now = new Date();
-  var bookinglimit = new Date(now.setDate(now.getDate() + 7));
+  var bookinglimit = new Date(now.setDate(now.getDate() + 40));
   const maxDate = new Date(bookinglimit);
 
   //날짜 선택했는지 안했는지 확인하는 부분
@@ -34,11 +80,7 @@ export default function BookingFacility() {
   const startDate = selectedStartDate ? selectedStartDate.toString() : '';
 
  
-  //dropDownPicker data받아오는 부분
-  const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
-  const [items, setItems] = useState(facilityArray);
+
 
   //날짜와 시설이 모두 선택된 상황에서만 시간선택 할 수 있도록 한다.
   let showTimeSelect=selectedStartDate && value;
@@ -72,7 +114,7 @@ export default function BookingFacility() {
       selectedAllo.push(i);
     }
   });
-
+//console.log(selectedAllo)
 
 
 //시간선택
@@ -87,86 +129,76 @@ const Item = ({ item, onPress, backgroundColor, textColor }) => (
 );
 
 const [selectedId, setSelectedId] = useState([]);
-//const isSelected = selectedId.filter((i) => i === id).length > 0;
-//console.log(isSelected);
+
 const renderItem = ({ item }) => {
 
   const isSelected = selectedId.filter((i) => i === item.id).length > 0;
- // console.log(isSelected);
-  //const backgroundColor = item.id === selectedId ? "#A9E2F3" : "white";
-  //const color = item.id === selectedId ? '#2E9AFE' : 'black';
   const backgroundColor="#A9E2F3";
   const color="#2E9AFE";
   return (
     <Item
       item={item}
-      //onPress={() => setSelectedId(item.id)}
       onPress={()=>{
         if (isSelected){
           setSelectedId((prev) => prev.filter((i) => i !== item.id));
         }else{
         setSelectedId((prev) => [...prev, item.id])
         }
-      }}//이제 색깔만 바꿔주면 됨.
+      }}
       backgroundColor={isSelected&&{backgroundColor}}
       textColor={isSelected&&{color}}
     />
   );
 };
 
-//onsole.log(selectedId);
 
+//달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
 
-//실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함 
-//배열을 만들어서 시간,가격을 넣어준다.
 const data=[]
-//시도 
-const Tdata=[]
-let availTime=[]
-//available이 true인거만 가져오는 부분
+let todayAvail=[]
+let d=new Date(selectedStartDate)
+
 
 if(selectedAllo){
-
-selectedAllo.map((i)=>{
-  if(i.available===true){
-    availTime.push(i);
-  }
-});
+  selectedAllo.map((elem)=>{//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
+    if(elem.usingTime.split('T')[0]==d.getFullYear()+'-'+0+(d.getMonth()+1)+"-"+d.getDate()){
+    todayAvail.push(elem)
+    }
+  });
 }
-//console.log(startDate)//문자열
-console.log(Date.parse(selectedStartDate))//선택된 날짜임
-if(availTime[0]){
-//console.log(Date.parse(availTime[0].usingTime))//날짜 객체로 변환 불가(시간때문에..)
-console.log("------------------",Date.parse("2022-03-25T12:00"))//날짜 객체로 변환 불가(시간때문에..)
-console.log("-----////////-----",Date.parse("2022-03-25T12:00"))//날짜 객체로 변환 불가(시간때문에..)
 
+let gradeCost=cost3;
+//console.log("---------오늘 가능한거",todayAvail)//선택된 날짜에 가능한 object들 띄움(avilable이 true인건 아직 모름)
+//if time이 usingTime.split('T')[1]이거면 가격을 할인률 곱해서 cost에 넣기
+console.log(time)
+if(todayAvail[2]){
+console.log(todayAvail[2].usingTime.split('T')[1])
 }
-//id는 겹치면 안돼서 대충 난수 생성해서 넣어줌 (근데 난수가 겹치지 않도록 하는 코드는 귀찮아서 아직 안씀)
-//5월2일 (선택된 날짜)에 avilable이 true인 시간을 가져와서 
-//time에서 시간만 가져와서 시간만 자르기
-//이건 db연결한 후에 하는게 나을거같음
- if(availTime){
-    availTime.map((elem)=>{
-      Tdata.push({id:Math.floor(Math.random() * 101),title:" ",time:elem.usingTime,cost:cost2})
+
+if(grade===0){gradeCost=cost1}
+else if (grade===1){gradeCost=cost2}
+else if (grade===2){gradeCost=cost3}
+//등급이 없는경우 3등급으로 처리
+
+
+
+//cost는 사용자 등급에 따라 다르다. 현재 사용자의 등급을 가져와서 가격을 책정해서 넣어주어야 함.
+ if(todayAvail){
+  todayAvail.map((elem)=>{
+    if (elem.available===true){//선택된 날짜에 개설된 시간들중에 available이 true인거
+      if(time==elem.usingTime.split('T')[1]){
+        console.log("됨~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+          gradeCost=gradeCost*rate
+
+      }
+      data.push({id:elem.usingTime.split('T')[1],title:" ",time:elem.usingTime,cost:gradeCost})
+    }
+      
     })
 
  }
-//console.log(Tdata);
+ console.log(data)
 
-
-
-
-
-
-
-//오늘 예약 총 몇타임 가능한지 계산해서 반복..
-//cost는 등급에 따라 달라져야 한다.
-//여기 좀 맘에 안드는데 이거말곤 해결방법이 생각 안남
-let i=0
-while(openTime+unitTime*i<=closeTime){
-  data.push({id:i,title:" ",time:openTime+unitTime*i,cost:cost2})
-  i+=1
-}
 
 //선택된 id가 여러개이다.
 let SelectedTimeObject=[];//선택된 시간Object를 담는 배열
@@ -176,6 +208,8 @@ if (data){
       SelectedTimeObject.push(data.find((elem)=>{return elem.id==i}))
     
   });
+
+ 
   
   if (SelectedTimeObject){
    const temparr=SelectedTimeObject.map(elem=>{return elem.cost})//가격만 뽑아서 배열로 반환
@@ -196,7 +230,7 @@ if (data){
  const [count, setCount] = useState(0);
 
  //전화번호 입력
- const [number, onChangePhoneNumber] = useState(null);
+ const [number, onChangePhoneNumber] = useState(phone);
 //console.log("input phone number=",number);
 
 //예약하기 버튼
@@ -204,6 +238,7 @@ const onPressedFin=()=>{
   console.log("input phone number=",number);//전화번호 db에 저장
   //예약인원 db에저장? 예약된 타임 예약안되도록 처리
   //한번더 예약정보 확인하도록 모달로 띄워주기
+  //가격정보 bookingtable에 저장하기
 }
 
   return (
@@ -288,6 +323,7 @@ const onPressedFin=()=>{
       placeholder="전화번호를 입력해주세요." 
       keyboardType='phone-pad'
       onChangeText={onChangePhoneNumber}
+      value={number}
       />
       </View>
       
@@ -363,3 +399,4 @@ const styles = StyleSheet.create({
   },
 
 });
+
