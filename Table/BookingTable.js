@@ -3,14 +3,14 @@ import { booking, user } from "../Category";
 
 export class BookingTable {
     bookings = [
-        new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, false),
-        new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, true),
-        new booking("yjb", "hante1", "2022-03-26-12:00", "2022-03-25-09:00", 4, false),
-        new booking("yjb", "hante1", "2022-03-27-12:00", "2022-03-25-09:00", 4, false),
-        new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, false),
-        new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, true),
-        new booking("sbp", "hante2", "2022-03-28-12:00", "2022-03-25-12:00", 6, true),
-        new booking("yjb", "hante3", "2022-03-28-12:00", "2022-03-25-12:00", 6, true),
+        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, false),
+        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, true),
+        new booking("yjb", "hante1", "2022-05-26T12:00", "2022-05-25T09:00", 4, false),
+        new booking("yjb", "hante1", "2022-05-27T12:00", "2022-05-25T09:00", 4, false),
+        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, false),
+        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, true),
+        new booking("sbp", "hante2", "2022-05-28T12:00", "2022-05-25T12:00", 6, true),
+        new booking("yjb", "hante3", "2022-05-28T12:00", "2022-05-25T12:00", 6, true),
     ];
 
     add(booking){

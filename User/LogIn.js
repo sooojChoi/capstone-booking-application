@@ -58,7 +58,8 @@ export default function LogIn() {
 
 
                 <View style={styles.signUpBtn}>
-                      <TouchableOpacity>
+                      <TouchableOpacity
+                      >
                             <Text style={styles.text}>회원가입</Text>
                       </TouchableOpacity>
                 </View>

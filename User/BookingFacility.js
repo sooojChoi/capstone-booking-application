@@ -80,7 +80,7 @@ export default function BookingFacility() {
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
     <View><Text style>{item.time}</Text></View>
-    <View style={{width: width/5+2, height: height*0.1,}}>
+    <View style={{width: width*0.9, height: height*0.05,}}>
     <Text style={[styles.title, textColor,{fontSize:14}]}>{data[0].cost}</Text>
     </View>
   </TouchableOpacity>
@@ -133,8 +133,14 @@ selectedAllo.map((i)=>{
   }
 });
 }
-//onsole.log(startDate)선택된 날짜임
-//console.log(availTime)
+//console.log(startDate)//문자열
+console.log(Date.parse(selectedStartDate))//선택된 날짜임
+if(availTime[0]){
+//console.log(Date.parse(availTime[0].usingTime))//날짜 객체로 변환 불가(시간때문에..)
+console.log("------------------",Date.parse("2022-03-25T12:00"))//날짜 객체로 변환 불가(시간때문에..)
+console.log("-----////////-----",Date.parse("2022-03-25T12:00"))//날짜 객체로 변환 불가(시간때문에..)
+
+}
 //id는 겹치면 안돼서 대충 난수 생성해서 넣어줌 (근데 난수가 겹치지 않도록 하는 코드는 귀찮아서 아직 안씀)
 //5월2일 (선택된 날짜)에 avilable이 true인 시간을 가져와서 
 //time에서 시간만 가져와서 시간만 자르기
@@ -227,6 +233,7 @@ const onPressedFin=()=>{
       <View style={{backgroundColor:'white',paddingVertical:20}}>
 
             <DropDownPicker
+             containerStyle={{width:width*0.9,marginHorizontal:width*0.05}}
             open={open}
             value={value}
             items={items}
@@ -258,20 +265,24 @@ const onPressedFin=()=>{
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
 
             {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
-          <View style={{height:showTimeSelect?500:0,width:showTimeSelect?400:0}}>
-                      <View>
-                          <Text style={styles.SelectionTitle}>시간 선택</Text>
-                       
-                        
-                          <FlatList
-                            data={data}
-                            renderItem={renderItem}
-                            keyExtractor={(item) => item.id}
-                            horizontal={true}
-        
-                          />
+          <View style={{height:showTimeSelect?1000:0,width:showTimeSelect?400:0}}>
+                     
+                        <Text style={styles.SelectionTitle}>시간 선택</Text>
+                          <View>
+                            <View style={{height:showTimeSelect?500:0,width:showTimeSelect?400:0}}>
+                          <ScrollView horizontal={true} style={{ width: "100%" }} bounces={false}>
+                                <FlatList
+                                  data={data}
+                                  renderItem={renderItem}
+                                  keyExtractor={(item) => item.id}
+                                  //horizontal={true}
+              
+                                />
+                         </ScrollView>
+                         </View>
           </View>
           <View>
+      {/*예약자가 회원인 경우 value값으로 전화번호 띄워줌*/ }
       <Text style={styles.SelectionTitle}>예약자 전화번호</Text>
       <TextInput style={styles.textinput1} 
       placeholder="전화번호를 입력해주세요." 
@@ -332,7 +343,8 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     marginBottom:20,
     alignItems:'center',
-    marginStart:20
+    marginStart:20,
+    borderColor:'grey',
   },
   SelectionTitle: {
     paddingVertical:15,
