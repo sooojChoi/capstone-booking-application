@@ -3,7 +3,7 @@
 // 그 사용자의 이름과 전화번호, 등록일 등은 USER에서 가져와야됨.
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet,SafeAreaView, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
 import { PermissionTable } from '../Table/PermissionTable.js';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -139,10 +139,10 @@ export default function UserManagementNavigation() {
       return <TouchableOpacity style={{...styles.facilityFlatList,}} >
         <View style={{flexDirection:'row', justifyContent:'space-between', marginBottom:2,marginTop:2}}>
           <View style={{flexDirection:'row', alignItems:'center'}}>
-            <MaterialCommunityIcons name="account-circle" size={40} color="black" style={{marginEnd:10}}/>
+            <MaterialCommunityIcons name="account-circle" size={40} color="black" style={{marginRight:10}}/>
             <View>
               <View style={{flexDirection:'row', marginBottom:5}}>
-                <Text style={{fontSize:17, marginRight:10}}>{itemData.item.name}</Text>
+                <Text style={{fontSize:15, marginRight:10}}>{itemData.item.name}</Text>
                 <Text style={{fontSize:14, color:'#3c3c3c'}}>{grade[itemData.item.grade]}</Text>
               </View>
               <View>
@@ -150,19 +150,19 @@ export default function UserManagementNavigation() {
               </View>
             </View>
           </View>
-          <View style={{marginRight:8}}>
-            <TouchableOpacity onPress={() => navigation.navigate('DetailUserManagement', {userId: itemData.item.userId, userGrade: itemData.item.grade})}>
-                <View style={{padding:10,paddingLeft:12,paddingRight:12, borderWidth:1, borderRadius:10}}>
-                  <Text style={{fontSize:14}}>수정</Text>
-                </View>
+          <View style={{marginRight:3, justifyContent:'center'}}>
+            <TouchableOpacity 
+            onPress={() => navigation.navigate('DetailUserManagement', {userId: itemData.item.userId, userGrade: itemData.item.grade})}
+            style={{backgroundColor:'#3262d4',padding:8,paddingLeft:15,paddingRight:15, borderRadius:8}}>
+                 <Text style={{fontSize:14, color:'white'}}>수정</Text>
             </TouchableOpacity>
           </View>
         </View>
     </TouchableOpacity> 
     }
 
-    return <View style={styles.container}>
-      <Modal isVisible={isModalVisible} 
+    return <SafeAreaView style={styles.container}>
+     {/* { <Modal isVisible={isModalVisible} 
         style={{alignSelf:'center', width:'100%',justifyContent:'center'}}>
           <View style={{ padding:10, backgroundColor:'white', justifyContent:'center'}}>
             <View style={{borderBottomColor:'#a6a6a6', borderBottomWidth:1,marginTop:5, marginBottom:10}}>
@@ -221,22 +221,22 @@ export default function UserManagementNavigation() {
               </TouchableOpacity>
             </View>
           </View>
-        </Modal>
+        </Modal>} 
         <View style={{alignSelf:'center',borderBottomColor: '#a6a6a6', borderBottomWidth:2,width: SCREEN_WIDTH*0.95}}>
             <View style={{flexDirection:'row', justifyContent:'space-between', 
             alignItems:'center', marginTop:0, marginBottom:10}}>
                 <Text style={{...styles.TitleText,marginStart: 5, marginBottom:0}}>사용자 정보</Text>
             </View>
-        </View>
+              </View>*/}
         <View>
           <View style={{height:SCREEN_HEIGHT*0.87}}>
-          <FlatList keyExtracter={(item, index) => index.toString()} 
+          <FlatList keyExtracter={(item, index) => index} 
                 data={users} 
                 renderItem={renderGridItem} 
                 numColumns={1}/>
           </View>
         </View>
-    </View>
+    </SafeAreaView>
 }
 
 const styles = StyleSheet.create({
