@@ -1,10 +1,7 @@
 // 얘역 내역(사용자) -> 유진
 
-import { StatusBar } from 'expo-status-bar';
-import { Images } from '../Images';
 import React, {useState, createRef} from 'react';
 import { Button, StyleSheet, Text, TextInput, View, FlatList, Alert } from 'react-native';
-import IconButton from '../IconButton';
 import {FacilityTable} from '../Table/FacilityTable';
 import {BookingTable} from '../Table/BookingTable';
 import { booking } from '../Category';
@@ -15,19 +12,17 @@ export default function App() {
   const [value, setValue] = useState('');
 
   const facilityTable = new FacilityTable();
-  const bookingTable = new BookingTable();
+  const [bookingTable, setBookingTable] = useState(new BookingTable)
 
-  //시설, 유저아이디 임의로 지정
-  const facilities = facilityTable.getsById("hante1")
-  
-  const bookings = bookingTable.getByUserIdNotCancle("yjb")
+  //유저아이디 임의로 지정
+  const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancle("yjb"))
 
-  
+
+  //예약내역
   const yItem = (itemData) => {
     const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
+    console.log('user'+itemData.item.userId)
 
-   //console.log('cost1 ' + facilitieCost)
-   //const booking = bookingTable.getsByUserIdAndFacilityIdAndUsingTime("yjb", itemData.item.facilities, itemData.item.usingTime, itemData.item.cancel)
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
     <Text style={styles.text3}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
 
@@ -42,8 +37,12 @@ export default function App() {
         onPress: () => console.log("아니라는데"),     //onPress 이벤트시 콘솔창에 로그를 찍는다
         style: "cancel"
       },
-      { text: "확인", onPress: () => bookingTable.modifyCancle("yjb", itemData.item.facilityId, itemData.item.usingTime)}, //버튼 제목
-
+      { text: "확인", onPress: () => {bookingTable.modify(new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true))
+        setBookingTable(bookingTable)
+        setBookings(bookingTable.getByUserIdNotCancle(itemData.item.userId))
+        setBookingCancel(bookingTable.getByUserIdCancle(itemData.item.userId))}
+      }, //버튼 제목
+//new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true)
     ],
     { cancelable: false }
   )}/>
@@ -54,7 +53,11 @@ export default function App() {
   
   }
 
-  const bookingCancle = bookingTable.getByUserIdCancle("yjb")
+
+  //취소내역
+  //const bookingCancle = bookingTable.getByUserIdCancle("yjb")
+  const [bookingCancel, setBookingCancel] = useState(bookingTable.getByUserIdCancle("yjb"))
+  
 
   const nItem = (itemData) => {
     const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
@@ -68,10 +71,7 @@ export default function App() {
   
   }
 
-  const arr = [];
-for (let i = 0; i < 100; i++) {
-  arr.push(i);
-}
+
 
   return (
 
@@ -85,6 +85,7 @@ for (let i = 0; i < 100; i++) {
       <FlatList
       data={bookings}
       renderItem={yItem}
+      
       />
       </View>
 
@@ -96,7 +97,7 @@ for (let i = 0; i < 100; i++) {
       <Text style={styles.text2}>취소내역</Text>
       <View style={{height:300}}>
       <FlatList
-      data={bookingCancle}
+      data={bookingCancel}
       renderItem={nItem}
       />
       </View>

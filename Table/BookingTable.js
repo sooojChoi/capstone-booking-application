@@ -28,9 +28,10 @@ export class BookingTable {
 
     modify(booking){
         for(var i=0;i<this.bookings.length;i++){
-            if(existing.userId == booking.userId){
-                if(existing.facilityId == booking.facilityId){
-                    if(existing.usingTime == booking.usingTime){
+            if(this.bookings[i].userId == booking.userId){
+                if(this.bookings[i].facilityId == booking.facilityId){
+                    if(this.bookings[i].usingTime == booking.usingTime){
+                        console.log("시간같은뎅")
                         this.bookings[i] = booking
                         return
                     }
@@ -40,54 +41,11 @@ export class BookingTable {
     }
 
     remove(userId, facilityId, usingTime){
-        for(var i=0;i<this.users.length;i++){
+        for(var i=0;i<this.bookings.length;i++){
             if(this.bookings[i].userId == userId){
                 if(this.bookings[i].facilityId == facilityId){
                     if(this.bookings[i].usingTime == usingTime){
                         this.bookings.splice(i, 1)
-                        return
-                    }
-                }
-            }
-        }
-    }
-
-    //예약내역 취소내역으로 바꾸기
-    // modifyCancle(userId, facilityId, usingTime){
-    //     for(var i=0;i<this.bookings.length;i++){
-    //         if(userId == booking.userId){
-    //             if(facilityId == booking.facilityId){
-    //                 if(usingTime == booking.usingTime){
-    //                     this.bookings[i].cancel = true
-    //                     return
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    // modifyCancle(booking) {
-    //     for(var existing of this.bookings){
-    //         if(existing.userId == booking.userId){
-    //             if(existing.facilityId == booking.facilityId){
-    //                 if(existing.usingTime == booking.usingTime){
-    //                     if(existing.cancel == false){
-    //                         this.bookings[existing].cancel = true
-    //                         return
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    modifyCancle(userId, facilityId, usingTime){
-        for(var existing of this.bookings){
-            if(existing.userId == userId){
-                console.log("아이디같은뎅")
-                if(existing.facilityId == facilityId){
-                    console.log("시설같은뎅")
-                    if(existing.usingTime == usingTime){
-                        console.log("시간같은뎅")
-                        //this.bookings[existing].cancel = true
                         return
                     }
                 }

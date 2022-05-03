@@ -9,7 +9,7 @@ import { FacilityTable } from '../Table/FacilityTable'
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function DetailFacilityManagement({ route }) {
+export default function DetailFacilityManagement({ route, navigation }) {
   // DB Table
   const facilityTable = new FacilityTable();
   const facilityId = route.params.facilityId;
@@ -40,7 +40,7 @@ export default function DetailFacilityManagement({ route }) {
           cost1: facility.cost1, cost2: facility.cost2, cost3: facility.cost3
         }
 
-        setFacilityInfo(temp);
+        setFacilityInfo(temp)
 
         setName(facility.name)
         setOpenTime(facility.openTime)
@@ -96,16 +96,17 @@ export default function DetailFacilityManagement({ route }) {
     temp.cost3 = cost3
 
     setFacilityInfo({...temp}) // 수정 사항 반영
-    console.log("********************")
-    console.log(facilityInfo)
-    console.log("&&&&&&&&&&&&&&&&&&&&")
+    // console.log("********************")
+    // console.log(facilityInfo)
+    // console.log("&&&&&&&&&&&&&&&&&&&&")
     facilityTable.modify(facilityInfo) // DB 수정
-    console.log("********************")
-    console.log(facilityTable.getsById(facilityId))
-    console.log("&&&&&&&&&&&&&&&&&&&&")
+    // console.log("********************")
+    // console.log(facilityTable.getsById(facilityId))
+    // console.log("&&&&&&&&&&&&&&&&&&&&")
+    navigation.goBack()
   }
 
-  return ( // TextInput 별 DB 형태에 맞춰 유효성 검사 추가하기
+  return ( // TextInput 별 DB 형태에 맞춰 유효성 검사 추가하기(Firebase?)
     <SafeAreaView style={styles.container}>
       <View style={{ alignItems: 'center' }}>
         <Text style={{ fontSize: 32, fontWeight: "bold" }}>공공 시설 예약</Text>
@@ -183,7 +184,7 @@ export default function DetailFacilityManagement({ route }) {
             <TouchableOpacity style={{ ...styles.button, backgroundColor: 'skyblue' }} onPress={changeInfo}>
               <Text style={{ fontSize: 18 }}>수정</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
               <Text style={{ fontSize: 18 }}>취소</Text>
             </TouchableOpacity>
           </View>
