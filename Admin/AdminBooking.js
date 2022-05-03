@@ -6,8 +6,8 @@ import { Button, StyleSheet, Text, TextInput, View, FlatList, ScrollView,} from 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {FacilityTable} from '../Table/FacilityTable';
+import {FacilityTable, } from '../Table/FacilityTable';
+import {AllocationTable} from '../Table/AllocationTable';
 
 
 //시간선택
@@ -21,10 +21,17 @@ const Item = ({ item, onPress, backgroundColor, textColor }) => (
 );
 
 export default function App() {
-//혜림이꺼
+//FacilityTable생성
 facilityTable=new FacilityTable()
+//AllocationTable 생성
+const allocationTable=new AllocationTable();
 
+ //예약 후 총 금액
+ let totalCost=0;
+
+ //달력에서 예약 가능기간 설정
 const minDate = new Date(); // Today
+
 //최대 7일 뒤까지 예약 가능
 var now = new Date();
 var bookinglimit = new Date(now.setDate(now.getDate() + 7));
@@ -34,36 +41,43 @@ const maxDate = new Date(bookinglimit);
 const [ selectedStartDate,onDateChange]=useState(null);
 const startDate = selectedStartDate ? selectedStartDate.toString() : '';
 
+//dropDownPicker data받아오는 부분
+const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
 const [open, setOpen] = useState(false);
 const [value, setValue] = useState(null);
-const [items, setItems] = useState([
-  {label: facilityTable.facilitys[0].name, value: facilityTable.facilitys[0].id},
-  {label: facilityTable.facilitys[1].name, value: facilityTable.facilitys[1].id},
-  {label: facilityTable.facilitys[2].name, value: facilityTable.facilitys[2].id},
-]);
+const [items, setItems] = useState(facilityArray);
 
  //날짜와 시설이 모두 선택된 상황에서만 시간선택 할 수 있도록 한다.
  let showTimeSelect=selectedStartDate && value;
 
+ //dropdownpicker로 선택된 시설 정보 가져오는 부분
+ let selectedDetailedFacility=null;
+ //console.log(value)
+ if (value){
+   selectedDetailedFacility=facilityTable.getsById(value)
+ }
+ //console.log(selectedDetailedFacility);
+ 
+ let openTime,unitTime,cost1,cost2,cost3,closeTime,maxPlayers=null;
+ if (selectedDetailedFacility){
+ openTime=selectedDetailedFacility[0].openTime
+ unitTime=selectedDetailedFacility[0].unitTime
+ cost1=selectedDetailedFacility[0].cost1
+ cost2=selectedDetailedFacility[0].cost2
+ cost3=selectedDetailedFacility[0].cost3
+ closeTime=selectedDetailedFacility[0].closeTime
+ }
 
-{/* dropdown으로 선택한 시설과, 버튼으로 선택된 시간이 반영된 결과가 이 DATA에 담겨야 한다.*/}
-const facilityDATA = [
-  {
-    id: facilityTable.facilitys[0].id,
-    title: facilityTable.facilitys[0].name+ '\n<open time>:'+facilityTable.facilitys[0].openTime+  
-    '\n<cost1>:' +facilityTable.facilitys[0].cost1+'\n',
-  },
-  {
-    id: facilityTable.facilitys[1].id,
-    title: facilityTable.facilitys[1].name+ '\n<open time>:'+facilityTable.facilitys[1].openTime+  
-    '\n<cost1>:' +facilityTable.facilitys[1].cost1+'\n',
-  },
-  {
-    id: facilityTable.facilitys[2].id,
-    title: facilityTable.facilitys[2].name+ '\n<open time>:'+facilityTable.facilitys[2].openTime+  
-    '\n<cost1>:' +facilityTable.facilitys[2].cost1+'\n',
-  },
-];
+ /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
+
+//console.log(allocationTable.allocations)
+ let selectedAllo=[];
+ allocationTable.allocations.map((i)=>{
+   if(i.facilityId===value){
+     selectedAllo.push(i);
+   }
+ });
+
 
 //실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함
 const DATA = [
@@ -117,92 +131,35 @@ const DATA = [
   },
 ];
 
-//   const inputRef = createRef();
-
-//   const [value, setValue] = useState('');
-
-
-//   // datepicker
-//   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
-//   const showDatePicker = () => {
-//     setDatePickerVisibility(true);
-//   };
-
-//   const hideDatePicker = () => {
-//     setDatePickerVisibility(false);
-//   };
-
-//   const handleConfirm = (date) => {
-//     console.warn("A date has been picked: ", date);
-//     hideDatePicker();
-//     onChangeText(date.format("yyyy/MM/dd"))
-//   };
-
-//   const [text, onChangeText] = useState("");
-
-//   Date.prototype.format = function(f) {
-//     if (!this.valueOf()) return " ";
- 
-//     var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-//     var d = this;
-     
-//     return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
-//         switch ($1) {
-//             case "yyyy": return d.getFullYear();
-//             case "yy": return (d.getFullYear() % 1000).zf(2);
-//             case "MM": return (d.getMonth() + 1).zf(2);
-//             case "dd": return d.getDate().zf(2);
-//             case "E": return weekName[d.getDay()];
-//             case "HH": return d.getHours().zf(2);
-//             case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
-//             case "mm": return d.getMinutes().zf(2);
-//             case "ss": return d.getSeconds().zf(2);
-//             case "a/p": return d.getHours() < 12 ? "오전" : "오후";
-//             default: return $1;
-//         }
-//     });
-// };
-
- 
-// String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
-// String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
-// Number.prototype.zf = function(len){return this.toString().zf(len);};
-
-
-/* 출처: https://stove99.tistory.com/46 [스토브 훌로구] */
-
-// //시간선택
-// const timeItem = (item) => {
-
-//   return <View>
-//     <Text style>시간{}</Text>
-//     <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 5, margin: 4, width: 70, height: 40,}}>
-//   <View style={{flexDirection:'row',}}>
-//   <Text style={styles.text3}>5000{}</Text>
-//   </View>
-// </View>
-// </View>
-// }
 
 //시간선택
-const [selectedId, setSelectedId] = useState(null);
+const [selectedId, setSelectedId] = useState([]);
 
 const renderItem = ({ item }) => {
-  const backgroundColor = item.id === selectedId ? "#A9E2F3" : "white";
-  const color = item.id === selectedId ? '#2E9AFE' : 'black';
-  if(item.id === selectedId) setCost(item.cost);
+  const isSelected = selectedId.filter((i) => i === item.id).length > 0;
+
+  const backgroundColor="#A9E2F3";
+  const color="#2E9AFE";
+
+  //if(item.id === selectedId) setCost(item.cost);
 
   return (
     <Item
       item={item}
-      onPress={() => setSelectedId(item.id)}
-      backgroundColor={{ backgroundColor }}
-      textColor={{ color }}
+      onPress={() => {
+        if (isSelected){
+          setSelectedId((prev) => prev.filter((i) => i !== item.id));
+        }else{
+        setSelectedId((prev) => [...prev, item.id])
+        }
+      }}
+      backgroundColor={isSelected&&{backgroundColor}}
+      textColor={isSelected&&{color}}
     />
   );
 };
 
+const player = 0 //현재 예약된 인원
 //전체 인원
 // const [maxPlayer, setMaxPlayer] = useState(0);
 // const facilityTable = new FacilityTable();
@@ -213,6 +170,74 @@ const maxPlayer = facilityTable.getsPlayerById("hante1");
 
   //가격
   const [cost, setCost] = useState(0);
+
+  //실제로는 오픈시간과 클로즈시간 사이의 시간을 넣어줘야함 
+//배열을 만들어서 시간,가격을 넣어준다.
+const data=[]
+//시도 
+const Tdata=[]
+let availTime=[]
+//available이 true인거만 가져오는 부분
+
+if(selectedAllo){
+
+selectedAllo.map((i)=>{
+  if(i.available===true){
+    availTime.push(i);
+  }
+});
+}
+//console.log(startDate)//문자열
+console.log(Date.parse(selectedStartDate))//선택된 날짜임
+if(availTime[0]){
+//console.log(Date.parse(availTime[0].usingTime))//날짜 객체로 변환 불가(시간때문에..)
+console.log("------------------",Date.parse("2022-03-25T12:00"))//날짜 객체로 변환 불가(시간때문에..)
+console.log("-----////////-----",Date.parse("2022-03-25T12:00"))//날짜 객체로 변환 불가(시간때문에..)
+
+}
+//id는 겹치면 안돼서 대충 난수 생성해서 넣어줌 (근데 난수가 겹치지 않도록 하는 코드는 귀찮아서 아직 안씀)
+//5월2일 (선택된 날짜)에 avilable이 true인 시간을 가져와서 
+//time에서 시간만 가져와서 시간만 자르기
+//이건 db연결한 후에 하는게 나을거같음
+ if(availTime){
+    availTime.map((elem)=>{
+      Tdata.push({id:Math.floor(Math.random() * 101),title:" ",time:elem.usingTime,cost:cost2})
+    })
+
+ }
+//console.log(Tdata);
+
+
+
+
+
+
+
+//오늘 예약 총 몇타임 가능한지 계산해서 반복..
+//cost는 등급에 따라 달라져야 한다.
+//여기 좀 맘에 안드는데 이거말곤 해결방법이 생각 안남
+let i=0
+while(openTime+unitTime*i<=closeTime){
+  data.push({id:i,title:" ",time:openTime+unitTime*i,cost:cost2})
+  i+=1
+}
+
+//선택된 id가 여러개이다.
+let SelectedTimeObject=[];//선택된 시간Object를 담는 배열
+
+if (data){
+  selectedId.forEach((i)=>{//선택된 id각각 검색
+      SelectedTimeObject.push(data.find((elem)=>{return elem.id==i}))
+    
+  });
+  
+  if (SelectedTimeObject){
+   const temparr=SelectedTimeObject.map(elem=>{return elem.cost})//가격만 뽑아서 배열로 반환
+   totalCost=temparr.reduce((sum,cv)=>{return sum+cv},0);//배열의 합을 계산
+   //console.log(totalCost);
+
+  }
+}
   
 
   return (
@@ -238,16 +263,6 @@ const maxPlayer = facilityTable.getsPlayerById("hante1");
     <ScrollView>
     <View>
       
-      {/* 혜림이꺼 사용하기 */}
-      {/* <Text style={styles.text3}>시설선택 + 예약 날짜 {text}</Text> 
-      
-      <Button title='날짜선택' onPress={showDatePicker}/>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleConfirm}
-        onCancel={hideDatePicker}
-      /> */}
       {/*달력과 picker의 부모뷰. 여기에 style을 주지 않으면 picker와 달력이 겹쳐서 선택이 안된다. */}
       <View style={{backgroundColor:'white'}}>
 
@@ -281,14 +296,14 @@ const maxPlayer = facilityTable.getsPlayerById("hante1");
       <View style={{height:showTimeSelect?500:0, width:showTimeSelect?400:0}}>
       <Text style={styles.text3}>시간 선택</Text>
       <FlatList
-        data={DATA}
+        data={data}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         extraData={selectedId}
         //horizontal = { true }
       />
       <Text style={styles.text3}>실시간 예약인원</Text>
-      <Text style={styles.text3}>{}/{maxPlayer}</Text>
+      <Text style={styles.text3}>{player}/{maxPlayer}</Text>
 
       <View style={{flexDirection:'row'}}>
       <Text style={styles.text3}>예약 인원:</Text>
@@ -298,7 +313,7 @@ const maxPlayer = facilityTable.getsPlayerById("hante1");
       </View>
 
       <Text style={styles.text3}>공간사용료</Text>
-      <Text style={styles.text4}>₩ {cost*count}</Text>
+      <Text style={styles.text4}>₩ {totalCost*count}</Text>
 
 
       </View>
