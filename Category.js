@@ -54,12 +54,14 @@ export class allocation {
 }
 
 export class booking {
-    constructor(userId, facilityId, allocationUsingTime, bookingTime, usedPlayers, cancel) {
+    constructor(userId, facilityId, allocationUsingTime, bookingTime, usedPlayers, cancel,cost,phone) {
         this.userId = userId
         this.facilityId = facilityId
         this.usingTime = allocationUsingTime
         this.bookingTime = bookingTime
         this.usedPlayers = usedPlayers
         this.cancel = cancel
+        this.cost=cost
+        this.phone=phone
     }
 }
