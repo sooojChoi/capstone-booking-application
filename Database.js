@@ -61,7 +61,7 @@ export const ALLOCATION = [
 ];
 
 export const BOOKING = [
-    new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, false),
-    new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, false),
-    new booking("sbp", "hante2", "2022-03-28-12:00", "2022-03-25-12:00", 6, true),
+    new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, false,20000,"010-1234-5678"),
+    new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, false,30000,"010-1234-5678"),
+    new booking("sbp", "hante2", "2022-03-28-12:00", "2022-03-25-12:00", 6, true,10000,"010-1234-1212"),
 ]
