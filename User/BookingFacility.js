@@ -11,21 +11,21 @@ import {AllocationTable} from '../Table/AllocationTable';
 import { UserTable } from '../Table/UserTable';
 import {PermissionTable} from '../Table/PermissionTable';
 import { DiscountRateTable } from '../Table/DiscountRateTable';
+import Modal from "react-native-modal";
+import { allocation, booking } from '../Category';
+import { BookingTable } from '../Table/BookingTable';
 
 /*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. styles:FacilityImageStyle*/
 const {height,width}=Dimensions.get("window");
 
 export default function BookingFacility() {
-  //FacilityTable생성
+
   const facilityTable=new FacilityTable();
-  //AllocationTable 생성
   const allocationTable=new AllocationTable();
-  //PermissionTable 생성
   const permissionTable=new PermissionTable();
-  //UserTable 생성
   const userTable=new UserTable();
-  //DiscountRateTable생성
   const discountRateTable=new DiscountRateTable();
+  const bookingTable=new BookingTable();
 
 
 
@@ -58,7 +58,7 @@ export default function BookingFacility() {
 
   const userPermission=permissionTable.getsByUserId(currentUserId)
   const thisUserPermission=userPermission.map((elem)=>{if(elem.facilityId===value) return elem})//현재시설에서 등급 가져오기
-  console.log("-------------",thisUserPermission)
+  //console.log("-------------",thisUserPermission)
   let grade;
   if(thisUserPermission[0]){
       grade=thisUserPermission[0].grade
@@ -103,6 +103,7 @@ export default function BookingFacility() {
   cost2=selectedDetailedFacility[0].cost2
   cost3=selectedDetailedFacility[0].cost3
   closeTime=selectedDetailedFacility[0].closeTime
+  maxPlayers=selectedDetailedFacility[0].maxPlayers
   }
 
   /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
@@ -117,13 +118,15 @@ export default function BookingFacility() {
 //console.log(selectedAllo)
 
 
+
 //시간선택
 //cost는 등급에 따라 달라진다.
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
-    <View><Text style>{item.time}</Text></View>
-    <View style={{width: width*0.9, height: height*0.05,}}>
-    <Text style={[styles.title, textColor,{fontSize:14}]}>{data[0].cost}</Text>
+    <View><Text style>{item.time.split('T')[1]}</Text></View>
+    <View style={{width: width*0.9, height: height*0.06,flexDirection:'row'}}>
+    <Text style={[styles.title, textColor,{fontSize:16}]}>{item.cost}</Text>
+    <Text style={{...styles.title,fontSize:16}}>최대 인원: {maxPlayers}</Text>
     </View>
   </TouchableOpacity>
 );
@@ -150,7 +153,7 @@ const renderItem = ({ item }) => {
     />
   );
 };
-
+console.log(selectedId)
 
 //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
 
@@ -170,10 +173,10 @@ if(selectedAllo){
 let gradeCost=cost3;
 //console.log("---------오늘 가능한거",todayAvail)//선택된 날짜에 가능한 object들 띄움(avilable이 true인건 아직 모름)
 //if time이 usingTime.split('T')[1]이거면 가격을 할인률 곱해서 cost에 넣기
-console.log(time)
-if(todayAvail[2]){
-console.log(todayAvail[2].usingTime.split('T')[1])
-}
+//console.log(time)
+// if(todayAvail[2]){
+// console.log(todayAvail[2].usingTime.split('T')[1])
+// }
 
 if(grade===0){gradeCost=cost1}
 else if (grade===1){gradeCost=cost2}
@@ -191,13 +194,14 @@ else if (grade===2){gradeCost=cost3}
           gradeCost=gradeCost*rate
 
       }
-      data.push({id:elem.usingTime.split('T')[1],title:" ",time:elem.usingTime,cost:gradeCost})
+      data.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:gradeCost})
+      //---------------------------id를 usingTime 전체다 넣어줌
     }
       
     })
 
  }
- console.log(data)
+ //console.log(data)
 
 
 //선택된 id가 여러개이다.
@@ -233,12 +237,39 @@ if (data){
  const [number, onChangePhoneNumber] = useState(phone);
 //console.log("input phone number=",number);
 
+
+//마지막 모달
+const [isModalVisible, setModalVisible] = useState(false);
+
+const toggleModal = () => {
+  setModalVisible(!isModalVisible);
+};
+
+let reserveds=[]//예약된 allocation들
 //예약하기 버튼
 const onPressedFin=()=>{
-  console.log("input phone number=",number);//전화번호 db에 저장
-  //예약인원 db에저장? 예약된 타임 예약안되도록 처리
-  //한번더 예약정보 확인하도록 모달로 띄워주기
-  //가격정보 bookingtable에 저장하기
+ 
+  /*예약된 타임 다른데서 예약안되도록 처리 allocation table에 false로 변경*/
+/*booking table에 전화번호, 가격정보 저장 */ 
+  allocationTable.allocations.map((elem)=>{
+   if( elem.facilityId===value){
+     if(selectedId.includes(elem.usingTime)){//elem.usingTime이 selectedId 배열 안에 있으면
+       reserveds.push(elem)
+     }
+    
+   }
+  })
+
+const now=new Date();
+  console.log("reserveds~~~~~~~",reserveds);
+  reserveds.map((elem)=>{
+    allocationTable.modify(new allocation(value,elem.usingTime,elem.discountRateTime,false))
+   bookingTable.add(new booking(currentUserId,value,elem.usingTime,now,count,false,totalCost,number))
+  })
+  console.log("---------------------변경된",allocationTable,"?------?")
+  console.log("---------------------변경된",bookingTable)
+
+  toggleModal();//예약 완료되고 그걸 어떻게 사용자한테  보여줄지
 }
 
   return (
@@ -300,11 +331,11 @@ const onPressedFin=()=>{
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
 
             {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
-          <View style={{height:showTimeSelect?1000:0,width:showTimeSelect?400:0}}>
+          <View style={{height:showTimeSelect?800:0,width:showTimeSelect?400:0}}>
                      
                         <Text style={styles.SelectionTitle}>시간 선택</Text>
                           <View>
-                            <View style={{height:showTimeSelect?500:0,width:showTimeSelect?400:0}}>
+                            <View style={{height:showTimeSelect?300:0,width:showTimeSelect?400:0}}>
                           <ScrollView horizontal={true} style={{ width: "100%" }} bounces={false}>
                                 <FlatList
                                   data={data}
@@ -337,17 +368,38 @@ const onPressedFin=()=>{
 
       <View>
       <Text style={styles.SelectionTitle}>공간사용료</Text>
-      <Text style={styles.SelectionTitle}>₩ {totalCost*count}</Text>
+      <Text style={styles.SelectionTitle}>₩ {totalCost}</Text>
       </View>
       <TouchableOpacity 
       style={{marginHorizontal:width/3}}
-      onPress={onPressedFin}
+      onPress={toggleModal}
       >
         <Text style={{fontSize:30,fontWeight:'bold'}}>예약하기</Text>
         </TouchableOpacity>
           </View>
 
-        
+    
+      <Modal 
+      isVisible={isModalVisible}
+      backdropColor="white"
+      style={{borderWidth:1,borderColor:'grey',marginVertical:height*0.25}}
+      backdropOpacity={0.9}
+      >
+       
+          <Text style={{...styles.SelectionTitle,fontSize:20}}>예약자 이름: {name}</Text>
+          <Text style={{...styles.SelectionTitle,fontSize:20}}>예약 시설: {selectedDetailedFacility?selectedDetailedFacility[0].name:"한성대 체육관"}</Text>
+          <Text style={{...styles.SelectionTitle,fontSize:20}}>예약 시간: {selectedId.map((e)=>{return "\n"+e.split('T')[0]+"일 "+e.split('T')[1]+"시"})}</Text>
+          <Text style={{...styles.SelectionTitle,fontSize:20}}>예약자 전화번호: {number}</Text>
+          <Text style={{...styles.SelectionTitle,fontSize:20}}>인원: {count}</Text>
+          <Text style={{...styles.SelectionTitle,fontSize:20}}>가격: {totalCost+"₩"}</Text>
+
+            <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+           <TouchableOpacity onPress={onPressedFin} ><Text style={styles.SelectionTitle}>예약하기</Text></TouchableOpacity> 
+           <TouchableOpacity onPress={toggleModal} ><Text style={styles.SelectionTitle}>취소</Text></TouchableOpacity> 
+              </View>
+         
+         
+      </Modal>
 
 
     </ScrollView>
@@ -360,7 +412,7 @@ const styles = StyleSheet.create({
 
   /*예약 대상 시설 이름*/
   title:{
-    paddingVertical:15,
+    paddingTop:15,
     paddingHorizontal:20,
     fontWeight:'bold',
     fontSize:30,
