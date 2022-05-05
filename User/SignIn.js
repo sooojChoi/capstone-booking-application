@@ -4,20 +4,44 @@
 import { StyleSheet, Text, View,TextInput,Button,KeyboardAvoidingView,TouchableOpacity,Keyboard
   ,ScrollView,Dimensions, SafeAreaView
  } from 'react-native';
- import React,{useState,useRef,useCallback} from "react";
+ import React,{useState,useRef,useCallback, useEffect} from "react";
  import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
  import DropDownPicker from 'react-native-dropdown-picker';
  import {FacilityTable} from '../Table/FacilityTable';
  import { UserTable } from '../Table/UserTable';
  import { user } from "../Category";
  import Toast from 'react-native-easy-toast'
+ import { Feather } from '@expo/vector-icons';
+ import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import SearchFacility from './searchFacility';
 
 /*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. */
 const {height,width}=Dimensions.get("window");
+const Stack = createStackNavigator();
 
-export default function SignIn() {
+export default function SignUpNavigation() {
+  return(
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="userSignUp">
+        <Stack.Screen
+          name="UserSignUp"
+          component={SignIn}
+          options={{ title: '회원 가입' }} 
+        />
+        <Stack.Screen
+          name="searchFacility"
+          component={SearchFacility}
+          options={{ title: '시설 검색' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
+}
 
-  facilityTable=new FacilityTable()
+
+function SignIn({navigation, route}) {
+  const facilityTable=new FacilityTable()
   const userTable=new UserTable();
 
   const [InputName,setInputName]=useState();//입력된 이름
@@ -56,6 +80,7 @@ export default function SignIn() {
   const [isDuplicated,setIsDuplicated]=useState(true);// id중복검사
   const [InputId,setInputId]=useState();//입력된 id
   const id=userTable.users.map((elem)=>{return elem.id});
+  const [facName, setFacName] = useState("");  // 가입할 시설 이름
 
   const checkId=()=>{
     if (id.includes(InputId)){
@@ -112,40 +137,97 @@ const complete=()=>{
 //모든 칸을 다 입력해야지만 유효한 정보이다.. 
 const isValid=value&&InputId&&InputName&&phone&&InputPW
 
+// 검색하려고 클릭하면 호출됨
+const searchFacOnFocus = () =>{
+  navigation.navigate('searchFacility')
+}
+
+// 시설 검색 화면으로 갔다가 돌아오면 호출된다.
+useEffect(()=>{
+  const id = route.params?.facilityId
+
+  if(id === undefined){
+    console.log("hahaha")
+  }else{
+    console.log("id: "+route.params?.facilityId)
+    setFacName(facilityTable.getsById(id)[0].name)
+    //setFacName(facilityTable.getsById(id))
+  }
+},[route.params?.facilityId])
+
+
+
+
+
   return (
     <View style={{...styles.container,}}>
          {
            // navigation 으로 헤더 생기니까 title 없앴음
            //<Text style={styles.title}>회원가입</Text>
          }
-      <SafeAreaView>
+      <SafeAreaView style={{flex:1}}>
         <ScrollView showsVerticalScrollIndicator={false}>
         {
           // 안드로이드에서 실행할 때 safeAreaView가 적용안돼서 아래의 view에 paddingTop을 20으로 해놨다.
-          // 네비게이션 연결하고 헤더 붙이면 20 없앰.
+          // 네비게이션 연결하고 헤더 붙이면 0으로...
         }
-        <View style={{paddingTop:20}}>
+        <View style={{paddingTop:0}}>
 
-          <Text style={{...styles.text,marginLeft:width/10}}>가입할 시설 선택</Text>
-      
-          <DropDownPicker
-          containerStyle={{width:width*0.8,marginLeft:width/10}}
-          open={open}
-          value={value}
-          items={items}
-          setOpen={setOpen}
-          setValue={setValue}
-          setItems={setItems}
-          placeholder="시설을 선택하세요"
-          />
-        
+          {
+            //  <DropDownPicker
+            //  containerStyle={{width:width*0.8,marginLeft:width/10}}
+            //  open={open}
+            //  value={value}
+            //  items={items}
+            //  setOpen={setOpen}
+            //  setValue={setValue}
+            //  setItems={setItems}
+            //  placeholder="시설을 선택하세요"
+            //  />
+           
+          }
+         
           <View style={styles.signInForm}>
 
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-       
               <View>
-          
- 
+
+                <View>
+                  <Text style={{...styles.text,}}>가입할 시설 검색</Text>
+                  {
+                    facName === "" || facName === null ?(
+                    <View style={{flexDirection:'row'}}>
+                      <TouchableOpacity 
+                      style={{width:width*0.8, borderWidth: 1, marginVertical:5, padding: 8,alignItems:'center',
+                        borderColor:'#828282',borderRadius:1, flexDirection:'row', justifyContent:'space-between'}}
+                        onPress={() => searchFacOnFocus()}>
+                        <Text style={{fontSize:14, color:"#828282"}}>
+                          시설 검색
+                        </Text>
+                        <Feather name="search" size={24} color="#828282" />
+                      </TouchableOpacity>
+                    </View>
+                    ) : (
+                      <View>
+                      <View style={{flexDirection:'row'}}>
+                      <TouchableOpacity 
+                        style={{width:width*0.8, borderWidth: 1, marginVertical:5, padding: 8,alignItems:'center',
+                        borderColor:'#828282',borderRadius:1, flexDirection:'row', justifyContent:'space-between'}}
+                        onPress={() => searchFacOnFocus()}>
+                        <Text style={{fontSize:14, color:"#828282"}}>
+                           {facName}
+                        </Text>
+                        <Feather name="search" size={24} color="#828282" />
+                      </TouchableOpacity>
+                      </View>
+                      <View style={{marginBottom:10}}>
+                        <Text style={styles.text}>시설</Text>
+                        <Text style={{...styles.text, fontSize:14,color:"#464646"}}>{facName}</Text>
+                      </View>
+                      </View>
+                    )
+                  }
+                  
+                </View>
  
                 <View>
                   <Text style={styles.text}>이름</Text> 
@@ -229,8 +311,6 @@ const isValid=value&&InputId&&InputName&&phone&&InputPW
                 </View>
    
                 </View>
- 
-              </TouchableWithoutFeedback>
    
         
               {
