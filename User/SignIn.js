@@ -2,7 +2,7 @@
 // 회원가입(사용자) -> 혜림
 
 import { StyleSheet, Text, View,TextInput,Button,KeyboardAvoidingView,TouchableOpacity,Keyboard
-  ,ScrollView,Dimensions
+  ,ScrollView,Dimensions, SafeAreaView
  } from 'react-native';
  import React,{useState,useRef,useCallback} from "react";
  import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
@@ -24,9 +24,6 @@ export default function SignIn() {
   //  console.log(InputName);
   const [phone,setPhone]=useState();//입력된 번호
 
-
-
-
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState();
   const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
@@ -43,9 +40,17 @@ export default function SignIn() {
   }
 
   const [InputPW,setPW]=useState();//입력된 PW
-  const [checkPW,CheckingInputPW]=useState();//재입력된 PW
+  const [checkPW,CheckingInputPW]=useState("");//재입력된 PW
+  const [CorrectedNewPW,setNewCorrect]=useState(false);// PW와 재입력된 PW일치 여부
 
-
+  const checkingPW=(value)=>{
+    console.log(value)
+    CheckingInputPW(value)
+    if (InputPW===value){
+      setNewCorrect(true);
+    }
+    else{setNewCorrect(false);}
+  }
 
 
   const [isDuplicated,setIsDuplicated]=useState(true);// id중복검사
@@ -108,110 +113,156 @@ const complete=()=>{
 const isValid=value&&InputId&&InputName&&phone&&InputPW
 
   return (
-    <View style={styles.container}>
-         
-         <Text style={styles.title}>회원가입</Text>
-   
+    <View style={{...styles.container,}}>
+         {
+           // navigation 으로 헤더 생기니까 title 없앴음
+           //<Text style={styles.title}>회원가입</Text>
+         }
+      <SafeAreaView>
+        <ScrollView showsVerticalScrollIndicator={false}>
+        {
+          // 안드로이드에서 실행할 때 safeAreaView가 적용안돼서 아래의 view에 paddingTop을 20으로 해놨다.
+          // 네비게이션 연결하고 헤더 붙이면 20 없앰.
+        }
+        <View style={{paddingTop:20}}>
 
-   
-    <Text style={{...styles.text,marginLeft:width/10}}>가입할 시설 선택</Text>
+          <Text style={{...styles.text,marginLeft:width/10}}>가입할 시설 선택</Text>
       
-         <DropDownPicker
-            containerStyle={{width:width*0.8,marginLeft:width/10}}
-             open={open}
-             value={value}
-             items={items}
-             setOpen={setOpen}
-             setValue={setValue}
-             setItems={setItems}
-             placeholder="시설을 선택하세요"
-           />
+          <DropDownPicker
+          containerStyle={{width:width*0.8,marginLeft:width/10}}
+          open={open}
+          value={value}
+          items={items}
+          setOpen={setOpen}
+          setValue={setValue}
+          setItems={setItems}
+          placeholder="시설을 선택하세요"
+          />
         
-  <View style={styles.signInForm}>
+          <View style={styles.signInForm}>
 
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
        
-       <View>
+              <View>
           
  
  
-        <View>
-            <Text style={styles.text}>이름</Text> 
-            <TextInput 
-            style={styles.input}
-            onChangeText={setInputName}
-            value={InputName}
-            />
-        </View>
+                <View>
+                  <Text style={styles.text}>이름</Text> 
+                  <TextInput 
+                  style={styles.input}
+                  onChangeText={setInputName}
+                  value={InputName}
+                  placeholder="이름을 입력해주세요."
+                  />
+                </View>
  
       
-        <View>
+                <View>
 
-          <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                <Text style={styles.text}>ID</Text> 
-                  <View style={{height:isDuplicated?0:height*0.03,width:isDuplicated?0:width*0.35
-                  }}>
-                  <Text style={{...styles.text,color:'red'}}>이미 존재하는 id</Text> 
+                  <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                    <Text style={styles.text}>ID</Text> 
+                    <View style={{height:isDuplicated?0:height*0.03,width:isDuplicated?0:width*0.35
+                      }}>
+                      <Text style={{...styles.text,color:'red'}}>이미 존재하는 id</Text> 
+                    </View>
                   </View>
-        </View>
-            <TextInput 
-            style={styles.input}
-            onChangeText={setInputId}
-            value={InputId}
-            />
-        </View>
+                  <TextInput 
+                    style={styles.input}
+                    onChangeText={setInputId}
+                    value={InputId}
+                    placeholder="아이디를 입력해주세요."
+                    />
+                </View>
  
-        <View>
-              <Text style={styles.text}>비밀번호</Text> 
-              <TextInput 
-              style={styles.input} 
-              onChangeText={setPW}
-              secureTextEntry
-              textContentType="oneTimeCode"
-              />
-        </View>
+                <View>
+                      <Text style={styles.text}>비밀번호</Text> 
+                      <TextInput 
+                      style={styles.input} 
+                      onChangeText={setPW}
+                      secureTextEntry={true}
+                      textContentType="oneTimeCode"
+                      placeholder="비밀번호를 입력해주세요."
+                      />
+                </View>
  
-      
-         <View>
-              <Text style={styles.text}>재입력    </Text> 
-              <TextInput 
-              style={styles.input}
-              onChangeText={CheckingInputPW}
-              secureTextEntry
-              textContentType="oneTimeCode"
-              />
-        </View>
+                {  // 재입력된 비번과 새 비번이 동일할 경우, 재입력에 아무것도 입력되지 않은 경우.
+                CorrectedNewPW === true || checkPW === "" ? (
+                  <View>
+                      <Text style={styles.text}>재입력    </Text> 
+                      <TextInput 
+                      style={styles.input}
+                      onChangeText={(value) => checkingPW(value)}
+                      secureTextEntry={true}
+                      textContentType="oneTimeCode"
+                      placeholder="비밀번호를 다시 입력해주세요."
+                      />
+                </View>
+                ) : (
+                  <View>
+                      <View style={{flexDirection:'row'}}>
+                        <Text style={{...styles.text, color:"#ff4141"}}>재입력</Text>
+                        <Text style={{...styles.text, color:"#ff4141", fontSize:14, marginLeft:15}}>* 일치하지 않습니다.</Text>  
+                      </View>
+            
+                      <TextInput 
+                      style={{...styles.input, borderColor:"#ff4141"}}
+                      onChangeText={(value) => checkingPW(value)}
+                      secureTextEntry={true}
+                      textContentType="oneTimeCode"
+                      placeholder="비밀번호를 다시 입력해주세요."
+                      />
+                </View>
+                )}
 
 
-        <View>
-              <Text style={styles.text}>전화번호</Text> 
-              <TextInput 
-              style={styles.input}  
-              keyboardType="numeric"
-              onChangeText={setPhone}
-              value={phone}
-              />
-           
-        </View>
+                <View>
+                      <Text style={styles.text}>전화번호</Text> 
+                      <TextInput 
+                      style={styles.input}  
+                      keyboardType="numeric"
+                      onChangeText={setPhone}
+                      value={phone}
+                      placeholder="전화번호를 입력해주세요. (' - ' 없이 입력)"
+                      />
+                  
+                </View>
    
-        </View>
+                </View>
  
-        </TouchableWithoutFeedback>
+              </TouchableWithoutFeedback>
    
         
-          <TouchableOpacity  
-          style={styles.signInBtn}
-          onPress={complete}
-          >
-                <Text style={{...styles.text,color:"white"}} >회원가입</Text>
-        </TouchableOpacity>
-        <Toast ref={toastRef} 
-      position={'center'}
-      fadeInDuration={200}
-      fadeOutDuration={2000}
-      />
+              {
+                value&&InputId&&InputName&&phone&&InputPW&&checkPW ? (
+              
+                <TouchableOpacity  
+                style={{...styles.signInBtn,}}
+                onPress={complete}
+                disabled={false}
+                >
+                  <Text style={{...styles.text,color:"white"}} >회원가입</Text>
+                </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity  
+                  style={{...styles.signInBtn, backgroundColor:"#a0a0a0"}}
+                  disabled={true}
+                  >
+                    <Text style={{...styles.text,color:"white"}} >회원가입</Text>
+                  </TouchableOpacity>
+            
+                )
+              }
+              <Toast ref={toastRef} 
+              position={'center'}
+              fadeInDuration={200}
+              fadeOutDuration={2000}
+              />
  
-        </View>    
+          </View>    
+        </View>
+        </ScrollView>
+      </SafeAreaView>
      
   </View>
   
@@ -235,28 +286,31 @@ const styles = StyleSheet.create({
   },
   /*모든 텍스트 스타일*/
   text:{
-    fontSize:20,
+    fontSize:15,
     marginBottom:5,
+    marginTop:5,
+    color:"#141414"
   },
 
   input: {
-    height: height*0.05,
     width:width*0.8,
     borderWidth: 1,
     marginVertical:5,
-    padding: 10,
-    borderColor:'grey',
+    padding: 8,
+    borderColor:'#828282',
+    borderRadius:1,
   },
   signInForm:{
     marginTop:20,
     alignItems:'center'
   },
   signInBtn:{
-    height: height*0.05,
     width:width*0.8,
     backgroundColor:"#3262D4",
     justifyContent:'center',
     alignItems:'center',
     marginTop:20,
+    paddingVertical:10,
+    borderRadius:1,
     }
 });
