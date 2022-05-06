@@ -1,29 +1,66 @@
 // 세부시설 여러개 추가하는 화면
 
 import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
-import React, {useEffect, useState, useRef, useCallback} from "react";
+import React, {useEffect, useState, useRef,} from "react";
 import Toast, {DURATION} from 'react-native-easy-toast'
-import { AntDesign } from '@expo/vector-icons';
-import { FontAwesome } from '@expo/vector-icons';
 import { FlatList } from 'react-native-gesture-handler';
+import { AntDesign } from '@expo/vector-icons';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function AdminSignUpAndAddFacility({navigation}) {
+export default function AdminSignUpAndAddFacility({navigation, route}) {
     const [facName, onChangeNameText] = useState("");  // 세부 시설 등록이면 있고, 아니면 이름 입력은 안함.
-    const [facInfo, setFacInfo] = useState({}); // 등록할 시설 정보를 담는 오브젝트
-    const [facGradeInfo, setFacGradeInfo] = useState({})  // 시설 정보인데 등급 관련된 것. (따로 저장하는 것임)
-    const [facDetailAddress, onChangeDetailAddressText] = useState("");
+    const [facInfo, setFacInfo] = useState([]); // 등록할 시설 정보를 담는 오브젝트
 
-    const [gradeSetting, setGradeSetting] = useState(false);  // 등급 기능을 사용한다면 true, 아니면 false
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
+    // '시설 추가'버튼을 누르면 동작함
     const goToDetailScene = () =>{
-        navigation.navigate('DetailAdminSignUp')
+        navigation.navigate('DetailAdminSignUp', {sort: 'add'})
     }
-    const goToNextScreen = () =>{
 
+    // '추가 완료'버튼을 누르면 동작함
+    const goToNextScreen = () =>{
+        // 테이블에 시설들 추가하고, 관리자 어플 홈 화면으로 이동함.
+
+    }
+    
+    // flatList에서 각 시설 클릭하면 호출되는 함수
+    const goToDetailSceneAgain = (name) =>{
+        navigation.navigate('DetailAdminSignUp', {sort: 'add', facilityName: name})
+    }
+
+    // 시설 상세 입력하고 돌아오면 호출됨.
+    useEffect(()=>{
+        const name = route.params?.facilityName
+    
+        if(name === undefined || name === "" || name === null){
+            console.log("nothing")
+        }else{
+            //console.log("name: "+name)
+            const list = { name: name }
+            setFacInfo(arr => [...arr, list])
+           
+           // console.log([list])
+        }
+    },[route.params?.facilityName])
+
+
+    const renderGridItem = (itemData, index) => {
+        console.log(itemData.item)
+        return (
+            <TouchableOpacity onPress={()=>goToDetailSceneAgain(itemData.item.name)}>
+              <View style={{...styles.flatListStyle, flexDirection:'row', justifyContent:'space-between'}}>
+                
+              <Text style={{fontSize:15, color:"#191919"}}>
+                  {itemData.item.name}
+              </Text>
+              <AntDesign name="right" size={22} color="#787878" />
+              </View>
+            </TouchableOpacity>
+        )
+  
     }
    
 
@@ -34,10 +71,21 @@ export default function AdminSignUpAndAddFacility({navigation}) {
                 <Text style={{...styles.normalText, }}>시설 추가</Text>
             </TouchableOpacity>
         </View>
-        <View style={{flex:1, backgroundColor: 'white'}}>
-            <FlatList>
-
-            </FlatList>
+        <View style={{flex:1, backgroundColor: 'white', borderTopColor:"#a0a0a0", borderTopWidth:1}}>
+            {
+                facInfo.length === 0 ? (
+                    <Text style={{fontSize:15, color:"#a0a0a0", alignSelf:'center', marginTop:SCREEN_HEIGHT*0.2}}>
+                        추가된 시설이 없습니다.
+                    </Text>
+                ) : (
+                    <FlatList
+                        keyExtracter={(item, index) => item.name} 
+                        data={facInfo} 
+                        renderItem={renderGridItem} 
+                        numColumns={1}>
+                    </FlatList>
+                )
+            }
         </View>
         <View>
         {isAllInfoEntered === true ? (
@@ -113,5 +161,11 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     backgroundColor:'#3262d4',
     borderRadius:8,
+  },
+  flatListStyle:{
+    borderBottomColor:"#c8c8c8",
+    borderBottomWidth:1,
+    paddingVertical:20,
+    paddingHorizontal:20
   }
   });

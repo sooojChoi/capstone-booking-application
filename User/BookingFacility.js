@@ -350,15 +350,6 @@ const now=new Date();
                 disabledDates={[minDate,new Date(2022, 3, 15)]}
                 
               />
-                {
-                (selectedStartDate === null || value === null)  ? (
-                  <View style={{paddingVertical:70}}>
-                  </View>
-                ) : (
-                  <View style={{paddingVertical:0}}>
-                  </View>
-                )
-              }
 
 
 </View>    
