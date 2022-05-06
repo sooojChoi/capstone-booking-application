@@ -31,7 +31,6 @@ export class BookingTable {
             if(this.bookings[i].userId == booking.userId){
                 if(this.bookings[i].facilityId == booking.facilityId){
                     if(this.bookings[i].usingTime == booking.usingTime){
-                        console.log("시간같은뎅")
                         this.bookings[i] = booking
                         return
                     }
@@ -126,4 +125,14 @@ export class BookingTable {
         return result
     }
 
+    // 취소내역 불러오기
+    getsAllWithNotCancel(){
+        var result = []
+        for(var existing of this.bookings){
+            if(existing.cancel == false){
+                result.push(existing)
+            }
+        }
+        return result
+    }
 }

@@ -29,13 +29,17 @@ export default function BookingFacility() {
 
 
 
-  //dropDownPicker data받아오는 부분
+
+  /*facilityTable의 정보를 받아옴*/ 
   const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
+
+   //dropDownPicker data받아오는 부분
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState(facilityArray);
 
-//시간 할인되는거
+  /*discountRateTable의 정보를 가져옴*/
+  //시간 할인되는거
   const dc=discountRateTable.gets(value)
   let rate,time;
   if(dc[0]){
@@ -44,20 +48,22 @@ export default function BookingFacility() {
   }
 
 
-
-  const currentUserId="yjb";//현재 user의 id(임시)
+    /*userTable의 정보를 가져옴*/
+  const currentUserId="leemz22";//현재 user의 id(임시)
   const currentUser=userTable.getsById(currentUserId); //현재 user의 정보 가져옴
   let allowDate,name,phone=null;
-  console.log(currentUser);
+  //console.log(currentUser);
   if(currentUser[0]){
     allowDate=currentUser[0].allowDate
     name=currentUser[0].name
     phone=currentUser[0].phone
   }
+      //console.log("--------------------allowdate",allowDate)
 
-
+  /*permissionTable의 정보를 가져옴 */
   const userPermission=permissionTable.getsByUserId(currentUserId)
-  const thisUserPermission=userPermission.map((elem)=>{if(elem.facilityId===value) return elem})//현재시설에서 등급 가져오기
+  let thisUserPermission=[]
+  userPermission.map((elem)=>{if(elem.facilityId===value) thisUserPermission.push(elem)})//현재시설에서 등급 가져오기
   //console.log("-------------",thisUserPermission)
   let grade;
   if(thisUserPermission[0]){
@@ -68,25 +74,7 @@ export default function BookingFacility() {
   //예약 후 총 금액
   let totalCost=0;
 
-  //달력에서 예약 가능기간 설정
-  const minDate = new Date(); // Today
-  //최대 7일 뒤까지 예약 가능
-  var now = new Date();
-  var bookinglimit = new Date(now.setDate(now.getDate() + 40));
-  const maxDate = new Date(bookinglimit);
-
-  //날짜 선택했는지 안했는지 확인하는 부분
-  const [ selectedStartDate,onDateChange]=useState(null);
-  const startDate = selectedStartDate ? selectedStartDate.toString() : '';
-
- 
-
-
-  //날짜와 시설이 모두 선택된 상황에서만 시간선택 할 수 있도록 한다.
-  let showTimeSelect=selectedStartDate && value;
   
-
-
   //dropdownpicker로 선택된 시설 정보 가져오는 부분
   let selectedDetailedFacility=null;
   //console.log(value)
@@ -95,7 +83,9 @@ export default function BookingFacility() {
   }
   //console.log(selectedDetailedFacility);
   
-  let openTime,unitTime,cost1,cost2,cost3,closeTime,maxPlayers=null;
+
+  let openTime,unitTime,cost1,cost2,cost3,closeTime,maxPlayers,booking1,booking2,booking3=null;
+
   if (selectedDetailedFacility){
   openTime=selectedDetailedFacility[0].openTime
   unitTime=selectedDetailedFacility[0].unitTime
@@ -104,7 +94,45 @@ export default function BookingFacility() {
   cost3=selectedDetailedFacility[0].cost3
   closeTime=selectedDetailedFacility[0].closeTime
   maxPlayers=selectedDetailedFacility[0].maxPlayers
+  booking1=selectedDetailedFacility[0].booking1
+  booking2=selectedDetailedFacility[0].booking2
+  booking3=selectedDetailedFacility[0].booking3
   }
+  let limit=booking3?booking3:0;//등급제가 아닌경우
+  let gradeCost=cost3;
+
+  if(grade===0){gradeCost=cost1;  limit=booking1;}
+  else if (grade===1){gradeCost=cost2;  limit=booking2;}
+  else if (grade===2){gradeCost=cost3;  limit=booking3;}
+  //등급이 없는경우 3등급으로 처리
+  
+  
+
+ 
+
+//달력에서 예약 가능기간 설정
+const minDate = new Date(); // Today
+//등급에 따른 예약 가능일 지정
+
+//최대 limit일 뒤에 예약 가능
+var now = new Date();
+var bookinglimit = new Date(now.setDate(now.getDate() + limit));
+const maxDate = new Date(bookinglimit);
+
+//console.log(bookinglimit)
+
+
+//날짜 선택했는지 안했는지 확인하는 부분
+const [ selectedStartDate,onDateChange]=useState(null);
+const startDate = selectedStartDate ? selectedStartDate.toString() : '';
+
+
+
+
+//날짜와 시설이 모두 선택된 상황에서만 시간선택 할 수 있도록 한다.
+let showTimeSelect=selectedStartDate && value;
+
+
 
   /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
 
@@ -153,7 +181,7 @@ const renderItem = ({ item }) => {
     />
   );
 };
-console.log(selectedId)
+//console.log(selectedId)
 
 //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
 
@@ -170,7 +198,8 @@ if(selectedAllo){
   });
 }
 
-let gradeCost=cost3;
+
+
 //console.log("---------오늘 가능한거",todayAvail)//선택된 날짜에 가능한 object들 띄움(avilable이 true인건 아직 모름)
 //if time이 usingTime.split('T')[1]이거면 가격을 할인률 곱해서 cost에 넣기
 //console.log(time)
@@ -178,10 +207,6 @@ let gradeCost=cost3;
 // console.log(todayAvail[2].usingTime.split('T')[1])
 // }
 
-if(grade===0){gradeCost=cost1}
-else if (grade===1){gradeCost=cost2}
-else if (grade===2){gradeCost=cost3}
-//등급이 없는경우 3등급으로 처리
 
 
 
@@ -325,7 +350,7 @@ const now=new Date();
                 disabledDates={[minDate,new Date(2022, 3, 15)]}
                 
               />
-              
+
 
 </View>    
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
@@ -346,7 +371,11 @@ const now=new Date();
                                 />
                          </ScrollView>
                          </View>
+
+                       
+
           </View>
+       
           <View>
       {/*예약자가 회원인 경우 value값으로 전화번호 띄워줌*/ }
       <Text style={styles.SelectionTitle}>예약자 전화번호</Text>
@@ -451,4 +480,5 @@ const styles = StyleSheet.create({
   },
 
 });
+
 

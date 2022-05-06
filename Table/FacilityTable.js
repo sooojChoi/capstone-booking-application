@@ -19,37 +19,37 @@ export class FacilityTable {
         new facility("hanClass3", "한성 강의실 103호", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000),
     ];
 
-    add(facility){
-        for(var existing of this.facilitys){
-            if(existing.id == facility.id){
+    add(facility) {
+        for (var existing of this.facilitys) {
+            if (existing.id == facility.id) {
                 return
             }
         }
         this.facilitys.push(facility)
     }
 
-    modify(facility){
-        for(var i=0;i<this.facilitys.length;i++){
-            if(this.facilitys[i].id == facility.id){
+    modify(facility) {
+        for (var i = 0; i < this.facilitys.length; i++) {
+            if (this.facilitys[i].id == facility.id) {
                 this.facilitys[i] = facility
                 return
             }
         }
     }
 
-    remove(id){
-        for(var i=0;i<this.facilitys.length;i++){
-            if(this.facilitys[i].id == id){
+    remove(id) {
+        for (var i = 0; i < this.facilitys.length; i++) {
+            if (this.facilitys[i].id == id) {
                 this.facilitys.splice(i, 1)
                 return
             }
         }
     }
 
-    getsByName(name){
+    getsByName(name) {
         var result = []
-        for(var existing of this.facilitys){
-            if(existing.name == name){
+        for (var existing of this.facilitys) {
+            if (existing.name == name) {
                 result.push(existing)
             }
         }
@@ -68,8 +68,8 @@ export class FacilityTable {
 
     getsById(id){
         var result = []
-        for(var existing of this.facilitys){
-            if(existing.id == id){
+        for (var existing of this.facilitys) {
+            if (existing.id == id) {
                 result.push(existing)
             }
         }
@@ -78,18 +78,27 @@ export class FacilityTable {
 
     getCostById(id){
         var result = []
-        for(var existing of this.facilitys){
-            if(existing.id == id){
+        for (var existing of this.facilitys) {
+            if (existing.id == id) {
                 result.push(existing.cost1)
             }
         }
         return result
     }
-    getsPlayerById(id){
+    getsPlayerById(id) {
+        var result = []
+        for (var existing of this.facilitys) {
+            if (existing.id == id) {
+                result.push(existing.maxPlayers)
+            }
+        }
+        return result
+    }
+    getNameById(id){
         var result = []
         for(var existing of this.facilitys){
             if(existing.id == id){
-                result.push(existing.maxPlayers)
+                result.push(existing.name)
             }
         }
         return result
