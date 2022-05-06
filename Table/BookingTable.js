@@ -31,7 +31,6 @@ export class BookingTable {
             if(this.bookings[i].userId == booking.userId){
                 if(this.bookings[i].facilityId == booking.facilityId){
                     if(this.bookings[i].usingTime == booking.usingTime){
-                        console.log("시간같은뎅")
                         this.bookings[i] = booking
                         return
                     }
