@@ -126,4 +126,14 @@ export class BookingTable {
         return result
     }
 
+    // 취소내역 불러오기
+    getsAllWithNotCancel(){
+        var result = []
+        for(var existing of this.bookings){
+            if(existing.cancel == false){
+                result.push(existing)
+            }
+        }
+        return result
+    }
 }
