@@ -1,12 +1,13 @@
 // 회원 탈퇴(사용자) -> 혜림
 
 import { StyleSheet, Text, View,TextInput,TouchableOpacity,
-    Keyboard,ScrollView,Dimensions,Alert
+    Keyboard,ScrollView,Dimensions,Alert, SafeAreaView
 } from 'react-native';
 import React,{useState,useRef,useCallback} from "react";
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import Toast from 'react-native-easy-toast'
 import { UserTable } from '../Table/UserTable';
+import { AntDesign } from '@expo/vector-icons';
 
 const {height,width}=Dimensions.get("window");
 
@@ -16,11 +17,8 @@ export default function DeleteAccount(){
   const userTable=new UserTable();
   const currentUserId="hrr";//현재 user의 id(임시)
 
-  const [InputPW,setPW]=useState();//입력된 PW
+  const [InputPW,setPW]=useState("");//입력된 PW
   const currentUserPW="1234"//현재 User의 임시 PW
-
-
-
 
   const toastRef = useRef(); // toast ref 생성
  // Toast 메세지 출력
@@ -63,69 +61,76 @@ const checkPW=()=>{
   
   if (InputPW===currentUserPW){alertBtn()}
   else{showToast()}
-
-
 }
 
 
 
 return(   
-<View style={styles.container}>
+<SafeAreaView style={styles.container}>
+  <ScrollView showsVerticalScrollIndicator={false}>
       
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-   <View>
-         <Text style={styles.title}>회원 탈퇴 (계정해지)</Text>
-
-
-
-     <View style={styles.line}>
-         <Text style={{fontSize:25,marginVertical:25,marginHorizontal:20}}>
-             탈퇴 시 사용중인 계정은 복구가 불가능하고 계정정보는 즉시 폐기됩니다.
-            </Text> 
-     </View>
-     <View style={{marginHorizontal:10}}>
-         <Text style={styles.text}>탈퇴사유</Text> 
-         <TextInput 
-         style={styles.input} 
-         multiline={true} 
-         numberOfLines={4}
-         />
-     </View>
-     <View style={styles.line}>
-         <Text style={{fontSize:25,marginVertical:25,marginHorizontal:20}}>
-         사용중인 비밀번호를 입력하시면 탈퇴할 수 있습니다.
-            </Text> 
-     </View>
-     <View style={styles.line}>
-           <Text style={styles.text}>비밀번호  </Text> 
-           <TextInput 
-           style={styles.PwInput} 
-           onChangeText={setPW}
-           secureTextEntry
-           textContentType="oneTimeCode"
-           />
-     </View>
-    
-
-     </View>
-     </TouchableWithoutFeedback>
-
-
-   
-      
-       <TouchableOpacity  
-       style={styles.DeleteBtn}
-       onPress={checkPW}
-       //비밀번호가 제대로 입력됐으면 alertBtn, 아니면 다시 입력하라는 toast
-       >
-             <Text style={{...styles.text,color:'white'}}>탈퇴 하기</Text>
-     </TouchableOpacity>
-     <Toast ref={toastRef} 
-      position={'center'}
-      />
-      
-    
-</View>
+  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <View>
+     {
+       // 네비게이션으로 위에 헤더가 들어가므로 타이틀 지웠음.
+       // <Text style={styles.title}>회원 탈퇴 (계정해지)</Text>
+     }
+      <View style={styles.line}>
+        <AntDesign name="infocirlceo" size={20} color="#505050" />
+        <Text style={{fontSize:15,color:"#505050",marginRight:20, marginLeft:10}}>
+            탈퇴 시 사용 중인 계정은 복구가 불가능하고 계정 정보는 즉시 폐기됩니다.
+        </Text> 
+      </View>
+      <View style={{marginTop:20,alignItems:"center"}}>
+          <View style={{width:width*0.8}}>
+            <Text style={{...styles.text, marginLeft:0}}>탈퇴 사유</Text> 
+          </View>
+          <TextInput 
+          style={{...styles.input}} 
+          multiline={true} 
+          numberOfLines={4}
+          autoComplete={false}
+          maxLength={150}
+          placeholder="탈퇴 사유를 입력해주세요."
+          />
+      </View>
+      <View style={{marginTop:40,alignItems:"center"}}>
+        <View style={{width:width*0.8}}>
+          <Text style={{...styles.text, marginLeft:0}}>사용 중인 비밀번호를 입력해주세요.</Text> 
+        </View>
+        <TextInput 
+            style={styles.PwInput} 
+            onChangeText={setPW}
+            secureTextEntry={true}
+            textContentType="oneTimeCode"
+            placeholder='비밀번호'
+            />
+      </View>
+    </View>
+  </TouchableWithoutFeedback>
+  <View style={{alignItems:'center', marginTop:70}}>
+      { InputPW === "" ? (
+        <TouchableOpacity  
+        style={{...styles.DeleteBtn, backgroundColor:"#a0a0a0"}}
+        disabled={true}
+        >
+          <Text style={{fontSize:15, color:'white'}}>탈퇴 하기</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity  
+        style={styles.DeleteBtn}
+        onPress={checkPW}       //비밀번호가 제대로 입력됐으면 alertBtn, 아니면 다시 입력하라는 toast
+        disabled={false}
+        >
+          <Text style={{fontSize:15, color:'white'}}>탈퇴 하기</Text>
+        </TouchableOpacity>
+      )}
+  </View>
+  <Toast ref={toastRef} 
+    position={'center'}
+  />
+  </ScrollView>
+</SafeAreaView>
 
 
 
@@ -138,7 +143,7 @@ return(
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      alignItems:'center',
+     // alignItems:'center',
     },
     title:{
       marginTop:40,
@@ -149,35 +154,45 @@ const styles = StyleSheet.create({
     },
     /*모든 텍스트 스타일*/
     text:{
-      paddingStart:18,
-      fontSize:20,
+    //  paddingStart:18,
+      marginLeft:20,
+      fontSize:15,
+      color:"#141414"
     },
     line:{
       alignItems:'center',
       flexDirection:"row",
-  
+      marginHorizontal:20,
+     // marginLeft:20,
+    //  marginRight:20,
+      marginTop:25,
     },
     PwInput: {
-      height: 40,
-      width:220,
-      margin: 12,
+      //height: 40,
+      width:width*0.8,
       borderWidth: 1,
-      padding:10,
+      padding:8,
+      borderColor:"#828282",
+      borderRadius:3,
+      marginTop:10,
     },
     input: {
         height: 100,
-        width:width*0.9,
-        margin: 12,
-        borderWidth: 1,
+        width:width*0.8,
+        marginTop: 10,
+        borderWidth:1,
+        borderColor:"#828282",
+        borderRadius:3,
         padding:10,
       },
       DeleteBtn:{
-        height: height*0.05,
-        width:width*0.8,
+        paddingVertical:12,
+       // paddingHorizontal:30,
+        width:width*0.6,
         backgroundColor:"#3262D4",
         justifyContent:'center',
         alignItems:'center',
-        marginTop:20,
+        borderRadius:8,
         }
   });
   

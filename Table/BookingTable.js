@@ -3,14 +3,14 @@ import { booking, user } from "../Category";
 
 export class BookingTable {
     bookings = [
-        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, false),
-        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, true),
-        new booking("yjb", "hante1", "2022-05-26T12:00", "2022-05-25T09:00", 4, false),
-        new booking("yjb", "hante1", "2022-05-27T12:00", "2022-05-25T09:00", 4, false),
-        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, false),
-        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, true),
-        new booking("sbp", "hante2", "2022-05-28T12:00", "2022-05-25T12:00", 6, true),
-        new booking("yjb", "hante3", "2022-05-28T12:00", "2022-05-25T12:00", 6, true),
+        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, false,20000,"010-1234-5678"),
+        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, true,20000,"010-1234-5679"),
+        new booking("yjb", "hante1", "2022-05-26T12:00", "2022-05-25T09:00", 4, false,30000,"010-0983-5678"),
+        new booking("yjb", "hante1", "2022-05-27T12:00", "2022-05-25T09:00", 4, false,10000,"010-0983-3333"),
+        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, false,8000,"010-1234-0983"),
+        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, true,12000,"010-4321-5678"),
+        new booking("sbp", "hante2", "2022-05-28T12:00", "2022-05-25T12:00", 6, true,21000,"010-1256-5678"),
+        new booking("yjb", "hante3", "2022-05-28T12:00", "2022-05-25T12:00", 6, true,40000,"010-1414-5678"),
     ];
 
     add(booking){

@@ -16,6 +16,8 @@ import AdminSignUp from './Admin/AdminSignUp';
 import SelectFacilitySort from './Admin/AdminSignUp';
 import DetailAdminSignUp from './Admin/DetailAdminSignUp';
 import AdminSignUpAndAddFacility from './Admin/AdminSignUpAndAddFacility';
+import SearchFacility from './User/searchFacility';
+import SignUpNavigation from './User/SignIn';
 
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
@@ -29,6 +31,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
  
   //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
+
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
   //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
   //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
@@ -44,9 +47,11 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return <MyBookingList></MyBookingList> // 예약 내역(유진)
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
-  //return (<SignIn></SignIn>) // 회원가입(혜림)
-   
-  return (<View></View>) // 에러 방지 View
+
+  //return (<SearchFacility></SearchFacility>) // 회원가입 -> 시설 검색(수진)
+  //return (<SignUpNavigation></SignUpNavigation>) // 회원가입(수진, 혜림)
+
+  //return (<View></View>) // 에러 방지 View
 }
 
 const styles = StyleSheet.create({

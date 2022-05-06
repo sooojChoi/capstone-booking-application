@@ -2,15 +2,21 @@ import { facility } from "../Category";
 
 export class FacilityTable {
     facilitys = [
-        new facility("hante1", "한성테니스장1", 10, 22, 1, 1, 6, 21, 14, 7, 4000, 7000, 10000),
-        new facility("hante2", "한성테니스장2", 10, 22, 1, 1, 6, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hante3", "한성테니스장3", 10, 22, 1, 2, 6, 21, 14, 7, 6000, 7000, 10000),
-        new facility("hanfs1", "한성풋살장1", 10, 22, 1, 4, 6, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hanfs2", "한성풋살장2", 10, 22, 1, 4, 6, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hanfs3", "한성풋살장3", 10, 22, 1, 6, 6, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hanfs4", "한성풋살장4", 10, 22, 1, 6, 6, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hanhk1", "한성하키장1", 10, 22, 1, 8, 10, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hanhk2", "한성하키장2", 10, 22, 1, 8, 10, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hante1", "한성테니스장1", 10 , 22 , 1, 1,6, 21, 14, 7, 4000, 7000, 10000),
+        new facility("hante2", "한성테니스장2", 10 , 22 , 1, 1,6, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("hante3", "한성테니스장3", 10 , 22 , 1, 2,6, 21, 14, 7, 6000, 7000, 10000), 
+        new facility("hanfs1", "한성풋살장1", 10 , 22 , 1,4, 6, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hanfs2", "한성풋살장2", 10 , 22 , 1,4, 6, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("hanfs3", "한성풋살장3", 10 , 22 , 1, 6,6, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("hanfs4", "한성풋살장4", 10 , 22 , 1, 6,6, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hanhk1", "한성하키장1", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("hanhk2", "한성하키장2", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000),
+        new facility("seoulStudyRoom1", "서울 스터디룸1", 10 , 22 , 1, 6,6, 21, 14, 7, 5000, 7000, 10000),
+        new facility("seoulStudyRoom2", "서울 스터디룸2", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("seoulStudyRoom3", "서울 스터디룸3", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hanClass1", "한성 강의실 101호", 10 , 22 , 1, 6,6, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hanClass2", "한성 강의실 102호", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("hanClass3", "한성 강의실 103호", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000),
     ];
 
     add(facility) {
@@ -50,7 +56,17 @@ export class FacilityTable {
         return result
     }
 
-    getsById(id) {
+    getsByKeyWord(word){
+        var result = []
+        for(var existing of this.facilitys){
+            if(existing.name.includes(word)){
+                result.push(existing)
+            }
+        }
+        return result
+    }
+
+    getsById(id){
         var result = []
         for (var existing of this.facilitys) {
             if (existing.id == id) {
@@ -59,7 +75,8 @@ export class FacilityTable {
         }
         return result
     }
-    getCostById(id) {
+
+    getCostById(id){
         var result = []
         for (var existing of this.facilitys) {
             if (existing.id == id) {
