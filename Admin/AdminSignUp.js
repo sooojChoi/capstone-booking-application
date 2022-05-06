@@ -22,7 +22,7 @@ export default function AdminSignUptNavigation() {
           <Stack.Screen
             name="AdminSignUp"
             component={AdminSignUp}
-            options={{ title: '회원 가입' }} 
+            options={{ title: '시설 등록' }} 
           />
           <Stack.Screen
             name="SelectFacilitySort"
@@ -145,7 +145,7 @@ function AdminSignUp({navigation}) {
 
 function SelectFacilitySort({navigation, route}) {
     const goToDetailScene = () =>{
-      navigation.navigate('DetailAdminSignUp')
+      navigation.navigate('DetailAdminSignUp', {sort: 'final', name: null})
       //navigation.reset({routes: [{name: 'AdminSignUpAndAddFacility'}]})
     }
     const goToAddFacilityScene = () =>{

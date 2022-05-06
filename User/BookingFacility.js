@@ -325,7 +325,7 @@ const now=new Date();
                 disabledDates={[minDate,new Date(2022, 3, 15)]}
                 
               />
-
+              
 
 </View>    
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
