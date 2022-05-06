@@ -48,20 +48,20 @@ function SignIn({navigation, route}) {
   //  console.log(InputName);
   const [phone,setPhone]=useState();//입력된 번호
 
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState();
-  const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
-  const [items, setItems] = useState(facilityArray);
-  let selectedFacility=null;
-  let selectedFacilityname;
+  //const [open, setOpen] = useState(false);
+  //const [value, setValue] = useState();
+  //const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
+ // const [items, setItems] = useState(facilityArray);
+ // let selectedFacility=null;
+ // let selectedFacilityname;
 
-  if(value){
-    const array=facilityTable.getsById(value);
-     selectedFacility=array[0] //선택된 1개의 객체만 가져옴
-     if (selectedFacility){
-      selectedFacilityname=selectedFacility["name"]
-    }
-  }
+  // if(value){
+  //   const array=facilityTable.getsById(value);
+  //    selectedFacility=array[0] //선택된 1개의 객체만 가져옴
+  //    if (selectedFacility){
+  //     selectedFacilityname=selectedFacility["name"]
+  //   }
+  // }
 
   const [InputPW,setPW]=useState();//입력된 PW
   const [checkPW,CheckingInputPW]=useState("");//재입력된 PW
@@ -135,7 +135,7 @@ const complete=()=>{
   
 }
 //모든 칸을 다 입력해야지만 유효한 정보이다.. 
-const isValid=value&&InputId&&InputName&&phone&&InputPW
+const isValid=(facName!="" && facName != undefined)&&InputId&&InputName&&phone&&InputPW
 
 // 검색하려고 클릭하면 호출됨
 const searchFacOnFocus = () =>{
@@ -314,7 +314,7 @@ useEffect(()=>{
    
         
               {
-                value&&InputId&&InputName&&phone&&InputPW&&checkPW ? (
+                (facName!="" && facName != undefined)&&InputId&&InputName&&phone&&InputPW&&checkPW ? (
               
                 <TouchableOpacity  
                 style={{...styles.signInBtn,}}
