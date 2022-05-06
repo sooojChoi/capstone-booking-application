@@ -1,7 +1,7 @@
 // 얘역 내역(사용자) -> 유진
 
 import React, {useState, createRef} from 'react';
-import { Button, StyleSheet, Text, TextInput, View, FlatList, Alert } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
 import {FacilityTable} from '../Table/FacilityTable';
 import {BookingTable} from '../Table/BookingTable';
 import { booking } from '../Category';
@@ -21,14 +21,14 @@ export default function App() {
   //예약내역
   const yItem = (itemData) => {
     const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
-    console.log('user'+itemData.item.userId)
+    const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
 
-    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
-    <Text style={styles.text3}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
+    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: 350, height: 75,}}>
+    <Text style={styles.text3}>{facilitieName} {itemData.item.usingTime}</Text>
 
     <View style={{flexDirection:'row',}}>
       <Text style={styles.text3}>{facilitieCost}W, 인원{itemData.item.usedPlayers}명</Text>
-      <Button title='예약취소' onPress={() => Alert.alert(                    //Alert를 띄운다
+      <TouchableOpacity style={styles.ButtonStyle} onPress={() => Alert.alert(                    //Alert를 띄운다
     "주의",                    // 첫번째 text: 타이틀 제목
     "예약을 취소하시겠습니까?",                         // 두번째 text: 그 밑에 작은 제목
     [                              // 버튼 배열
@@ -45,7 +45,9 @@ export default function App() {
 //new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true)
     ],
     { cancelable: false }
-  )}/>
+  )}>
+    <Text style={{fontSize:14, color:'white'}}>예약취소</Text>
+    </TouchableOpacity>
       {/* <IconButton type={Images.delete} /> */}
       
     </View>
@@ -61,8 +63,9 @@ export default function App() {
 
   const nItem = (itemData) => {
     const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
-    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: 350, height: 88,}}>
-    <Text style={styles.text4}>{itemData.item.facilityId} {itemData.item.usingTime}</Text>
+    const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
+    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: 350, height: 75,}}>
+    <Text style={styles.text4}>{facilitieName} {itemData.item.usingTime}</Text>
 
     <View style={{flexDirection:'row',}}>
       <Text style={styles.text4}>{facilitieCost}W, 인원{itemData.item.usedPlayers}명</Text>
@@ -76,7 +79,8 @@ export default function App() {
   return (
 
     // 예약내역
-    <View style={styles.container}>
+    <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
+    <View>
 
       <View style={{padding: 10, margin: 8}}>
       <Text style={styles.text2}>예약내역</Text>
@@ -85,7 +89,6 @@ export default function App() {
       <FlatList
       data={bookings}
       renderItem={yItem}
-      
       />
       </View>
 
@@ -104,16 +107,11 @@ export default function App() {
       </View>
 
     </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   text1: {
     fontSize: 36,
     margin: 20,
@@ -124,11 +122,11 @@ const styles = StyleSheet.create({
     height: 40,
   },
   text3: {
-    fontSize: 18,
+    fontSize: 15,
     margin: 5,
   },
   text4: {
-    fontSize: 18,
+    fontSize: 15,
     margin: 5,
     color: '#999',
   },
@@ -149,6 +147,17 @@ const styles = StyleSheet.create({
     height: 38,
     width: 256,
     marginLeft: 5,
+  },
+  ButtonStyle:{
+    backgroundColor:'#3262d4',
+   // justifyContent:'space-around',
+    alignSelf:'flex-start',
+    borderRadius:8,
+    padding: 5,
+    paddingLeft:10,
+    paddingRight:10,
+    marginBottom:5,
+    marginLeft:140
   },
 
 });

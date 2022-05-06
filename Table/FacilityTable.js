@@ -94,4 +94,13 @@ export class FacilityTable {
         }
         return result
     }
+    getNameById(id){
+        var result = []
+        for(var existing of this.facilitys){
+            if(existing.id == id){
+                result.push(existing.name)
+            }
+        }
+        return result
+    }
 }
