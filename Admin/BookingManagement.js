@@ -2,7 +2,7 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "react-native-modal";
 import CalendarPicker from 'react-native-calendar-picker';
 import { AntDesign } from '@expo/vector-icons';
@@ -34,115 +34,193 @@ export default function BookingManagementNavigation() {
       </Stack.Navigator>
     </NavigationContainer>
   )
-}
+};
 
 function BookingManagement({ navigation }) {
   // DB Table
   const bookingTable = new BookingTable()
-  const booking = bookingTable.bookings // -> 취소 내역만 가져오도록 클래스 함수 만들기
+  const booking = bookingTable.getsAllWithNotCancel() // 취소되지 않은 예약 내역만 가져옴
   const facilityTable = new FacilityTable()
   const facility = facilityTable.facilitys
 
   const [filter, setFilter] = useState("전체 예약 내역") // 필터링 된 내역(시설, 날짜)를 보여줌
   const newFacilityCheck = [] // facilityCheck 값 변경을 위한 전역 변수
-  const [facilityCheck, setFacilityCheck] = useState([]); // 시설 선택 Modal - Check List 구현
+  const [oldFacilityCheck, setOldFacilityCheck] = useState([]) // facilityCheck 값 변경 취소를 위한 변수
+  const [isFacility, setIsFacility] = useState(false) // 시설 선택 Modal - 확인(true) / 취소(false)
+  const [facilityCheck, setFacilityCheck] = useState([]) // 시설 선택 Modal - Check List 구현
+  const [checkListInfo, setCheckListInfo] = useState() // 선택된 시설 목록
 
   // 시설 선택 Modal에 출력할 시설 목록(+ 체크리스트)
-  const getFacility = () => {
+  const getFacilityList = () => {
     newFacilityCheck.length = 0
-    facility.map((temp) => {
-      const id = temp.id
-      const name = temp.name
+    facility.map((facility) => {
+      const id = facility.id
       const isCheck = false
       newFacilityCheck.push({
-        id: id, name: name, isCheck: isCheck,
+        id: id, isCheck: isCheck
       })
-    });
-    setFacilityCheck(...[newFacilityCheck]);
+    })
+    setFacilityCheck(...[newFacilityCheck])
+    setOldFacilityCheck(...[newFacilityCheck])
+
   }
 
+  useEffect(() => {
+    getFacilityList()
+  }, []) // 에러(무한루프) 방지
+
   // 시설 선택 Modal
-  const [facilityModalVisible, setFacilityModalVisible] = useState(false);
+  const [facilityModalVisible, setFacilityModalVisible] = useState(false)
   const facilityModal = () => {
-    setFacilityModalVisible(!facilityModalVisible);
-  };
+    setFacilityModalVisible(!facilityModalVisible)
+  }
+
+  // 시설 체크 리스트 초기화
+  const resetFacilityCheck = (isCheckMode) => {
+    facilityCheck.map((facility) => {
+      const id = facility.id
+      let isCheck = facility.isCheck
+      if (isCheckMode === false) {
+        isCheck = false
+      } else if (isCheckMode === true) {
+        isCheck = true
+      } // null이면 isCheck 유지
+      newFacilityCheck.push({
+        id: id, isCheck: isCheck
+      })
+    })
+    setFacilityCheck(newFacilityCheck)
+  }
+
+  // 시설 체크 리스트
+  const checkFacilityList = (id) => {
+    console.log("선택 : " + id)
+    console.log("===============")
+    resetFacilityCheck(null)
+
+    newFacilityCheck.find((facility) => {
+      if (facility.id === id) {
+        if (facility.isCheck === true) {
+          facility.isCheck = false
+        }
+        else {
+          facility.isCheck = true
+        }
+      }
+    })
+    setFacilityCheck(newFacilityCheck)
+  }
+
+  // 날짜 필터링 설정(날짜 선택 Modal '확인' 버튼)
+  const setFacilityFilter = () => {
+    setOldFacilityCheck(facilityCheck)
+    facilityModal()
+
+  }
+
+  // 시설 필터링 취소(날짜 선택 Modal '취소' 버튼)
+  const cancelFacilityFilter = () => {
+    setFacilityCheck(oldFacilityCheck)
+    facilityModal()
+  }
+
+  // 날짜 필터링 초기화(날짜 선택 Modal '초기화' 버튼)
+  const resetFacilityFilter = () => {
+    resetFacilityCheck(false)
+    facilityModal()
+  }
 
   // 시설 출력 Flatlist
   const renderFacility = (itemData) => {
     return (
       <View style={styles.facility}>
-        <TouchableOpacity style={{ flexDirection: 'row' }}>
-          <AntDesign name="checksquareo" size={24} color="black" style={{ alignSelf: 'center' }} />
-          <Text style={{ fontSize: 28, marginLeft: 10 }}>{itemData.item.name}</Text>
+        <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => checkFacilityList(itemData.item.id)}>
+          {itemData.item.isCheck === false ? (
+            <AntDesign name="checksquareo" size={24} color="black" style={{ alignSelf: 'center' }} />
+          ) : (
+            <AntDesign name="checksquare" size={24} color="black" style={{ alignSelf: 'center' }} />
+          )
+          }
+          <Text style={{ fontSize: 28, marginLeft: 10 }}>{itemData.item.id}</Text>
         </TouchableOpacity>
 
       </View>
-    );
+    )
   }
 
   // 날짜 선택 Modal
-  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [dateModalVisible, setDateModalVisible] = useState(false)
   const dateModal = () => {
-    setDateModalVisible(!dateModalVisible);
-  };
-
-  // Calendar Picker
-  const [selectedDate, onDateChange] = useState(null);
-  const nowDate = new Date();
-  const limitDate = new Date(nowDate.setDate(nowDate.getDate() + 30)); // 예약 조회 가능 날짜(최대 30일?)
-  const minDate = new Date();
-  const maxDate = new Date(limitDate);
-
-  const [filterDate, setFilterDate] = useState(null); // 필터링 날짜
-  const [resultDate, setResultDate] = useState(null); // 출력할 날짜
-
-  // 날짜 필터링
-  const filteredDate = () => {
-    if (selectedDate != null) {
-      const dateForStr = new Date(selectedDate); // DB 형태를 맞추기 위한 변수
-      setFilterDate(dateForStr);
-
-      const year = dateForStr.getFullYear();
-      const month = dateForStr.getMonth() + 1;
-      const date = dateForStr.getDate();
-      const result = year + '-' + (month < 10 ? '0' + month : month) + '-' + (date < 10 ? '0' + date : date);
-      setResultDate(result);
-    }
-    dateModal();
+    setDateModalVisible(!dateModalVisible)
   }
 
-  // 날짜 필터링 초기화
-  const resetFilterDate = () => {
+  // Calendar Picker
+  const [selectedDate, onDateChange] = useState(null)
+  const nowDate = new Date()
+  const limitDate = new Date(nowDate.setDate(nowDate.getDate() + 30)) // 예약 조회 가능 날짜(최대 30일?)
+  const minDate = new Date()
+  const maxDate = new Date(limitDate)
+
+  const [filterDate, setFilterDate] = useState(null) // 필터링 날짜
+  const [resultDate, setResultDate] = useState(null) // 출력할 날짜
+
+  // 날짜 필터링 설정(날짜 선택 Modal '확인' 버튼)
+  const setDateFilter = () => {
+    setResultDate(null)
+    if (selectedDate != null) {
+      const dateForStr = new Date(selectedDate) // DB 형태를 맞추기 위한 변수
+      setFilterDate(dateForStr)
+
+      const year = dateForStr.getFullYear()
+      const month = dateForStr.getMonth() + 1
+      const date = dateForStr.getDate()
+      const result = year + '-' + (month < 10 ? '0' + month : month) + '-' + (date < 10 ? '0' + date : date)
+      setResultDate(result)
+    }
+    dateModal()
+  }
+
+  // 날짜 필터링 취소(날짜 선택 Modal '취소' 버튼)
+  const cancelDateFilter = () => {
+    if (selectedDate != null)
+      onDateChange(null)
+    dateModal()
+  }
+
+  // 날짜 필터링 초기화(날짜 선택 Modal '초기화' 버튼)
+  const resetDateFilter = () => {
     onDateChange(null)
     setFilterDate(null)
     setResultDate(null)
+    dateModal()
   }
 
   // 예약 날짜 출력
-  const today = new Date();
-  const year = today.getFullYear(); // 년
-  const month = today.getMonth() + 1 < 10 ? '0' + (today.getMonth() + 1) : today.getMonth() + 1;  // 월
-  const day = today.getDate() < 10 ? '0' + today.getDate() : today.getDate();  // 일
+  // const today = new Date()
+  // const year = today.getFullYear() // 년
+  // const month = today.getMonth() + 1 < 10 ? '0' + (today.getMonth() + 1) : today.getMonth() + 1  // 월
+  // const day = today.getDate() < 10 ? '0' + today.getDate() : today.getDate()  // 일
+  // const date = year + '.' + month + '.' + day
 
-  const date = year + '.' + month + '.' + day;
-
-  // 예약 내역 출력(Flatlist) -> 필터가 된 데이터를 가져와 출력만 할 수 없을까?
+  // 예약 내역 출력(Flatlist)
   const renderItem = (itemData) => {
     const usingTime = itemData.item.usingTime // 시설 사용 시간("XXXX-XX-XX-XX:XX")
     const date = usingTime.substr(0, 10)
     const time = usingTime.substr(11, 5)
 
-    if (itemData.item.cancel == false && resultDate == null) {// 취소되지 않은 건만 보여줌 + 날짜 필터 선택 X
+    // console.log(selectedDate)
+    //console.log("resut Date : " + resultDate)
+    if (resultDate == null) { // 날짜 필터 선택 X
       setFilter("전체 예약 내역")
       return (
         <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime })}>
           <Text style={{ ...styles.booking, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
           <Text style={styles.booking}>인원 : {itemData.item.usedPlayers}명</Text>
-          <Text style={styles.booking}>시간 : {itemData.item.usingTime}</Text>
+          <Text style={styles.booking}>시간 : {date + " " + time}</Text>
         </TouchableOpacity>
-      );
+      )
     }
-    else if (itemData.item.cancel == false && resultDate == date) {// 취소되지 않은 건만 보여줌 + 날짜 필터 선택 O
+    else if (resultDate == date) { // 날짜 필터 선택 O
       setFilter(date)
       return (
         <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime })}>
@@ -150,8 +228,15 @@ function BookingManagement({ navigation }) {
           <Text style={styles.booking}>인원 : {itemData.item.usedPlayers}명</Text>
           <Text style={styles.booking}>시간 : {time}</Text>
         </TouchableOpacity>
-      );
+      )
     }
+  }
+
+  // 시설 & 날짜 필터를 모두 초기화함
+  const resetAll = () => {
+    onDateChange(null)
+    setFilterDate(null)
+    setResultDate(null)
   }
 
   return (
@@ -160,23 +245,25 @@ function BookingManagement({ navigation }) {
         <View style={{ padding: 20, backgroundColor: 'white' }}>
           <View style={{ alignSelf: 'center' }}>
             <FlatList
-              data={facility}
+              data={facilityCheck}
               renderItem={renderFacility}
               keyExtracter={(item) => item.id}
               style={{ width: SCREEN_WIDTH * 0.9, height: 300, flexGrow: 0 }} />
           </View>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+            <TouchableOpacity style={styles.resetButton} onPress={resetFacilityFilter}>
               <AntDesign name="reload1" size={20} color="black" />
-              <Text style={styles.reset}>초기화</Text>
+              <Text style={{ fontSize: 18, marginStart: 5 }}>초기화</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={facilityModal}>
-              <Text>취소</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.smallButton} onPress={getFacility}>
-              <Text style={{ color: 'white' }}>확인</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={cancelFacilityFilter}>
+                <Text>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.smallButton} onPress={setFacilityFilter}>
+                <Text style={{ color: 'white' }}>확인</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -210,17 +297,19 @@ function BookingManagement({ navigation }) {
             )
           }</View>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }} onPress={resetFilterDate}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <TouchableOpacity style={styles.resetButton} onPress={resetDateFilter}>
               <AntDesign name="reload1" size={20} color="black" />
-              <Text style={styles.reset}>초기화</Text>
+              <Text style={{ fontSize: 18, marginStart: 5 }}>초기화</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={dateModal}>
-              <Text>취소</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.smallButton} onPress={filteredDate}>
-              <Text style={{ color: 'white' }}>확인</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity style={{ ...styles.smallButton, backgroundColor: 'white' }} onPress={cancelDateFilter}>
+                <Text>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.smallButton} onPress={setDateFilter}>
+                <Text style={{ color: 'white' }}>확인</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -234,8 +323,14 @@ function BookingManagement({ navigation }) {
           <Text style={styles.button}>날짜</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.filter}>
-        <Text style={{ fontSize: 28, color: 'gray' }}>{filter}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={styles.filter}>
+          <Text style={{ fontSize: 28, color: 'gray' }}>{filter}</Text>
+        </View>
+        <TouchableOpacity style={{ flexDirection: 'row', marginRight: 10 }} onPress={resetAll}>
+          <AntDesign name="reload1" size={20} color="black" />
+          <Text style={{ fontSize: 18, marginStart: 5 }}>초기화</Text>
+        </TouchableOpacity>
       </View>
       <FlatList
         data={booking}
@@ -244,14 +339,14 @@ function BookingManagement({ navigation }) {
       <View>
       </View>
     </SafeAreaView>
-  );
-}
+  )
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
+    //alignItems: 'center',
   },
 
   top: {
@@ -291,21 +386,21 @@ const styles = StyleSheet.create({
     marginRight: 30,
   },
 
+  resetButton: {
+    flexDirection: 'row',
+    marginTop: 5,
+    alignItems: 'center'
+  },
+
   smallButton: {
     backgroundColor: '#3262D4',
     marginTop: 5,
     marginStart: 5,
     marginEnd: 5,
-    justifyContent: 'center',
     borderRadius: 8,
     padding: 8,
     paddingStart: 20,
     paddingEnd: 20,
-  },
-
-  reset: {
-    fontSize: 16,
-    marginStart: 5,
   },
 
   facility: {
@@ -321,7 +416,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: 'gray',
     marginTop: 10,
-    marginLeft: 22,
-    alignSelf: 'flex-start'
+    marginLeft: 20,
   },
 });
