@@ -1,6 +1,6 @@
 // 세부시설 여러개 추가하는 화면
 
-import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity, SafeAreaView, KeyboardAwareScrollView, ScrollView } from 'react-native';
 import React, {useEffect, useState, useRef,} from "react";
 import Toast, {DURATION} from 'react-native-easy-toast'
 import { FlatList } from 'react-native-gesture-handler';
