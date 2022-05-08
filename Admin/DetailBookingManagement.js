@@ -14,7 +14,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function DetailBookingManagement({ route, navigation }) {
   // DB Table
   const bookingTable = new BookingTable(); // 예약 정보
-  const facilityTable = new FacilityTable(); // 금액 정보
+  const facilityTable = new FacilityTable(); // 금액 정보 -> BookingTable Cost 속성 가져오기
   const permissionTable = new PermissionTable(); // 등급 정보
   const userTable = new UserTable(); // 전화번호 정보
 
@@ -24,7 +24,7 @@ export default function DetailBookingManagement({ route, navigation }) {
 
   let userId, facilityId, usingTime, bookingTime, usedPlayers, cancel, grade, cost, phone;
 
-  temp.map((booking) => {
+  temp.find((booking) => {
     if (booking.usingTime == ftime) {
       userId = booking.userId
       facilityId = booking.facilityId
