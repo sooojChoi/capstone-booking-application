@@ -57,7 +57,7 @@ function AdminSignUp({navigation}) {
     }
 
     return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             <View style={{alignItems:'flex-start', marginTop: 10,}}>
             <Text style={styles.titleText}>시설 이름</Text>
             <TextInput 
@@ -106,7 +106,7 @@ function AdminSignUp({navigation}) {
                 <AntDesign name="pluscircleo" size={28} color="black" 
                     style={{color:'#787878'}}/>
             </TouchableOpacity>
-            <View style={{flexDirection:'row',alignSelf:'center', marginTop:10}}>
+            <View style={{flexDirection:'row',alignSelf:'center', marginTop:10, marginBottom:50}}>
                 {// 아마 flatList로 바뀔 듯. 선택한 사진 수 만큼 띄워지도록.. 최대 선택할 수 있는 사진 개수 제한 걸기.
                 // 각 사진마다 우측 상단에 x 표시가 있어서, 클릭하면 해당 사진을 flatList에서 제거하고 db에서도 제거하도록.
                 }
@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
   scrollView: {
     backgroundColor: 'white',
     marginHorizontal: 30,
+    
   },
   titleText:{
       fontSize:15,
