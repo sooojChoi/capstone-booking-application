@@ -39,21 +39,21 @@ export default function BookingManagementNavigation() {
 function BookingManagement({ navigation }) {
   // DB Table
   const bookingTable = new BookingTable()
-  const booking = bookingTable.getsAllWithNotCancel() // 취소되지 않은 예약 내역만 가져옴
   const facilityTable = new FacilityTable()
-  const facility = facilityTable.facilitys
+  const facilityArray = facilityTable.facilitys
 
+  const [bookingList, setBookingList] = useState([]) // 필터링 된 예약 목록(FlatList 출력)
   const [filter, setFilter] = useState("전체 예약 내역") // 필터링 된 내역(시설, 날짜)를 보여줌
+
   const newFacilityCheck = [] // facilityCheck 값 변경을 위한 전역 변수
   const [oldFacilityCheck, setOldFacilityCheck] = useState([]) // facilityCheck 값 변경 취소를 위한 변수
-  const [isFacility, setIsFacility] = useState(false) // 시설 선택 Modal - 확인(true) / 취소(false)
   const [facilityCheck, setFacilityCheck] = useState([]) // 시설 선택 Modal - Check List 구현
-  const [checkListInfo, setCheckListInfo] = useState() // 선택된 시설 목록
+  const [facilityList, setFacilityList] = useState([]) // 선택된 시설 목록
 
   // 시설 선택 Modal에 출력할 시설 목록(+ 체크리스트)
   const getFacilityList = () => {
     newFacilityCheck.length = 0
-    facility.map((facility) => {
+    facilityArray.map((facility) => {
       const id = facility.id
       const isCheck = false
       newFacilityCheck.push({
@@ -62,12 +62,12 @@ function BookingManagement({ navigation }) {
     })
     setFacilityCheck(...[newFacilityCheck])
     setOldFacilityCheck(...[newFacilityCheck])
-
   }
 
   useEffect(() => {
-    getFacilityList()
-  }, []) // 에러(무한루프) 방지
+    if (!facilityCheck.length) // 초기 설정
+      getFacilityList()
+  }, [])
 
   // 시설 선택 Modal
   const [facilityModalVisible, setFacilityModalVisible] = useState(false)
@@ -94,8 +94,6 @@ function BookingManagement({ navigation }) {
 
   // 시설 체크 리스트
   const checkFacilityList = (id) => {
-    console.log("선택 : " + id)
-    console.log("===============")
     resetFacilityCheck(null)
 
     newFacilityCheck.find((facility) => {
@@ -111,11 +109,17 @@ function BookingManagement({ navigation }) {
     setFacilityCheck(newFacilityCheck)
   }
 
-  // 날짜 필터링 설정(날짜 선택 Modal '확인' 버튼)
+  // 시설 필터링 설정(날짜 선택 Modal '확인' 버튼)
   const setFacilityFilter = () => {
     setOldFacilityCheck(facilityCheck)
+    let result = []
+    facilityCheck.find((facility) => {
+      if (facility.isCheck === true) {
+        result.push(facility)
+      }
+    })
+    setFacilityList(result)
     facilityModal()
-
   }
 
   // 시설 필터링 취소(날짜 선택 Modal '취소' 버튼)
@@ -124,13 +128,19 @@ function BookingManagement({ navigation }) {
     facilityModal()
   }
 
-  // 날짜 필터링 초기화(날짜 선택 Modal '초기화' 버튼)
+  // 시설 필터링 초기화(날짜 선택 Modal '초기화' 버튼)
   const resetFacilityFilter = () => {
     resetFacilityCheck(false)
+    setOldFacilityCheck(newFacilityCheck)
+    setFacilityList([])
     facilityModal()
+    if (resultDate != null)
+      setFilter(resultDate)
+    else
+      setFilter("전체 예약 내역")
   }
 
-  // 시설 출력 Flatlist
+  // 시설 목록(CheckList) 출력(Flatlist)
   const renderFacility = (itemData) => {
     return (
       <View style={styles.facility}>
@@ -160,6 +170,12 @@ function BookingManagement({ navigation }) {
   const limitDate = new Date(nowDate.setDate(nowDate.getDate() + 30)) // 예약 조회 가능 날짜(최대 30일?)
   const minDate = new Date()
   const maxDate = new Date(limitDate)
+
+  const year = minDate.getFullYear()
+  const month = minDate.getMonth() + 1
+  const date = minDate.getDate()
+  const todayDate = year + '-' + (month < 10 ? '0' + month : month) + '-' + (date < 10 ? '0' + date : date)
+  console.log(todayDate) // 현재(Today)부터 예약 내역만 출력하기 위한 날짜
 
   const [filterDate, setFilterDate] = useState(null) // 필터링 날짜
   const [resultDate, setResultDate] = useState(null) // 출력할 날짜
@@ -195,48 +211,70 @@ function BookingManagement({ navigation }) {
     dateModal()
   }
 
-  // 예약 날짜 출력
-  // const today = new Date()
-  // const year = today.getFullYear() // 년
-  // const month = today.getMonth() + 1 < 10 ? '0' + (today.getMonth() + 1) : today.getMonth() + 1  // 월
-  // const day = today.getDate() < 10 ? '0' + today.getDate() : today.getDate()  // 일
-  // const date = year + '.' + month + '.' + day
+  useEffect(() => {
+    console.log(facilityList)
+    console.log("DateFilter : " + resultDate)
+    getBookingList()
+  }, [facilityList, resultDate]) // 동기 처리
 
-  // 예약 내역 출력(Flatlist)
-  const renderItem = (itemData) => {
-    const usingTime = itemData.item.usingTime // 시설 사용 시간("XXXX-XX-XX-XX:XX")
-    const date = usingTime.substr(0, 10)
-    const time = usingTime.substr(11, 5)
-
-    // console.log(selectedDate)
-    //console.log("resut Date : " + resultDate)
-    if (resultDate == null) { // 날짜 필터 선택 X
-      setFilter("전체 예약 내역")
-      return (
-        <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime })}>
-          <Text style={{ ...styles.booking, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
-          <Text style={styles.booking}>인원 : {itemData.item.usedPlayers}명</Text>
-          <Text style={styles.booking}>시간 : {date + " " + time}</Text>
-        </TouchableOpacity>
-      )
+  // 시설 & 날짜 필터된 예약 내역를 가져옴
+  const getBookingList = () => {
+    if (facilityList.length && resultDate != null) { // 시설 & 날짜 필터
+      setFilter(resultDate)
+      const bookingArray = bookingTable.getWithAllFilter(facilityList, resultDate, todayDate)
+      setBookingList(bookingArray)
     }
-    else if (resultDate == date) { // 날짜 필터 선택 O
-      setFilter(date)
-      return (
-        <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime })}>
-          <Text style={{ ...styles.booking, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
-          <Text style={styles.booking}>인원 : {itemData.item.usedPlayers}명</Text>
-          <Text style={styles.booking}>시간 : {time}</Text>
-        </TouchableOpacity>
-      )
+    else if (facilityList.length) { // 시설 필터
+      setFilter("시설 예약 내역")
+      const bookingArray = bookingTable.getsWithFacilityFilter(facilityList, todayDate)
+      setBookingList(bookingArray)
+    }
+    else if (resultDate != null) { // 날짜 필터
+      setFilter(resultDate)
+      const bookingArray = bookingTable.getsWithDateFilter(resultDate, todayDate)
+      setBookingList(bookingArray)
+    }
+    else { // 필터 X
+      setFilter("전체 예약 내역")
+      setBookingList(bookingTable.getsAllWithNotCancel(todayDate))
     }
   }
 
   // 시설 & 날짜 필터를 모두 초기화함
   const resetAll = () => {
+    resetFacilityCheck(false)
+    setFacilityList([])
     onDateChange(null)
     setFilterDate(null)
     setResultDate(null)
+    setFilter("전체 예약 내역")
+  }
+
+  // 예약 내역 출력(Flatlist)
+  const renderItem = (itemData) => {
+    const usingTime = itemData.item.usingTime // 시설 사용 시간("XXXX-XX-XXTXX:XX")
+    const date = usingTime.substr(0, 10)
+    const time = usingTime.substr(11, 5)
+
+    if (resultDate == null) {
+      return (
+        <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime })}>
+          <Text style={{ ...styles.booking, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
+          <Text style={styles.booking}>인원 : {itemData.item.usedPlayers}명</Text>
+          {/* <Text style={styles.booking}>시간 : {time}</Text> */}
+          <Text style={styles.booking}>시간 : {date + " " + time}</Text>
+        </TouchableOpacity>
+      )
+    } else {
+      return (
+        <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime })}>
+          <Text style={{ ...styles.booking, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
+          <Text style={styles.booking}>인원 : {itemData.item.usedPlayers}명</Text>
+          {/* <Text style={styles.booking}>시간 : {time}</Text> */}
+          <Text style={styles.booking}>시간 : {time}</Text>
+        </TouchableOpacity>
+      )
+    }
   }
 
   return (
@@ -314,14 +352,22 @@ function BookingManagement({ navigation }) {
         </View>
       </Modal>
 
-      {/* <Text style={{ fontSize: 32, fontWeight: "bold" }}>예약 내역</Text> */}
       <View style={styles.top}>
         <TouchableOpacity onPress={facilityModal}>
-          <Text style={styles.button}>시설</Text>
+          {facilityList.length == 0 ? (
+            <Text style={styles.button}>시설</Text>
+          ) : (
+            <Text style={styles.selectedButton}>시설</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity onPress={dateModal}>
-          <Text style={styles.button}>날짜</Text>
+          {resultDate == null ? (
+            <Text style={styles.button}>날짜</Text>
+          ) : (
+            <Text style={styles.selectedButton}>날짜</Text>
+          )}
         </TouchableOpacity>
+
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <View style={styles.filter}>
@@ -333,7 +379,7 @@ function BookingManagement({ navigation }) {
         </TouchableOpacity>
       </View>
       <FlatList
-        data={booking}
+        data={bookingList}
         renderItem={renderItem}
         keyExtracter={(item) => item.id} />
       <View>
@@ -379,7 +425,22 @@ const styles = StyleSheet.create({
     paddingLeft: 30,
     paddingRight: 30,
     marginTop: 10,
-    borderColor: 'gray',
+    borderColor: 'lightgray',
+    borderWidth: 2,
+    borderRadius: 10,
+    marginLeft: 30,
+    marginRight: 30,
+  },
+
+  selectedButton: {
+    fontSize: 24,
+    padding: 3,
+    paddingLeft: 30,
+    paddingRight: 30,
+    marginTop: 10,
+    overflow: 'hidden',
+    borderColor: '#EDF1F6',
+    backgroundColor: '#EDF1F6',
     borderWidth: 2,
     borderRadius: 10,
     marginLeft: 30,

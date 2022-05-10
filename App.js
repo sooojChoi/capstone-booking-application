@@ -50,8 +50,8 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
- // return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색 (수진)
- //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
+  //return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색 (수진)
+  //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
 
 
 
