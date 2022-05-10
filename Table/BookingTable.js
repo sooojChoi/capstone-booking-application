@@ -3,21 +3,21 @@ import { booking, user } from "../Category";
 
 export class BookingTable {
     bookings = [
-        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, false,20000,"010-1234-5678"),
-        new booking("yjb", "hante1", "2022-05-25T12:00", "2022-05-25T09:00", 4, true,20000,"010-1234-5679"),
-        new booking("yjb", "hante1", "2022-05-26T12:00", "2022-05-25T09:00", 4, false,30000,"010-0983-5678"),
-        new booking("yjb", "hante1", "2022-05-27T12:00", "2022-05-25T09:00", 4, false,10000,"010-0983-3333"),
-        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, false,8000,"010-1234-0983"),
-        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, true,12000,"010-4321-5678"),
-        new booking("sbp", "hante2", "2022-05-28T12:00", "2022-05-25T12:00", 6, true,21000,"010-1256-5678"),
-        new booking("yjb", "hante3", "2022-05-28T12:00", "2022-05-25T12:00", 6, true,40000,"010-1414-5678"),
+        new booking("yjb", "hante1", "2022-03-25T12:00", "2022-05-25T09:00", 4, false, 20000, "010-1234-5678"),
+        new booking("yjb", "hante1", "2022-05-25T13:00", "2022-05-25T09:00", 4, true, 20000, "010-1234-5679"),
+        new booking("yjb", "hante1", "2022-05-26T12:00", "2022-05-25T09:00", 4, false, 30000, "010-0983-5678"),
+        new booking("yjb", "hante1", "2022-05-27T12:00", "2022-05-25T09:00", 4, false, 10000, "010-0983-3333"),
+        new booking("yjb", "hante2", "2022-05-28T10:00", "2022-05-25T12:00", 6, false, 8000, "010-1234-0983"),
+        new booking("yjb", "hante2", "2022-05-28T11:00", "2022-05-25T12:00", 6, true, 12000, "010-4321-5678"),
+        new booking("sbp", "hante2", "2022-05-28T12:00", "2022-05-25T12:00", 6, true, 21000, "010-1256-5678"),
+        new booking("yjb", "hante3", "2022-05-28T14:00", "2022-05-25T12:00", 6, true, 40000, "010-1414-5678"),
     ];
 
-    add(booking){
-        for(var existing of this.bookings){
-            if(existing.userId == booking.userId){
-                if(existing.facilityId == booking.facilityId){
-                    if(existing.usingTime == booking.usingTime){
+    add(booking) {
+        for (var existing of this.bookings) {
+            if (existing.userId == booking.userId) {
+                if (existing.facilityId == booking.facilityId) {
+                    if (existing.usingTime == booking.usingTime) {
                         return
                     }
                 }
@@ -26,11 +26,11 @@ export class BookingTable {
         this.bookings.push(booking)
     }
 
-    modify(booking){
-        for(var i=0;i<this.bookings.length;i++){
-            if(this.bookings[i].userId == booking.userId){
-                if(this.bookings[i].facilityId == booking.facilityId){
-                    if(this.bookings[i].usingTime == booking.usingTime){
+    modify(booking) {
+        for (var i = 0; i < this.bookings.length; i++) {
+            if (this.bookings[i].userId == booking.userId) {
+                if (this.bookings[i].facilityId == booking.facilityId) {
+                    if (this.bookings[i].usingTime == booking.usingTime) {
                         this.bookings[i] = booking
                         return
                     }
@@ -39,11 +39,11 @@ export class BookingTable {
         }
     }
 
-    remove(userId, facilityId, usingTime){
-        for(var i=0;i<this.bookings.length;i++){
-            if(this.bookings[i].userId == userId){
-                if(this.bookings[i].facilityId == facilityId){
-                    if(this.bookings[i].usingTime == usingTime){
+    remove(userId, facilityId, usingTime) {
+        for (var i = 0; i < this.bookings.length; i++) {
+            if (this.bookings[i].userId == userId) {
+                if (this.bookings[i].facilityId == facilityId) {
+                    if (this.bookings[i].usingTime == usingTime) {
                         this.bookings.splice(i, 1)
                         return
                     }
@@ -54,10 +54,10 @@ export class BookingTable {
 
 
     // userId로 예약 내역 가져오기
-    getsByUserId(userId){
+    getsByUserId(userId) {
         var result = []
-        for(var existing of this.bookings){
-            if(existing.userId == userId){
+        for (var existing of this.bookings) {
+            if (existing.userId == userId) {
                 result.push(existing)
             }
         }
@@ -65,10 +65,10 @@ export class BookingTable {
     }
 
     // facilityId로 예약 내역 가져오기
-    getsByFacilityId(facilityId){
+    getsByFacilityId(facilityId) {
         var result = []
-        for(var existing of this.bookings){
-            if(existing.facilityId == facilityId){
+        for (var existing of this.bookings) {
+            if (existing.facilityId == facilityId) {
                 result.push(existing)
             }
         }
@@ -76,11 +76,11 @@ export class BookingTable {
     }
 
     // userId와 facilityId로 예약 내역 가져오기
-    getsByUserIdAndFacilityId(userId, facilityId){
+    getsByUserIdAndFacilityId(userId, facilityId) {
         var result = []
-        for(var existing of this.bookings){
-            if(existing.userId == userId){
-                if(existing.facilityId == facilityId){
+        for (var existing of this.bookings) {
+            if (existing.userId == userId) {
+                if (existing.facilityId == facilityId) {
                     result.push(existing)
                 }
             }
@@ -89,13 +89,13 @@ export class BookingTable {
     }
 
     // 해당하는 예약내역 가져오기
-    getsByUserIdAndFacilityIdAndUsingTime(userId, facilityId, usingTime){
+    getsByUserIdAndFacilityIdAndUsingTime(userId, facilityId, usingTime) {
         var result = []
-        for(var existing of this.bookings){
-            if(existing.userId == userId){
-                if(existing.facilityId == facilityId){
-                    if(existing.usingTime == usingTime){
-                    result.push(existing)
+        for (var existing of this.bookings) {
+            if (existing.userId == userId) {
+                if (existing.facilityId == facilityId) {
+                    if (existing.usingTime == usingTime) {
+                        result.push(existing)
                     }
                 }
             }
@@ -104,10 +104,10 @@ export class BookingTable {
     }
 
     //예약내역가져오기
-    getByUserIdNotCancle(userId){
+    getByUserIdNotCancle(userId) {
         var result = []
-        for(var existing of this.bookings){
-            if(existing.userId == userId && existing.cancel == false){
+        for (var existing of this.bookings) {
+            if (existing.userId == userId && existing.cancel == false) {
                 result.push(existing)
             }
         }
@@ -115,10 +115,10 @@ export class BookingTable {
     }
 
     //취소내역 userId로 가져오기
-    getByUserIdCancle(userId){
+    getByUserIdCancle(userId) {
         var result = []
-        for(var existing of this.bookings){
-            if(existing.userId == userId && existing.cancel == true){
+        for (var existing of this.bookings) {
+            if (existing.userId == userId && existing.cancel == true) {
                 result.push(existing)
             }
         }
@@ -126,11 +126,54 @@ export class BookingTable {
     }
 
     // 취소내역 불러오기
-    getsAllWithNotCancel(){
+    getsAllWithNotCancel(todayDate) {
         var result = []
-        for(var existing of this.bookings){
-            if(existing.cancel == false){
+        for (var existing of this.bookings) {
+            if (existing.cancel == false && existing.usingTime.substr(0, 10) >= todayDate)
                 result.push(existing)
+        }
+        return result
+    }
+
+    // 시설 & 날짜 필터링
+    getWithAllFilter(facility, usingTime, todayDate) {
+        var result = []
+        for (var existing of this.bookings) {
+            if (existing.cancel == false && existing.usingTime.substr(0, 10) >= todayDate) {
+                facility.find((facility) => {
+                    if (facility.isCheck === true) {
+                        if (existing.facilityId === facility.id && existing.usingTime.substr(0, 10) == usingTime)
+                            result.push(existing)
+                    }
+                })
+            }
+        }
+        return result
+    }
+
+    // 시설 필터링
+    getsWithFacilityFilter(facility, todayDate) {
+        var result = []
+        for (var existing of this.bookings) {
+            if (existing.cancel == false && existing.usingTime.substr(0, 10) >= todayDate) {
+                facility.find((facility) => {
+                    if (facility.isCheck === true) {
+                        if (existing.facilityId === facility.id)
+                            result.push(existing)
+                    }
+                })
+            }
+        }
+        return result
+    }
+
+    // 날짜 필터링
+    getsWithDateFilter(usingTime, todayDate) {
+        var result = []
+        for (var existing of this.bookings && existing.usingTime.substr(0, 10) >= todayDate) {
+            if (existing.cancel == false) {
+                if (existing.usingTime.substr(0, 10) == usingTime)
+                    result.push(existing)
             }
         }
         return result

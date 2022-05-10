@@ -59,7 +59,7 @@ export default function DetailFacilityManagement({ route, navigation }) {
 
   useEffect(() => {
     initialSetFacilityInfo();
-  }, []) // 에러(무한루프) 방지
+  }, [])
 
   // 시설 사진 변경
   const [image, setImage] = useState(null);
@@ -108,11 +108,8 @@ export default function DetailFacilityManagement({ route, navigation }) {
 
   return ( // TextInput 별 DB 형태에 맞춰 유효성 검사 추가하기(Firebase?)
     <SafeAreaView style={styles.container}>
-      <View style={{ alignItems: 'center' }}>
-        <Text style={{ fontSize: 32, fontWeight: "bold" }}>공공 시설 예약</Text>
-      </View>
       <ScrollView>
-        <View style={{ marginTop: 5 }}>
+        <View>
           <View style={styles.list}>
             <Text style={styles.category}>ID</Text>
             <Text style={styles.id}>{facilityInfo.id}</Text>
