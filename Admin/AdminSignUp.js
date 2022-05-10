@@ -53,7 +53,7 @@ function AdminSignUp({navigation}) {
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
     const goToNextScreen = () =>{
-        navigation.navigate('SelectFacilitySort')
+        navigation.navigate('SelectFacilitySort', {facilityName: facName})
     }
 
     return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
@@ -144,8 +144,9 @@ function AdminSignUp({navigation}) {
 }
 
 function SelectFacilitySort({navigation, route}) {
+  const { facilityName } = route.params; 
     const goToDetailScene = () =>{
-      navigation.navigate('DetailAdminSignUp', {sort: 'final', name: null})
+      navigation.navigate('DetailAdminSignUp', {sort: 'final', facility: facilityName})
       //navigation.reset({routes: [{name: 'AdminSignUpAndAddFacility'}]})
     }
     const goToAddFacilityScene = () =>{
