@@ -76,11 +76,16 @@ export class FacilityTable {
         return result
     }
 
-    getCostById(id){
-        var result = []
+    getCostById(id, grade){
+        var result
         for (var existing of this.facilitys) {
             if (existing.id == id) {
-                result.push(existing.cost1)
+                if (grade == "1")
+                    result=existing.cost1
+                else if (grade == "2")
+                    result=existing.cost2
+                else if (grade == "3")
+                    result=existing.cost3
             }
         }
         return result

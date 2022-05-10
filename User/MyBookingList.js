@@ -1,34 +1,48 @@
-// 얘역 내역(사용자) -> 유진
+// 예약 내역(사용자) -> 유진
 
 import React, {useState, createRef} from 'react';
-import { Button, StyleSheet, Text, TextInput, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
 import {FacilityTable} from '../Table/FacilityTable';
+import { Dimensions } from 'react-native';
 import {BookingTable} from '../Table/BookingTable';
+import {PermissionTable} from '../Table/PermissionTable';
 import { booking } from '../Category';
 
 export default function App() {
-  const inputRef = createRef();
-
-  const [value, setValue] = useState('');
+  const {height,width}=Dimensions.get("window");
 
   const facilityTable = new FacilityTable();
   const [bookingTable, setBookingTable] = useState(new BookingTable)
 
-  //유저아이디 임의로 지정
+  //유저 등급을 가져오기 위해
+  const permissionTable = new PermissionTable();
+
+  //유저아이디 임의로 지정 => DB연결하면 변경해야함
   const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancle("yjb"))
 
 
   //예약내역
   const yItem = (itemData) => {
-    const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
+    const userGrade = permissionTable.getsByUserIdFacilityId(itemData.item.userId,itemData.item.facilityId)
+    const facilitieCost = facilityTable.getCostById(itemData.item.facilityId, userGrade)
     const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
+    //usingTime에서 T빼기위해
+    const usingTimearr = itemData.item.usingTime.split("T")
 
-    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: 350, height: 75,}}>
-    <Text style={styles.text3}>{facilitieName} {itemData.item.usingTime}</Text>
+    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.9, height: 75,}}>
+    <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text3}>{facilitieCost}W, 인원{itemData.item.usedPlayers}명</Text>
-      <TouchableOpacity style={styles.ButtonStyle} onPress={() => Alert.alert(                    //Alert를 띄운다
+      <Text style={styles.text3}>{facilitieCost}W 인원{itemData.item.usedPlayers}명</Text>
+      <TouchableOpacity style={{backgroundColor:'#3262d4',
+   // justifyContent:'space-around',
+    alignSelf:'flex-start',
+    borderRadius:8,
+    padding: 5,
+    paddingLeft:10,
+    paddingRight:10,
+    marginBottom:5,
+    marginLeft:width*0.4}} onPress={() => Alert.alert(                    //Alert를 띄운다
     "주의",                    // 첫번째 text: 타이틀 제목
     "예약을 취소하시겠습니까?",                         // 두번째 text: 그 밑에 작은 제목
     [                              // 버튼 배열
@@ -58,17 +72,20 @@ export default function App() {
 
   //취소내역
   //const bookingCancle = bookingTable.getByUserIdCancle("yjb")
+   //유저아이디 임의로 지정 => DB연결하면 변경해야함
   const [bookingCancel, setBookingCancel] = useState(bookingTable.getByUserIdCancle("yjb"))
   
 
   const nItem = (itemData) => {
-    const facilitieCost = facilityTable.getCostById(itemData.item.facilityId)
+    const userGrade = permissionTable.getsByUserIdFacilityId(itemData.item.userId,itemData.item.facilityId)
+    const facilitieCost = facilityTable.getCostById(itemData.item.facilityId, userGrade)
     const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
-    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: 350, height: 75,}}>
-    <Text style={styles.text4}>{facilitieName} {itemData.item.usingTime}</Text>
+    const usingTimearr = itemData.item.usingTime.split("T")
+    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.9, height: 75,}}>
+    <Text style={styles.text4}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text4}>{facilitieCost}W, 인원{itemData.item.usedPlayers}명</Text>
+      <Text style={styles.text4}>{facilitieCost}W 인원{itemData.item.usedPlayers}명</Text>
     </View>
   </View>
   
@@ -85,7 +102,7 @@ export default function App() {
       <View style={{padding: 10, margin: 8}}>
       <Text style={styles.text2}>예약내역</Text>
 
-      <View style={{height:300}}>
+      <View style={{height:height*0.35}}>
       <FlatList
       data={bookings}
       renderItem={yItem}
@@ -98,7 +115,7 @@ export default function App() {
     {/* 취소내역 */}
       <View style={{padding: 10, margin: 8}}>
       <Text style={styles.text2}>취소내역</Text>
-      <View style={{height:300}}>
+      <View style={{height:height*0.35}}>
       <FlatList
       data={bookingCancel}
       renderItem={nItem}
@@ -129,35 +146,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     margin: 5,
     color: '#999',
-  },
-  textinput1: {
-    borderColor: '#999',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    height: 38,
-    width: 300,
-    marginLeft: 5,
-  },
-  textinput2: {
-    borderColor: '#999',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    height: 38,
-    width: 256,
-    marginLeft: 5,
-  },
-  ButtonStyle:{
-    backgroundColor:'#3262d4',
-   // justifyContent:'space-around',
-    alignSelf:'flex-start',
-    borderRadius:8,
-    padding: 5,
-    paddingLeft:10,
-    paddingRight:10,
-    marginBottom:5,
-    marginLeft:140
   },
 
 });
