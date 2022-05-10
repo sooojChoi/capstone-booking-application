@@ -1,6 +1,6 @@
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,Image,ScrollView,TouchableOpacity,FlatList,TextInput,Button
+import { StyleSheet, Text, View,Image,ScrollView,TouchableOpacity,FlatList,TextInput,Button,Alert
  } from 'react-native';
 import React,{useState} from "react";
 import { Dimensions } from 'react-native';
@@ -15,7 +15,7 @@ import Modal from "react-native-modal";
 import { allocation, booking } from '../Category';
 import { BookingTable } from '../Table/BookingTable';
 
-/*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. styles:FacilityImageStyle*/
+/*모바일 윈도우의 크기를 가져온다*/
 const {height,width}=Dimensions.get("window");
 
 export default function BookingFacility() {
@@ -50,15 +50,18 @@ export default function BookingFacility() {
 
     /*userTable의 정보를 가져옴*/
   const currentUserId="leemz22";//현재 user의 id(임시)
+  //const currentUserId="sbp";//현재 user의 id(임시)
   const currentUser=userTable.getsById(currentUserId); //현재 user의 정보 가져옴
   let allowDate,name,phone=null;
-  //console.log(currentUser);
+  console.log(currentUser[0].allowDate);
   if(currentUser[0]){
     allowDate=currentUser[0].allowDate
     name=currentUser[0].name
     phone=currentUser[0].phone
   }
-      //console.log("--------------------allowdate",allowDate)
+  //null이면 승인되지 않은 user
+  //allowdate가 되기 전까진 어플 정지먹는다. 
+    console.log("--------------------allowdate",allowDate)
 
   /*permissionTable의 정보를 가져옴 */
   const userPermission=permissionTable.getsByUserId(currentUserId)
@@ -215,7 +218,7 @@ if(selectedAllo){
   todayAvail.map((elem)=>{
     if (elem.available===true){//선택된 날짜에 개설된 시간들중에 available이 true인거
       if(time==elem.usingTime.split('T')[1]){
-        console.log("됨~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+      //  console.log("됨~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
           gradeCost=gradeCost*rate
 
       }
@@ -262,6 +265,18 @@ if (data){
  const [number, onChangePhoneNumber] = useState(phone);
 //console.log("input phone number=",number);
 
+const reservedAlert = () =>
+Alert.alert(
+  "예약이 완료되었습니다.",
+  "결제는 오셔서 하시면 됩니다.",
+  [
+    {
+      text: "예약내역 보러가기",
+      onPress: () => console.log("goto MyBookingList"),
+    },
+    { text: "첫 화면으로", onPress: () => console.log("goto main") }
+  ]
+);
 
 //마지막 모달
 const [isModalVisible, setModalVisible] = useState(false);
@@ -295,6 +310,7 @@ const now=new Date();
   console.log("---------------------변경된",bookingTable)
 
   toggleModal();//예약 완료되고 그걸 어떻게 사용자한테  보여줄지
+  reservedAlert();//예약완료 alert
 }
 
   return (
@@ -392,7 +408,7 @@ const now=new Date();
       <Text style={styles.SelectionTitle}>예약 인원:</Text>
       <Button title='-' onPress={() => {if(count > 0) setCount(count - 1)}}></Button>
       <Text style={styles.SelectionTitle}>{count}</Text>
-      <Button title='+' onPress={() => setCount(count + 1)}></Button>
+      <Button title='+' onPress={() => {if(count<maxPlayers)setCount(count + 1)}}></Button>
       </View>
 
       <View>
@@ -411,7 +427,7 @@ const now=new Date();
       <Modal 
       isVisible={isModalVisible}
       backdropColor="white"
-      style={{borderWidth:1,borderColor:'grey',marginVertical:height*0.25}}
+      style={{borderWidth:1,borderColor:'grey',marginVertical:height*0.2}}
       backdropOpacity={0.9}
       >
        

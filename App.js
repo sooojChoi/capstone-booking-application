@@ -17,6 +17,7 @@ import AdminSignUp from './Admin/AdminSignUp';
 import SelectFacilitySort from './Admin/AdminSignUp';
 import DetailAdminSignUp from './Admin/DetailAdminSignUp';
 import AdminSignUpAndAddFacility from './Admin/AdminSignUpAndAddFacility';
+import GenerateAllocation from './Admin/generateAllocation';
 import SearchFacility from './User/searchFacility';
 import SignUpNavigation from './User/SignIn';
 import Home from './User/Home';
@@ -27,7 +28,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   return (<Home></Home>) // 홈(유진)
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
-
+  //return (<GenerateAllocation></GenerateAllocation>)//관리자 allocation 생성(혜림)
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
   //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
 
@@ -54,6 +55,8 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
+
+
   //return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색 (수진)
 
   //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
