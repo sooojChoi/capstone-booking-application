@@ -4,6 +4,7 @@ export class PermissionTable {
     permissions = [
         new permission("yjb", "hante1", 2),
         new permission("yjb", "hante2", 1),
+        new permission("yjb", "hante3", 1),
         new permission("sbp", "hante2", 2),
         new permission("hrr", "hante3", 2),
         new permission("gt33", "hante1", 2),
@@ -63,6 +64,19 @@ export class PermissionTable {
         for(var existing of this.permissions){
             if(existing.facilityId == facilityId){
                 result.push(existing)
+            }
+        }
+        return result
+    }
+
+    // 해당시설 userId로 grade얻기
+    getsByUserIdFacilityId(userId, facilityId){
+        var result = []
+        for(var existing of this.permissions){
+            if(existing.userId == userId){
+                if(existing.facilityId == facilityId){
+                    result.push(existing.grade)
+                }
             }
         }
         return result
