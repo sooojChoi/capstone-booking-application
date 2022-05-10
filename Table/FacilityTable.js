@@ -14,9 +14,9 @@ export class FacilityTable {
         new facility("seoulStudyRoom1", "서울 스터디룸1", 10 , 22 , 1, 6,6, 21, 14, 7, 5000, 7000, 10000),
         new facility("seoulStudyRoom2", "서울 스터디룸2", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000), 
         new facility("seoulStudyRoom3", "서울 스터디룸3", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hanClass1", "한성 강의실 101호", 10 , 22 , 1, 6,6, 21, 14, 7, 5000, 7000, 10000),
-        new facility("hanClass2", "한성 강의실 102호", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000), 
-        new facility("hanClass3", "한성 강의실 103호", 10 , 22 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hanClass1", "한성 강의실 101호", 10 , 21 , 1, 6,6, 21, 14, 7, 5000, 7000, 10000),
+        new facility("hanClass2", "한성 강의실 102호", 10 , 20 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000), 
+        new facility("hanClass3", "한성 강의실 103호", 10 , 20 , 1, 8,10, 21, 14, 7, 5000, 7000, 10000),
     ];
 
     add(facility) {
