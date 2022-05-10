@@ -65,6 +65,10 @@ export class UserTable {
         }
         return result
     }
+  
+
+
+
 
     // allowDate가 null인 사용자 목록 불러오기
     getsAllowWithNull(){

@@ -107,7 +107,6 @@ const notValid = useCallback(() => {
 
   //회원 가입 버튼 눌렸을때
   //user객체 생성해서 db에 add
-  //날짜는 어떤 형식으로 db에 넣을지 몰라서 대충 넣음
   //console.log(value);
 
 const complete=()=>{  
@@ -118,7 +117,8 @@ const complete=()=>{
   if (isValid){//폼이 모두 입력되었으면
     if (isDuplicated){//id 중복 안됐으면
             if(InputPW===checkPW){//입력된 PW, 재입력된 PW가 동일하면
-              const newUser=new user(InputId,InputName,phone,20200501,null)
+              const now = new Date();//오늘날짜 생성해서 넣음~
+              const newUser=new user(InputId,InputName,phone,now,null)
               userTable.add(newUser)
               console.log(userTable);
               }else{//틀리면 toast메시지
