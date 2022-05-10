@@ -17,7 +17,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
     
     // '시설 추가'버튼을 누르면 동작함
     const goToDetailScene = () =>{
-        navigation.navigate('DetailAdminSignUp', {sort: 'add'})
+        navigation.navigate('DetailAdminSignUp', {sort: 'add', facility: null})
     }
 
     // '추가 완료'버튼을 누르면 동작함
@@ -28,33 +28,74 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
     
     // flatList에서 각 시설 클릭하면 호출되는 함수
     const goToDetailSceneAgain = (name) =>{
-        navigation.navigate('DetailAdminSignUp', {sort: 'add', facilityName: name})
+        console.log("#############")
+        const facObj = facInfo.filter((value) => value.facilityName === name)[0]
+        console.log(facObj)
+        navigation.navigate('DetailAdminSignUp', {sort: 'modify', facility : facObj})
+   //     console.log(facInfo.filter((value) => value.facilityName === name))
+
+       
     }
 
     // 시설 상세 입력하고 돌아오면 호출됨.
     useEffect(()=>{
-        const name = route.params?.facilityName
+        const params = route.params
+        const name = params?.facility
+        console.log(name)
     
         if(name === undefined || name === "" || name === null){
             console.log("nothing")
         }else{
-            //console.log("name: "+name)
-            const list = { name: name }
-            setFacInfo(arr => [...arr, list])
-           
-           // console.log([list])
-        }
-    },[route.params?.facilityName])
+            // const tempArray = []
+            // facInfo.map((value)=> {
+            //     const facN = value.facilityName; const openTime = value.openTime;
+            //     const closeTime = value.closeTime;
+            //     const unitHour = value.unitHour;   const unitMin = value.unitMin;
+            //     const minPlayer = value.minPlayer; const maxPlayer = value.maxPlayer;
+            //     const booking1 = value.booking1
+            //     const booking2 = value.booking2
+            //     const booking3 = value.booking3
+            //     const cost1 = value.cost1; 
+            //     const cost2 = value.cost2; const cost3 = value.cost3;
+            //     tempArray.push({ facilityName: facN, closeTime: closeTime, openTime:openTime,
+            //         unitHour: unitHour, unitMin:unitMin, minPlayer: minPlayer, maxPlayer: maxPlayer,
+            //         booking1: booking1, booking2: booking2, booking3: booking3,
+            //         cost1:cost1, cost2: cost2, cost3: cost3 
 
+            //     })
+            // })
+            // console.log("tempArray: "+tempArray)
+            // tempArray.find((value) => {
+            //     if(value.facilityName === params?.facility.facilityName){
+            //         value = params?.facility
+            //         return;
+            //     }
+            // })
+            var mode = 1
+            mode = facInfo.find((value)=> {
+                if(value.facilityName === params?.facility.facilityName){
+                    console.log("what?!")
+                    return 0;
+                }
+            })
+            if(mode === 1){
+                const list = params?.facility
+                //  console.log("list: "+list)
+                setFacInfo(arr => [...arr, list])
+            }
+          
+        }
+    },[route.params?.facility])
 
     const renderGridItem = (itemData, index) => {
-        console.log(itemData.item)
+        const value = itemData.item
+       
         return (
-            <TouchableOpacity onPress={()=>goToDetailSceneAgain(itemData.item.name)}>
+            <TouchableOpacity onPress={()=>goToDetailSceneAgain(itemData.item.facilityName)}>
               <View style={{...styles.flatListStyle, flexDirection:'row', justifyContent:'space-between'}}>
                 
               <Text style={{fontSize:15, color:"#191919"}}>
-                  {itemData.item.name}
+                  {itemData.item.facilityName}
               </Text>
               <AntDesign name="right" size={22} color="#787878" />
               </View>
