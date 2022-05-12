@@ -6,7 +6,6 @@ import React, {useEffect, useState, useRef, useCallback} from "react";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Toast, {DURATION} from 'react-native-easy-toast'
 import { AntDesign } from '@expo/vector-icons';
-import { FontAwesome } from '@expo/vector-icons';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -15,10 +14,11 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function DetailAdminSignUp({navigation, route}) {
     const { sort, facility} = route.params;  //sort는 'add' 또는 'final' (add이면 시설 추가하는 것, final이면 최종 입력(하나만))
    // const {sort, facilityName} = route.params;
+   const [time, setTime] = useState(() => new Date(2000, 1, 1, 0, 0))
 
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);  
-    const [openTime, setOpenTime] = useState("시간 선택")  // 오픈 시간
-    const [closeTime, setCloseTime] = useState("시간 선택")  //마감 시간
+    const [openTime, setOpenTime] = useState("")  // 오픈 시간
+    const [closeTime, setCloseTime] = useState("")  //마감 시간
     const [unitHour, setUnitHour] = useState("");  // 예약 시간 단위
     const [unitMin, setUnitMin] = useState("");  // 예약 시간 단위
     const [timeSort, setTimeSort] = useState();  // open 또는 close
@@ -49,10 +49,12 @@ export default function DetailAdminSignUp({navigation, route}) {
       };
       const handleConfirm = (date) => {
         console.warn("A date has been picked: ", date.toTimeString().split(" ")[0].substring(0,5));
-        const hour = date.toTimeString().split(" ")[0].substring(0,2) + "시"
-        const min = date.toTimeString().split(" ")[0].substring(3,5) + "분"
+        const hour = date.toTimeString().split(" ")[0].substring(0,2)
+        const min = date.toTimeString().split(" ")[0].substring(3,5)
+        setTime(new Date(2000, 1, 1, hour, min))
         if(timeSort === "open"){
-            setOpenTime(hour+min)
+            setOpenTime(String(hour)+String(min))
+            console.log(String(hour)+String(min))
         }else if(timeSort === "close"){
             setCloseTime(hour+min)
         }
@@ -74,13 +76,29 @@ export default function DetailAdminSignUp({navigation, route}) {
 
         }
         console.log("추가해라")
-        const unitTime = unitHour+unitMin
-        const Facility = {
-            facilityName: facName,
-            openTime: openTime, closeTime: closeTime, unitTime: unitTime,
-            minPlayer:minPlayer, maxPlayer: maxPlayer, booking1: booking1,
-            booking2: booking2, booking3:booking3, cost1: cost1, cost2:cost2, cost3:cost3
+        const unitTime = (Number(unitHour)*60)+Number(unitMin)
+        const openHour = Number(openTime.substring(0,2))*60
+        const openMin = Number(openTime.substring(4,6))
+        const closeHour = Number(closeTime.substring(0,2))*60
+        const closeMin = Number(closeTime.substring(4,6))
+
+        var Facility = {}
+        if(gradeSetting === false){
+            Facility = {
+                facilityName: facName,
+                openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
+                minPlayer:minPlayer, maxPlayer: maxPlayer, booking1: null,
+                booking2: null, booking3:null, cost1: null, cost2:null, cost3:null
+            }
+        }else{
+            Facility = {
+                facilityName: facName,
+                openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
+                minPlayer:minPlayer, maxPlayer: maxPlayer, booking1: booking1,
+                booking2: booking2, booking3:booking3, cost1: cost1, cost2:cost2, cost3:cost3
+            }
         }
+        
         console.log(Facility)
         navigation.navigate('AdminSignUpAndAddFacility', { facility: Facility });
 
@@ -105,25 +123,59 @@ export default function DetailAdminSignUp({navigation, route}) {
                 onChangeNameText(facility)
             }else{
                 onChangeNameText(facility.facilityName)
-                setOpenTime(facility.openTime)
-                setCloseTime(facility.closeTime)
-                if( facility.unitHour !== null && facility.unitHour !== ""){
-                setUnitHour(facility.unitHour)
+
+                const open = Number(facility.openTime)
+                var openH = 0
+                var openM = 0
+                if(open >= 60){
+                    openH = parseInt(open/60)
+                    openM = open%60
+                }else{
+                    openM = open%60
                 }
-                if( facility.unitMin !== null && facility.unitMin !== ""){
-                    setUnitHour(facility.unitMin)
+                openH = openH < 10 ? ('0'+String(openH)) : (openH)
+                setOpenTime(String(openH)+String(openM))
+                
+                const close = Number(facility.closeTime)
+                var closeH = 0
+                var closeM = 0
+                if(close >= 60){
+                    closeH = parseInt(close/60)
+                    closeM = close%60
+                }else{
+                    closeM = close%60
+                }
+                closeH = closeH < 10 ? ('0'+String(closeH)) : (closeH)
+                setCloseTime(String(closeH)+String(closeM))
+
+                if( facility.unitTime !== null && facility.unitTime !== ""){
+                    var hour = 0
+                    var min = 0
+                    const time = Number(facility.unitTime)
+                    if(time>=60)
+                    {
+                        hour = parseInt(time/60)
+                        min = time%60
+                        console.log(min)
+                    }else{
+                        min = time%60
+                    }             
+                    setUnitHour(String(hour))
+                    setUnitMin(String(min))
                 }
                 setMinPlayer(facility.minPlayer)
                 setMaxPlayer(facility.maxPlayer)
-                if(facility.booking1 !== null){
+                if(facility.booking1 !== null && facility.booking1 !== undefined){
                     setGradeSetting(true)
+                    setBooking1(facility.booking1===null ? null : facility.booking1)
+                    setBooking2(facility.booking2===null ? null : facility.booking2)
+                    setBooking3(facility.booking3===null ? null : facility.booking3)
+                    setCost1(facility.cost1===null ? null : facility.cost1)
+                    setCost2(facility.cost2===null ? null : facility.cost2)
+                    setCost3(facility.cost3===null ? null : facility.cost3)
+                }else{
+                    setGradeSetting(false)
                 }
-                setBooking1(facility.booking1===null ? null : facility.booking1)
-                setBooking2(facility.booking2===null ? null : facility.booking2)
-                setBooking3(facility.booking3===null ? null : facility.booking3)
-                setCost1(facility.cost1===null ? null : facility.cost1)
-                setCost2(facility.cost2===null ? null : facility.cost2)
-                setCost3(facility.cost3===null ? null : facility.cost3)
             }
 
         }
@@ -138,16 +190,36 @@ export default function DetailAdminSignUp({navigation, route}) {
         <KeyboardAwareScrollView>
             <View style={{alignItems:'flex-start', marginTop: 10,}}>
                 <View style={{...styles.borderBottomStyle}}>
-                    <Text style={{...styles.titleText, marginTop:5}}>시설 이름</Text>
-                    <TextInput 
-                        style={{...styles.textinput, marginBottom:0, }}
-                        onChangeText={onChangeNameText}
-                        placeholder="시설 이름"
-                        value={facName}
-                        maxLength={50}
-                        editable={true}
-                        autoCorrect={false}
-                    ></TextInput>
+                    
+                    {
+                        sort === "modify" ? (
+                            <View>
+                                <View style={{flexDirection:'row'}}>
+                                    <Text style={{...styles.titleText, marginTop:5}}>시설 이름</Text>
+                                    <Text style={{...styles.titleText, marginTop:5, marginLeft:10, fontSize:14,}}>* 수정 불가</Text>
+                                </View>
+                                <TextInput 
+                                style={{...styles.textinput, marginBottom:0, color:"grey" }}
+                                value={facName}
+                                editable={false}
+                                ></TextInput>
+                            </View>
+                        ) :(
+                        <View>
+                            <Text style={{...styles.titleText, marginTop:5}}>시설 이름</Text>
+                            <TextInput 
+                            style={{...styles.textinput, marginBottom:0, }}
+                            onChangeText={onChangeNameText}
+                            placeholder="시설 이름"
+                            value={facName}
+                            maxLength={50}
+                            editable={true}
+                            autoCorrect={false}
+                            ></TextInput>
+                        </View>
+                        )
+                    }
+                    
                 </View>
                 
 
@@ -159,7 +231,14 @@ export default function DetailAdminSignUp({navigation, route}) {
                             <Text style={{...styles.normalTextBlack}}>오픈 시간</Text>
                             <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10 , width:SCREEN_WIDTH*0.3}}
                             onPress={() => showTimePicker("open")}>
-                                <Text style={{...styles.normalText}}>{openTime}</Text>
+                                {
+                                    openTime === null || openTime === undefined || openTime==="" ? (
+                                        <Text style={{...styles.normalText}}>시간 선택</Text>
+                                    ) : (
+                                        <Text style={{...styles.normalText}}>{openTime.substring(0,2)+"시 "+openTime.substring(2,4)+"분"}</Text>
+                                    )
+                                }
+                                
                             </TouchableOpacity>
                             <DateTimePickerModal
                                 isVisible={isTimePickerVisible}
@@ -168,13 +247,20 @@ export default function DetailAdminSignUp({navigation, route}) {
                                 onCancel={hideTimePicker}
                                 confirmTextIOS="확인"
                                 cancelTextIOS="취소"
+                                date={time}
                             />
                         </View>
                         <View style={{marginLeft:30, alignItems:'center'}}>
                             <Text style={{...styles.normalTextBlack}}>마감 시간</Text>
                             <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10, width:SCREEN_WIDTH*0.3 }}
                             onPress={() => showTimePicker("close")}>
-                                <Text style={{...styles.normalText}}>{closeTime}</Text>
+                                 {
+                                    closeTime === null || closeTime === undefined || closeTime === "" ? (
+                                        <Text style={{...styles.normalText}}>시간 선택</Text>
+                                    ) : (
+                                        <Text style={{...styles.normalText}}>{closeTime.substring(0,2)+"시 "+closeTime.substring(2,4)+"분"}</Text>
+                                    )
+                                }
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -248,16 +334,16 @@ export default function DetailAdminSignUp({navigation, route}) {
                         infoMode === false ? (
                             <TouchableOpacity  style={{flexDirection:'row', alignItems:'center'}} onPress={() => setInfoMode(true)}>
                                 <Text style={{fontSize:14, marginRight:5, color:"grey"}}>설명보기</Text>
-                                <AntDesign name="caretdown" size={20} color="grey" />
+                                <AntDesign name="caretdown" size={15} color="grey" />
                             </TouchableOpacity>
                         ) : (
                             <View>
                                 <TouchableOpacity style={{flexDirection:'row', alignItems:'center'}} onPress={() => setInfoMode(false)}>
                                     <Text style={{fontSize:14, marginRight:5, color:"grey"}}>설명닫기</Text>
-                                    <AntDesign name="caretup" size={20} color="grey" />
+                                    <AntDesign name="caretup" size={15} color="grey" />
                                 </TouchableOpacity>
                                 <Text style={{...styles.normalTextBlack, marginTop:10}}>높은 등급일수록 많은 일수, 적은 금액을 설정하면 됩니다.
-                    예약 가능일은 ‘오늘’부터 며칠 뒤까지 예약이 가능한지를 의미합니다. 금액은 시간 단위별 예약 금액을 의미합니다.</Text>
+                    일수는 오늘부터 며칠 뒤까지 예약이 가능한지를 의미합니다. 금액은 시간 단위별 예약 금액을 의미합니다.</Text>
                             </View>
                         )
                     }

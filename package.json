@@ -10,6 +10,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@baronha/react-native-multiple-image-picker": "^0.4.10",
     "@react-native-community/checkbox": "^0.5.12",
     "@react-native-community/datetimepicker": "^4.0.1",
     "@react-native-community/masked-view": "^0.1.11",
@@ -27,6 +28,7 @@
     "react-native-dropdown-picker": "^5.3.0",
     "react-native-easy-toast": "^2.0.0",
     "react-native-gesture-handler": "~2.1.0",
+    "react-native-image-picker": "^4.8.3",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-modal": "^13.0.1",
     "react-native-modal-datetime-picker": "^13.1.2",
