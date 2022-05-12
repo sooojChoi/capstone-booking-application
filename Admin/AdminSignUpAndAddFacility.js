@@ -1,8 +1,7 @@
 // 세부시설 여러개 추가하는 화면
 
-import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity, SafeAreaView, KeyboardAwareScrollView, ScrollView } from 'react-native';
-import React, {useEffect, useState, useRef,} from "react";
-import Toast, {DURATION} from 'react-native-easy-toast'
+import { StyleSheet, Text, View, Dimensions, Alert, TouchableOpacity, SafeAreaView, KeyboardAwareScrollView, ScrollView } from 'react-native';
+import React, {useEffect, useState,} from "react";
 import { FlatList } from 'react-native-gesture-handler';
 import { AntDesign } from '@expo/vector-icons';
 
@@ -10,11 +9,10 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function AdminSignUpAndAddFacility({navigation, route}) {
-    const [facName, onChangeNameText] = useState("");  // 세부 시설 등록이면 있고, 아니면 이름 입력은 안함.
     const [facInfo, setFacInfo] = useState([]); // 등록할 시설 정보를 담는 오브젝트
 
-    const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
-    
+    const [isAllInfoEntered, setIsAllInfoEntered] = useState(false);  // true이면 아래 '입력 완료'버튼이 활성화된다.
+
     // '시설 추가'버튼을 누르면 동작함
     const goToDetailScene = () =>{
         navigation.navigate('DetailAdminSignUp', {sort: 'add', facility: null})
@@ -33,7 +31,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
         console.log(facObj)
         navigation.navigate('DetailAdminSignUp', {sort: 'modify', facility : facObj})
    //     console.log(facInfo.filter((value) => value.facilityName === name))
-
+        
        
     }
 
@@ -42,56 +40,110 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
         const params = route.params
         const name = params?.facility
         console.log(name)
+
+        if(facInfo.length !==0){
+            setIsAllInfoEntered(true)
+        }
     
         if(name === undefined || name === "" || name === null){
             console.log("nothing")
+            console.log(facInfo)
         }else{
-            // const tempArray = []
-            // facInfo.map((value)=> {
-            //     const facN = value.facilityName; const openTime = value.openTime;
-            //     const closeTime = value.closeTime;
-            //     const unitHour = value.unitHour;   const unitMin = value.unitMin;
-            //     const minPlayer = value.minPlayer; const maxPlayer = value.maxPlayer;
-            //     const booking1 = value.booking1
-            //     const booking2 = value.booking2
-            //     const booking3 = value.booking3
-            //     const cost1 = value.cost1; 
-            //     const cost2 = value.cost2; const cost3 = value.cost3;
-            //     tempArray.push({ facilityName: facN, closeTime: closeTime, openTime:openTime,
-            //         unitHour: unitHour, unitMin:unitMin, minPlayer: minPlayer, maxPlayer: maxPlayer,
-            //         booking1: booking1, booking2: booking2, booking3: booking3,
-            //         cost1:cost1, cost2: cost2, cost3: cost3 
+            setIsAllInfoEntered(true)
+            const list = params?.facility
+            const tempArray = []
+            facInfo.map((value)=> {
+                const facN = value.facilityName; const openTime = value.openTime;
+                const closeTime = value.closeTime;
+                const unitTime = value.unitTime; 
+                const minPlayer = value.minPlayer; const maxPlayer = value.maxPlayer;
+                const booking1 = value.booking1
+                const booking2 = value.booking2
+                const booking3 = value.booking3
+                const cost1 = value.cost1; 
+                const cost2 = value.cost2; const cost3 = value.cost3;
+                tempArray.push({ facilityName: facN, closeTime: closeTime, openTime:openTime,
+                    unitTime: unitTime, minPlayer: minPlayer, maxPlayer: maxPlayer,
+                    booking1: booking1, booking2: booking2, booking3: booking3,
+                    cost1:cost1, cost2: cost2, cost3: cost3 
 
-            //     })
-            // })
-            // console.log("tempArray: "+tempArray)
-            // tempArray.find((value) => {
-            //     if(value.facilityName === params?.facility.facilityName){
-            //         value = params?.facility
-            //         return;
-            //     }
-            // })
-            var mode = 1
-            mode = facInfo.find((value)=> {
-                if(value.facilityName === params?.facility.facilityName){
-                    console.log("what?!")
-                    return 0;
+                })
+            })
+            console.log("tempArray: "+tempArray)
+          
+            var mode = 0
+            tempArray.find((value)=> {
+                if(value.facilityName === list.facilityName){
+                    // 기존에 있는 것은, 새로 추가하는 것이 아니라 수정하는 것이다.
+                    mode = 1;
+                    value.facilityName = list.facilityName
+                    value.openTime = list.openTime
+                    value.closeTime = list.closeTime
+                    value.unitTime = list.unitTime
+                    value.minPlayer = list.minPlayer
+                    value.maxPlayer = list.maxPlayer
+                    value.booking1 = list.booking1
+                    value.booking2 = list.booking2
+                    value.booking3 = list.booking3
+                    value.cost1 = list.cost1
+                    value.cost2 = list.cost2
+                    value.cost3 = list.cost3
                 }
             })
-            if(mode === 1){
-                const list = params?.facility
+            // 기존에 없으면 새로 추가, 있으면 수정.
+            if(mode === 0){
                 //  console.log("list: "+list)
                 setFacInfo(arr => [...arr, list])
+            }
+            else{
+                setFacInfo(tempArray)
             }
           
         }
     },[route.params?.facility])
 
+
+    // 각 시설을 long Press하면 호출되는 함수. 시설 정보를 삭제하는 코드 구현.
+    const deleteFacility = (name) =>{
+        Alert.alert("삭제하시겠습니까?",name ,[
+            {text:"취소"},
+            {text: "삭제", onPress: () => {
+                const tempArray = []
+                facInfo.map((value)=> {
+                    const facN = value.facilityName; const openTime = value.openTime;
+                    const closeTime = value.closeTime;
+                    const unitTime = value.unitTime; 
+                    const minPlayer = value.minPlayer; const maxPlayer = value.maxPlayer;
+                    const booking1 = value.booking1
+                    const booking2 = value.booking2
+                    const booking3 = value.booking3
+                    const cost1 = value.cost1; 
+                    const cost2 = value.cost2; const cost3 = value.cost3;
+                    tempArray.push({ facilityName: facN, closeTime: closeTime, openTime:openTime,
+                        unitTime: unitTime, minPlayer: minPlayer, maxPlayer: maxPlayer,
+                        booking1: booking1, booking2: booking2, booking3: booking3,
+                        cost1:cost1, cost2: cost2, cost3: cost3 
+
+                    })
+                })
+
+                const newArray = tempArray.filter((value)=>value.facilityName !== name)
+                setFacInfo(newArray)
+
+                if(newArray.length ===0){
+                    setIsAllInfoEntered(false)
+                }
+            },},
+          ]);
+
+    }
+
+
     const renderGridItem = (itemData, index) => {
-        const value = itemData.item
        
         return (
-            <TouchableOpacity onPress={()=>goToDetailSceneAgain(itemData.item.facilityName)}>
+            <TouchableOpacity onPress={()=>goToDetailSceneAgain(itemData.item.facilityName)}
+            onLongPress={() => deleteFacility(itemData.item.facilityName)}>
               <View style={{...styles.flatListStyle, flexDirection:'row', justifyContent:'space-between'}}>
                 
               <Text style={{fontSize:15, color:"#191919"}}>
