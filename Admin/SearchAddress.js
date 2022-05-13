@@ -6,7 +6,6 @@ import Postcode from '@actbase/react-daum-postcode';
 
 export default function SearchAddress({navigation}) {
 
-
     const addressIsClicked = (data) => {
         //JSON.stringify(data)
         console.log(data.address)
