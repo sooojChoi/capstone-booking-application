@@ -21,24 +21,25 @@ import GenerateAllocation from './Admin/generateAllocation';
 import SearchFacility from './User/searchFacility';
 import SignUpNavigation from './User/SignIn';
 import Home from './User/Home';
+import FirebaseCloudDB from './FirebaseCloudDB';
 
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 관리자(Admin) UI
 
-  return (<Home></Home>) // 홈(유진)
+  //return (<Home></Home>) // 홈(유진)
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
   //return (<GenerateAllocation></GenerateAllocation>)//관리자 allocation 생성(혜림)
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
   //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
 
   //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
- 
+
   //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
   //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
   //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
- 
+
 
   //return (<UserPermissionNavigation></UserPermissionNavigation>)  //사용자 승인(수진)
   //return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진)
@@ -61,10 +62,9 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
 
+  //return (<View></View>) // 에러 방지 View
 
-
-  return (<View></View>) // 에러 방지 View
-
+  return (<FirebaseCloudDB></FirebaseCloudDB>) // Cloud Firestore 예제
 }
 
 const styles = StyleSheet.create({
