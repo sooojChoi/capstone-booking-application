@@ -16,39 +16,38 @@ export class UserTable {
         new user("gt33", "이희태", "010-0477-6889", 20220429, null),
     ];
 
-    add(user){
-        for(var existing of this.users){
-            if(existing.id == user.id){
+    add(user) {
+        for (var existing of this.users) {
+            if (existing.id == user.id) {
                 return
             }
         }
         this.users.push(user)
     }
 
-    modify(user){
-        for(var i=0;i<this.users.length;i++){
-            if(this.users[i].id == user.id){
+    modify(user) {
+        for (var i = 0; i < this.users.length; i++) {
+            if (this.users[i].id == user.id) {
                 this.users[i] = user
                 return
             }
         }
     }
 
-    remove(id){
-        for(var i=0;i<this.users.length;i++){
-            if(this.users[i].id == id){
+    remove(id) {
+        for (var i = 0; i < this.users.length; i++) {
+            if (this.users[i].id == id) {
                 this.users.splice(i, 1)
                 return
             }
         }
     }
 
-
     // 이름으로 user 목록 얻기
-    getsByName(name){
+    getsByName(name) {
         var result = []
-        for(var existing of this.users){
-            if(existing.name == name){
+        for (var existing of this.users) {
+            if (existing.name == name) {
                 result.push(existing)
             }
         }
@@ -56,25 +55,21 @@ export class UserTable {
     }
 
     //id로 user 목록 얻기 (추가: 수진)
-    getsById(id){
+    getsById(id) {
         var result = []
-        for(var existing of this.users){
-            if(existing.id == id){
+        for (var existing of this.users) {
+            if (existing.id == id) {
                 result.push(existing)
             }
         }
         return result
     }
-  
-
-
-
 
     // allowDate가 null인 사용자 목록 불러오기
-    getsAllowWithNull(){
+    getsAllowWithNull() {
         var result = []
-        for(var existing of this.users){
-            if(existing.allowDate == null){
+        for (var existing of this.users) {
+            if (existing.allowDate == null) {
                 result.push(existing)
             }
         }

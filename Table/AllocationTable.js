@@ -43,7 +43,6 @@ export class AllocationTable {
         }
     }
 
-
     // facilityId로 목록 얻기
     getsByFacilityId(facilityId){
         var result = []

@@ -1,6 +1,6 @@
 // Database.js
 
-import { user, facility,permission, discountRate, allocation, booking } from "./Category";
+import { user, facility, permission, discountRate, allocation, booking } from "./Category";
 
 export const USER = [
     new user("yjb", "배유진", "010-1234-5678", 20220325, "2022-03-27"),
@@ -16,17 +16,17 @@ export const USER = [
     new user("ookk33", "김태희", "010-5522-5655", 20220310, null),
     new user("gt33", "이희태", "010-0477-6889", 20220429, null),
 ];
- 
+
 export const FACILITY = [
-    new facility("hante1", "한성테니스장1", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000),
-    new facility("hante2", "한성테니스장2", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
-    new facility("hante3", "한성테니스장3", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
-    new facility("hanfs1", "한성풋살장1", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000),
-    new facility("hanfs2", "한성풋살장2", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
-    new facility("hanfs3", "한성풋살장3", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
-    new facility("hanfs4", "한성풋살장4", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000),
-    new facility("hanhk1", "한성하키장1", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000), 
-    new facility("hanhk2", "한성하키장2", 10 , 22 , 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hante1", "한성테니스장1", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hante2", "한성테니스장2", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hante3", "한성테니스장3", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hanfs1", "한성풋살장1", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hanfs2", "한성풋살장2", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hanfs3", "한성풋살장3", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hanfs4", "한성풋살장4", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hanhk1", "한성하키장1", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
+    new facility("hanhk2", "한성하키장2", 10, 22, 1, 6, 21, 14, 7, 5000, 7000, 10000),
 ];
 
 export const PERMISSION = [
@@ -41,14 +41,12 @@ export const PERMISSION = [
     new permission("chmsoo", "hante1", 3),
     new permission("kyh", "hante1", 3),
     new permission("sjc", "hante1", 3),
-    
 ];
 
 export const DISCOUNTRATE = [
     new discountRate("hante1", 15, 20),
     new discountRate("hante2", 12, 20),
     new discountRate("hante3", 17, 20),
-    
 ];
 
 export const ALLOCATION = [
@@ -61,7 +59,7 @@ export const ALLOCATION = [
 ];
 
 export const BOOKING = [
-    new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, false,20000,"010-1234-5678"),
-    new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, false,30000,"010-1234-5678"),
-    new booking("sbp", "hante2", "2022-03-28-12:00", "2022-03-25-12:00", 6, true,10000,"010-1234-1212"),
+    new booking("yjb", "hante1", "2022-03-25-12:00", "2022-03-25-09:00", 4, false, 20000, "010-1234-5678"),
+    new booking("yjb", "hante2", "2022-03-28-10:00", "2022-03-25-12:00", 6, false, 30000, "010-1234-5678"),
+    new booking("sbp", "hante2", "2022-03-28-12:00", "2022-03-25-12:00", 6, true, 10000, "010-1234-1212"),
 ]
