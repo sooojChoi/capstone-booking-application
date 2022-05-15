@@ -40,7 +40,6 @@ export class DiscountRateTable {
         }
     }
 
-
     // 이름으로 user 목록 얻기
     gets(facilityId){
         var result = []
@@ -51,5 +50,4 @@ export class DiscountRateTable {
         }
         return result
     }
-
 }

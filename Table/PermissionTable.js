@@ -17,10 +17,10 @@ export class PermissionTable {
         new permission("sjc", "hante1", 1),
     ];
 
-    add(permission){
-        for(var existing of this.permissions){
-            if(existing.userId == permission.userId){
-                if(existing.facilityId == permission.facilityId){
+    add(permission) {
+        for (var existing of this.permissions) {
+            if (existing.userId == permission.userId) {
+                if (existing.facilityId == permission.facilityId) {
                     return
                 }
             }
@@ -28,41 +28,41 @@ export class PermissionTable {
         this.permissions.push(permission)
     }
 
-    modify(permission){
-        for(var i=0;i<this.permissions.length;i++){
-            if(this.permissions[i].userId == permission.userId){
-                if(this.permissions[i].facilityId == permission.facilityId)
-                this.permissions[i] = permission
+    modify(permission) {
+        for (var i = 0; i < this.permissions.length; i++) {
+            if (this.permissions[i].userId == permission.userId) {
+                if (this.permissions[i].facilityId == permission.facilityId)
+                    this.permissions[i] = permission
                 return
             }
         }
     }
 
-    remove(userId, facilityId){
-        for(var i=0;i<this.permissions.length;i++){
-            if(this.permissions[i].userId == userId){
-                if(this.permissions[i].facilityId == facilityId)
-                this.permissions.splice(i, 1)
+    remove(userId, facilityId) {
+        for (var i = 0; i < this.permissions.length; i++) {
+            if (this.permissions[i].userId == userId) {
+                if (this.permissions[i].facilityId == facilityId)
+                    this.permissions.splice(i, 1)
                 return
             }
         }
     }
-    
+
     // userId로 목록 얻기
-    getsByUserId(userId){
+    getsByUserId(userId) {
         var result = []
-        for(var existing of this.permissions){
-            if(existing.userId == userId){
+        for (var existing of this.permissions) {
+            if (existing.userId == userId) {
                 result.push(existing)
             }
         }
         return result
     }
     // facilityId로 목록 얻기
-    getsByFacilityId(facilityId){
+    getsByFacilityId(facilityId) {
         var result = []
-        for(var existing of this.permissions){
-            if(existing.facilityId == facilityId){
+        for (var existing of this.permissions) {
+            if (existing.facilityId == facilityId) {
                 result.push(existing)
             }
         }
@@ -70,18 +70,15 @@ export class PermissionTable {
     }
 
     // 해당시설 userId로 grade얻기
-    getsByUserIdFacilityId(userId, facilityId){
+    getsByUserIdFacilityId(userId, facilityId) {
         var result = []
-        for(var existing of this.permissions){
-            if(existing.userId == userId){
-                if(existing.facilityId == facilityId){
+        for (var existing of this.permissions) {
+            if (existing.userId == userId) {
+                if (existing.facilityId == facilityId) {
                     result.push(existing.grade)
                 }
             }
         }
         return result
     }
-
-    
-    
 }
