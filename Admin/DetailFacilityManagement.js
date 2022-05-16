@@ -116,53 +116,53 @@ export default function DetailFacilityManagement({ route, navigation }) {
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>NAME</Text>
-            <TextInput style={styles.name} onChangeText={text => setName(text)}>{name}</TextInput>
+            <TextInput style={styles.name} onChangeText={setName}>{name}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>OPEN TIME</Text>
-            <TextInput style={styles.timeTInput} onChangeText={text => setOpenTime(text)}>{openTime}</TextInput>
+            <TextInput style={styles.timeTInput} onChangeText={setOpenTime}>{openTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>CLOSE TIME</Text>
-            <TextInput style={styles.timeTInput} onChangeText={text => setCloseTime(text)}>{closeTime}</TextInput>
+            <TextInput style={styles.timeTInput} onChangeText={setCloseTime}>{closeTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>UNIT TIME</Text>
-            <TextInput style={styles.timeTInput} onChangeText={text => setUnitTime(text)}>{unitTime}</TextInput>
+            <TextInput style={styles.timeTInput} onChangeText={setUnitTime}>{unitTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>수용 인원</Text>
-            <TextInput style={styles.name} onChangeText={text => setMaxPlayers(text)}>{maxPlayers}</TextInput>
+            <TextInput style={styles.name} onChangeText={setMaxPlayers}>{maxPlayers}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>예약 허용 날짜</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={text => setBooking1(text)}>{booking1}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={setBooking1}>{booking1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={text => setBooking2(text)}>{booking2}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={setBooking2}>{booking2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={text => setBooking3(text)}>{booking3}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={setBooking3}>{booking3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>등급별 사용료</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={text => setCost1(text)}>{cost1}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={setCost1}>{cost1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={text => setCost2(text)}>{cost2}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={setCost2}>{cost2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={text => setCost3(text)}>{cost3}</TextInput>
+            <TextInput style={styles.gradeTInput} onChangeText={setCost3}>{cost3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>시설 사진</Text>
