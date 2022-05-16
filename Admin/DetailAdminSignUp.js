@@ -82,7 +82,7 @@ export default function DetailAdminSignUp({navigation, route}) {
         const closeHour = Number(closeTime.substring(0,2))*60
         const closeMin = Number(closeTime.substring(4,6))
 
-        var Facility = {}
+        var Facility = { }
         if(gradeSetting === false){
             Facility = {
                 facilityName: facName,

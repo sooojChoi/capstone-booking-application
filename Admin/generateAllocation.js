@@ -64,7 +64,7 @@ export default function GenerateAllocation(){
   const facilityTable=new FacilityTable();
   /*facilityTable의 정보를 받아옴*/ 
   let i=0;
-const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,title:elem.id}});
+  const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,title:elem.id}});
 //console.log(facilityArray)
   //console.log(facilityTable.facilitys)
   let openTime,closeTime,unitTime;
@@ -79,8 +79,8 @@ const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,titl
         
         let k=0;
         while(openTime+j*unitTime<closeTime){
-         openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
-         ta.push(openTime+j*unitTime)
+          openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
+          ta.push(openTime+j*unitTime)
           t.push(ThatDay+"T"+(openTime+j*unitTime)+":00")
             j++;
         }
