@@ -4,14 +4,16 @@ import { StyleSheet, Text, View, Dimensions, Alert, TouchableOpacity, SafeAreaVi
 import React, {useEffect, useState,} from "react";
 import { FlatList } from 'react-native-gesture-handler';
 import { AntDesign } from '@expo/vector-icons';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function AdminSignUpAndAddFacility({navigation, route}) {
     const [facInfo, setFacInfo] = useState([]); // 등록할 시설 정보를 담는 오브젝트
-
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(false);  // true이면 아래 '입력 완료'버튼이 활성화된다.
+    const [facilityBasicInfo, setFacilityBasicInfo] = useState();
 
     // '시설 추가'버튼을 누르면 동작함
     const goToDetailScene = () =>{
@@ -22,12 +24,59 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
     const goToNextScreen = () =>{
         // 테이블에 시설들 추가하고, 관리자 어플 홈 화면으로 이동함.
 
+        // 시설 기본 정보
+        const basicInfo = {
+            id: facilityBasicInfo.id,
+            password: facilityBasicInfo.password,
+            name: facilityBasicInfo.facilityBasicName,
+            address: facilityBasicInfo.facilityAddress,
+            tel: facilityBasicInfo.facilityNumber,
+            explain: facilityBasicInfo.explain
+        }
+        facInfo.map((value)=>{
+            const detailInfo = {
+                name: value.name,
+                openTime: value.openTime, closeTime: value.closeTime, unitTime: value.unitTime,
+                minPlayer: value.minPlayer, maxPlayer: value.maxPlayer,
+                booking1: value.booking1, booking2: value.booking2, booking3: value.booking3,
+                cost1: value.cost1,  cost2: value.cost2,  cost3: value.cost3,
+                explain: value.explain 
+            }
+
+            CreateFacility(basicInfo, detailInfo)
+        })
+
+
+    }
+
+     // Random ID로 문서 생성 -> Facility Document
+     const CreateFacility = (basicRef, detailRef) => {
+        const ref1 = doc(db, "Facility", basicRef.id)
+        const ref2 = doc(db, "Facility", basicRef.id, "Detail", detailRef.name)
+
+        // setDoc(문서 위치, 데이터)
+        setDoc(ref1, basicRef)
+            // Handling Promises
+            .then(() => {
+                    setDoc(ref2, detailRef)
+                    // Handling Promises
+                    .then(() => {
+                        alert("User Document Created!")
+                    })
+                    .catch((error) => {
+                        alert(error.message)
+                    })
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+
     }
     
     // flatList에서 각 시설 클릭하면 호출되는 함수
     const goToDetailSceneAgain = (name) =>{
         console.log("#############")
-        const facObj = facInfo.filter((value) => value.facilityName === name)[0]
+        const facObj = facInfo.filter((value) => value.name === name)[0]
         console.log(facObj)
         navigation.navigate('DetailAdminSignUp', {sort: 'modify', facility : facObj})
    //     console.log(facInfo.filter((value) => value.facilityName === name))
@@ -39,10 +88,19 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
     useEffect(()=>{
         const params = route.params
         const name = params?.facility
+        const basicInfo = params?.facilityBasicInfo
         console.log(name)
 
         if(facInfo.length !==0){
             setIsAllInfoEntered(true)
+        }
+
+        if(basicInfo !== undefined && basicInfo !== null){
+            console.log("----------------시설 기본 정보--------------")
+            console.log(basicInfo);
+            setFacilityBasicInfo(basicInfo);
+        }else{
+            console.log("기본 정보 없음.")
         }
     
         if(name === undefined || name === "" || name === null){
@@ -53,7 +111,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             const list = params?.facility
             const tempArray = []
             facInfo.map((value)=> {
-                const facN = value.facilityName; const openTime = value.openTime;
+                const facN = value.name; const openTime = value.openTime;
                 const closeTime = value.closeTime;
                 const unitTime = value.unitTime; 
                 const minPlayer = value.minPlayer; const maxPlayer = value.maxPlayer;
@@ -62,10 +120,11 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
                 const booking3 = value.booking3
                 const cost1 = value.cost1; 
                 const cost2 = value.cost2; const cost3 = value.cost3;
-                tempArray.push({ facilityName: facN, closeTime: closeTime, openTime:openTime,
+                const explain = value.explain;
+                tempArray.push({ name: facN, closeTime: closeTime, openTime:openTime,
                     unitTime: unitTime, minPlayer: minPlayer, maxPlayer: maxPlayer,
                     booking1: booking1, booking2: booking2, booking3: booking3,
-                    cost1:cost1, cost2: cost2, cost3: cost3 
+                    cost1:cost1, cost2: cost2, cost3: cost3, explain: explain
 
                 })
             })
@@ -73,10 +132,11 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
           
             var mode = 0
             tempArray.find((value)=> {
-                if(value.facilityName === list.facilityName){
+                if(value.name === list.name){
                     // 기존에 있는 것은, 새로 추가하는 것이 아니라 수정하는 것이다.
                     mode = 1;
-                    value.facilityName = list.facilityName
+                    value.name = list.name
+                    value.explain = list.explain
                     value.openTime = list.openTime
                     value.closeTime = list.closeTime
                     value.unitTime = list.unitTime
@@ -110,7 +170,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             {text: "삭제", onPress: () => {
                 const tempArray = []
                 facInfo.map((value)=> {
-                    const facN = value.facilityName; const openTime = value.openTime;
+                    const facN = value.name; const openTime = value.openTime;
                     const closeTime = value.closeTime;
                     const unitTime = value.unitTime; 
                     const minPlayer = value.minPlayer; const maxPlayer = value.maxPlayer;
@@ -119,15 +179,16 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
                     const booking3 = value.booking3
                     const cost1 = value.cost1; 
                     const cost2 = value.cost2; const cost3 = value.cost3;
-                    tempArray.push({ facilityName: facN, closeTime: closeTime, openTime:openTime,
+                    const explain = value.explain;
+                    tempArray.push({ name: facN, closeTime: closeTime, openTime:openTime,
                         unitTime: unitTime, minPlayer: minPlayer, maxPlayer: maxPlayer,
                         booking1: booking1, booking2: booking2, booking3: booking3,
-                        cost1:cost1, cost2: cost2, cost3: cost3 
+                        cost1:cost1, cost2: cost2, cost3: cost3 , explain:explain
 
                     })
                 })
 
-                const newArray = tempArray.filter((value)=>value.facilityName !== name)
+                const newArray = tempArray.filter((value)=>value.name !== name)
                 setFacInfo(newArray)
 
                 if(newArray.length ===0){
@@ -142,12 +203,12 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
     const renderGridItem = (itemData, index) => {
        
         return (
-            <TouchableOpacity onPress={()=>goToDetailSceneAgain(itemData.item.facilityName)}
-            onLongPress={() => deleteFacility(itemData.item.facilityName)}>
+            <TouchableOpacity onPress={()=>goToDetailSceneAgain(itemData.item.name)}
+            onLongPress={() => deleteFacility(itemData.item.name)}>
               <View style={{...styles.flatListStyle, flexDirection:'row', justifyContent:'space-between'}}>
                 
               <Text style={{fontSize:15, color:"#191919"}}>
-                  {itemData.item.facilityName}
+                  {itemData.item.name}
               </Text>
               <AntDesign name="right" size={22} color="#787878" />
               </View>
