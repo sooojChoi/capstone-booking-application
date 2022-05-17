@@ -23,7 +23,6 @@ import SignIn from './User/SignIn';
 import SignUpNavigation from './User/SignIn';
 import CloudFirestore from './CloudFirestore';
 
-
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   //return (<Home></Home>) // 홈(유진)
 
@@ -33,9 +32,8 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<GenerateAllocation></GenerateAllocation>)//관리자 allocation 생성(혜림)
 
-
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
-  //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
+  return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
 
   //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
@@ -58,12 +56,9 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
 
-
   //return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색 (수진)
 
   //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
-
-
 
   return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
 

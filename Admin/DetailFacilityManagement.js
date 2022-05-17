@@ -3,6 +3,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
+import { doc, collection, getDocs, updateDoc, query } from 'firebase/firestore';
+import { db } from '../Core/Config';
 import * as ImagePicker from 'expo-image-picker';
 import { FacilityTable } from '../Table/FacilityTable'
 
@@ -13,20 +15,24 @@ export default function DetailFacilityManagement({ route, navigation }) {
   // DB Table
   const facilityTable = new FacilityTable();
   const facilityId = route.params.facilityId;
-  const [facilityInfo, setFacilityInfo] = useState({});
+  const [facilityInfo, setFacilityInfo] = useState([]);
   const facilityArray = facilityTable.facilitys;
-  
-  const [name, setName] = useState('');
-  const [openTime, setOpenTime] = useState('');
-  const [closeTime, setCloseTime] = useState('');
-  const [unitTime, setUnitTime] = useState('');
-  const [maxPlayers, setMaxPlayers] = useState('');
-  const [booking1, setBooking1] = useState('');
-  const [booking2, setBooking2] = useState('');
-  const [booking3, setBooking3] = useState('');
-  const [cost1, setCost1] = useState('');
-  const [cost2, setCost2] = useState('');
-  const [cost3, setCost3] = useState('');
+
+  // Cloud Firestore
+  const [factInfo, setFactInfo] = useState([]);
+
+  const [name, setName] = useState("");
+  const [openTime, setOpenTime] = useState("");
+  const [closeTime, setCloseTime] = useState("");
+  const [unitTime, setUnitTime] = useState("");
+  const [maxPlayers, setMaxPlayers] = useState("");
+  const [minPlayers, setMinPlayers] = useState("");
+  const [booking1, setBooking1] = useState("");
+  const [booking2, setBooking2] = useState("");
+  const [booking3, setBooking3] = useState("");
+  const [cost1, setCost1] = useState("");
+  const [cost2, setCost2] = useState("");
+  const [cost3, setCost3] = useState("");
 
   // 시설 정보 가져오기(초기값)
   // 사진, 설명에 대한 DB 관리는 어떻게 할 것인가?(Firebase 연동 시 고려하기)
@@ -57,8 +63,42 @@ export default function DetailFacilityManagement({ route, navigation }) {
     })
   }
 
+  const initSetFacilityInfo = () => {
+    const ref = collection(db, "Facility", "Hansung", "Detail")
+    const data = query(ref)
+    let result = [] // 가져온 User 목록을 저장할 변수
+
+    getDocs(data)
+      .then((snapshot) => {
+        snapshot.forEach((doc) => {
+          if (doc.data().id == facilityId) {
+            result.push(doc.data())
+            console.log("id : " + doc.data().id)
+
+            setName(doc.data().name)
+            setOpenTime(doc.data().openTime)
+            setCloseTime(doc.data().closeTime)
+            setUnitTime(doc.data().unitTime)
+            setMaxPlayers(doc.data().maxPlayers)
+            setMinPlayers(doc.data().minPlayers)
+            setBooking1(doc.data().booking1)
+            setBooking2(doc.data().booking2)
+            setBooking3(doc.data().booking3)
+            setCost1(doc.data().cost1)
+            setCost2(doc.data().cost2)
+            setCost3(doc.data().cost3)
+          }
+        });
+        setFactInfo(result)
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
   useEffect(() => {
-    initialSetFacilityInfo();
+    //initialSetFacilityInfo();
+    initSetFacilityInfo();
   }, [])
 
   // 시설 사진 변경
@@ -79,10 +119,12 @@ export default function DetailFacilityManagement({ route, navigation }) {
     }
   };
 
-  // 수정 버튼 선택
+  // 시설 정보 수정
   const changeInfo = () => {
-    const temp = facilityInfo
+    //const temp = facilityInfo
+    const temp = factInfo
 
+    temp.id = facilityId
     temp.name = name
     temp.openTime = openTime
     temp.closeTime = closeTime
@@ -94,16 +136,53 @@ export default function DetailFacilityManagement({ route, navigation }) {
     temp.cost1 = cost1
     temp.cost2 = cost2
     temp.cost3 = cost3
+    console.log(temp.cost3)
 
-    setFacilityInfo({...temp}) // 수정 사항 반영
-    // console.log("********************")
-    // console.log(facilityInfo)
-    // console.log("&&&&&&&&&&&&&&&&&&&&")
-    facilityTable.modify(facilityInfo) // DB 수정
-    // console.log("********************")
-    // console.log(facilityTable.getsById(facilityId))
-    // console.log("&&&&&&&&&&&&&&&&&&&&")
-    navigation.goBack()
+    // setFacilityInfo({ ...temp }) // 수정 사항 반영
+    setFactInfo({ ...temp }) // 수정 사항 반영
+    console.log("********************")
+    console.log(factInfo)
+    console.log("&&&&&&&&&&&&&&&&&&&&")
+    // facilityTable.modify(facilityInfo) // DB 수정
+    // // console.log("********************")
+    // // console.log(facilityTable.getsById(facilityId))
+    // // console.log("&&&&&&&&&&&&&&&&&&&&")
+    // navigation.goBack()
+
+    //console.log(facilityInfo)
+  }
+
+  // 수정 버튼 선택
+  const modifyInfo = () => {
+    const docRef = doc(db, "Facility", "Hansung", "Detail", facilityId)
+
+    const docData = {
+      name: name,
+      openTime: openTime,
+      closeTime: closeTime,
+      unitTime: unitTime,
+      maxPlayers: maxPlayers,
+      booking1: booking1,
+      booking2: booking2,
+      booking3: booking3,
+      cost1: cost1,
+      cost2: cost2,
+      cost3: cost3
+    }
+
+    console.log(docData)
+
+    //setDoc(docRef, docData, { merge: merge })
+    updateDoc(docRef, docData)
+      // Handling Promises
+      .then(() => {
+        alert("Updated Successfully!")
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+
+    //navigation.goBack()
   }
 
   return ( // TextInput 별 DB 형태에 맞춰 유효성 검사 추가하기(Firebase?)
@@ -112,7 +191,7 @@ export default function DetailFacilityManagement({ route, navigation }) {
         <View>
           <View style={styles.list}>
             <Text style={styles.category}>ID</Text>
-            <Text style={styles.id}>{facilityInfo.id}</Text>
+            <Text style={styles.id}>{facilityId}</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>NAME</Text>
@@ -120,49 +199,53 @@ export default function DetailFacilityManagement({ route, navigation }) {
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>OPEN TIME</Text>
-            <TextInput style={styles.timeTInput} onChangeText={setOpenTime}>{openTime}</TextInput>
+            <TextInput style={styles.timeInput} onChangeText={setOpenTime}>{openTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>CLOSE TIME</Text>
-            <TextInput style={styles.timeTInput} onChangeText={setCloseTime}>{closeTime}</TextInput>
+            <TextInput style={styles.timeInput} onChangeText={setCloseTime}>{closeTime}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.timeText}>UNIT TIME</Text>
-            <TextInput style={styles.timeTInput} onChangeText={setUnitTime}>{unitTime}</TextInput>
+            <TextInput style={styles.timeInput} onChangeText={setUnitTime}>{unitTime}</TextInput>
           </View>
           <View style={styles.list}>
-            <Text style={styles.category}>수용 인원</Text>
-            <TextInput style={styles.name} onChangeText={setMaxPlayers}>{maxPlayers}</TextInput>
+            <Text style={styles.timeText}>최대 수용 인원</Text>
+            <TextInput style={styles.timeInput} onChangeText={setMaxPlayers}>{maxPlayers}</TextInput>
+          </View>
+          <View style={styles.list}>
+            <Text style={styles.timeText}>최소 수용 인원</Text>
+            <TextInput style={styles.timeInput} onChangeText={setMinPlayers}>{minPlayers}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>예약 허용 날짜</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={setBooking1}>{booking1}</TextInput>
+            <TextInput style={styles.gradeInput} onChangeText={setBooking1}>{booking1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={setBooking2}>{booking2}</TextInput>
+            <TextInput style={styles.gradeInput} onChangeText={setBooking2}>{booking2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={setBooking3}>{booking3}</TextInput>
+            <TextInput style={styles.gradeInput} onChangeText={setBooking3}>{booking3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>등급별 사용료</Text>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={setCost1}>{cost1}</TextInput>
+            <TextInput style={styles.gradeInput} onChangeText={setCost1}>{cost1}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={setCost2}>{cost2}</TextInput>
+            <TextInput style={styles.gradeInput} onChangeText={setCost2}>{cost2}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeTInput} onChangeText={setCost3}>{cost3}</TextInput>
+            <TextInput style={styles.gradeInput} onChangeText={setCost3}>{cost3}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>시설 사진</Text>
@@ -178,7 +261,7 @@ export default function DetailFacilityManagement({ route, navigation }) {
           </View>
           <TextInput style={styles.explain} multiline={true}></TextInput>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <TouchableOpacity style={{ ...styles.button, backgroundColor: 'skyblue' }} onPress={changeInfo}>
+            <TouchableOpacity style={{ ...styles.button, backgroundColor: 'skyblue' }} onPress={modifyInfo}>
               <Text style={{ fontSize: 18 }}>수정</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
@@ -221,7 +304,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
-    width: 200,
+    width: SCREEN_WIDTH * 0.58,
     height: 40,
     marginLeft: 10,
     fontSize: 20,
@@ -233,12 +316,12 @@ const styles = StyleSheet.create({
     width: 140,
   },
 
-  timeTInput: {
+  timeInput: {
     borderColor: 'lightgray',
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
-    width: SCREEN_WIDTH * 0.35,
+    width: SCREEN_WIDTH * 0.41,
     height: 40,
     marginLeft: 10,
     fontSize: 20,
@@ -250,7 +333,7 @@ const styles = StyleSheet.create({
     width: 60,
   },
 
-  gradeTInput: {
+  gradeInput: {
     borderColor: 'lightgray',
     borderWidth: 1,
     borderRadius: 10,
