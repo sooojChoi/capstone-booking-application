@@ -2,7 +2,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View,Image,ScrollView,TouchableOpacity,FlatList,TextInput,Button,Alert
  } from 'react-native';
-import React,{useState} from "react";
+import React,{useState,useEffect} from "react";
 import { Dimensions } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
@@ -14,6 +14,10 @@ import { DiscountRateTable } from '../Table/DiscountRateTable';
 import Modal from "react-native-modal";
 import { allocation, booking } from '../Category';
 import { BookingTable } from '../Table/BookingTable';
+import { SliderBox } from "react-native-image-slider-box";
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc } from 'firebase/firestore';
+import { db } from '../Core/Config';
+
 
 /*모바일 윈도우의 크기를 가져온다*/
 const {height,width}=Dimensions.get("window");
@@ -28,11 +32,95 @@ export default function BookingFacility() {
   const bookingTable=new BookingTable();
 
 
+  const imgData=[
+    require('../assets/library1.png'),
+    require('../assets/hansung1.png'),
+    require('../assets/hansung2.png'),
+    require('../assets/hante1.png'),
+  ]
+  const [img,setImg]=useState(imgData);
 
+
+// Storing User Data -> 기존 UserTable에서 데이터를 받아 저장하는 방식과 동일함
+const [facilityDoc, setFacilityDoc] = useState([])
+let facilitys;
+ // Facility 목록 가져오기
+    const ReadFacilityList = () => {
+        // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+        const ref = collection(db, "Facility")//내가 가져온건 전체꺼. 세부시설을 가져와야 한다.
+        const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+        let result = [] // 가져온 User 목록을 저장할 변수
+
+        getDocs(data)
+            // Handling Promises
+            .then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    //console.log(doc.id, " => ", doc.data())
+                    result.push({id:doc.id,detail:doc.data()})
+                });
+                setFacilityDoc(result) // useState에 데이터를 저장
+                facilitys=makeFacilityArray(result)
+                console.log("this is facilitys",facilitys)
+                //dropdown list에 들어갈 시설 리스트
+                facilitys.map((elem)=>{facilityArray.push({label:elem.label,value:elem.value})});
+               
+              })
+            .catch((error) => {
+                // MARK : Failure
+                alert(error.message)
+            })
+          
+    }
+    
+
+    // FacilityDoc에 저장한 Facillity 목록 출력하기
+    const printFacilityDoc = () => {
+    
+        console.log("----------facilityDoc----------")
+        console.log(facilityDoc) // User 목록
+
+        let newFacility = [] // userDoc.map를 위한 변수
+        //let findUser = [] // userDoc.find를 위한 변수
+
+        // 가져온 데이터는 기존처럼 배열로 다양한 함수를 사용할 수 있음
+        facilityDoc.map((f) => {
+            const label = f.detail.name
+            const value = f.id//id는 document의 이름이 되어야 한다.
+            newFacility.push({
+                label: label, value: value
+            })
+        })
+
+        console.log("----------facilityDoc.map----------")
+        console.log(newFacility) // facilityDoc.map 결과
+      }
+
+      function makeFacilityArray(facilityDoc){
+        let newFacility = [] // userDoc.map를 위한 변수
+        //let findUser = [] // userDoc.find를 위한 변수
+
+        // 가져온 데이터는 기존처럼 배열로 다양한 함수를 사용할 수 있음
+        console.log("facilityDoc:------",facilityDoc)
+        facilityDoc.map((f) => {
+            const label = f.detail.name
+            const value = f.id//id는 document의 이름이 되어야 한다.
+            newFacility.push({
+                label: label, value: value
+            })
+        })
+        return newFacility;
+      }
 
   /*facilityTable의 정보를 받아옴*/ 
-  const facilityArray=facilityTable.facilitys.map((elem)=>{return {label:elem.name,value:elem.id}});
+  let facilityArray=[];
+  useEffect(()=>{
+    //facilityTable.facilitys.map((elem)=>{facilityArray.push({label:elem.name,value:elem.id})});
+     ReadFacilityList();
+  
+  },[]);
 
+ 
+  
    //dropDownPicker data받아오는 부분
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
@@ -61,7 +149,7 @@ export default function BookingFacility() {
   }
   //null이면 승인되지 않은 user
   //allowdate가 되기 전까진 어플 정지먹는다. 
-    console.log("--------------------allowdate",allowDate)
+    //console.log("--------------------allowdate",allowDate)
 
   /*permissionTable의 정보를 가져옴 */
   const userPermission=permissionTable.getsByUserId(currentUserId)
@@ -311,6 +399,8 @@ const now=new Date();
 
   toggleModal();//예약 완료되고 그걸 어떻게 사용자한테  보여줄지
   reservedAlert();//예약완료 alert
+
+  
 }
 
   return (
@@ -320,10 +410,9 @@ const now=new Date();
     <ScrollView bounces={false}>
 {/*시설 이미지*/}
       <View> 
-          <Image
-          style={styles.FacilityImageStyle}
-            source={require('../assets/library1.png')}
-          />
+        <SliderBox images={img}
+        style={styles.FacilityImageStyle}
+         />
       </View>
 
 {/*페이지 제목을 예약 시설 이름으로 변경*/}
@@ -333,6 +422,9 @@ const now=new Date();
 {/*시설정보 (세부시설 선택 전:전체시설정보, 세부시설 선택 후: 세부시설 정보)*/}
       <View style={styles.FacilityInfoText}> 
             <Text>여기엔 시설 설명이 나옵니다.</Text>
+            <Button onPress={ReadFacilityList} title={"읽기"}/>
+            <Button onPress={printFacilityDoc} title={"프린트"}/>
+
       </View>
 
 
@@ -369,6 +461,16 @@ const now=new Date();
 
 
 </View>    
+{
+                (selectedStartDate === null || value === null)  ? (
+                  <View style={{paddingVertical:70}}>
+                  </View>
+                ) : (
+                  <View style={{paddingVertical:0}}>
+                  </View>
+                )
+              }
+              
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
 
             {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
