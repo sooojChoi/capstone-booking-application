@@ -1,56 +1,31 @@
 //관리자가 버튼 누르면 allocation 생성화면
 
 import { StyleSheet, Text, View, Dimensions, TextInput, 
-  TouchableOpacity,Pressable, SafeAreaView, ScrollView,FlatList } from 'react-native';
-import React, { useState } from "react";
+  TouchableOpacity,Pressable, SafeAreaView, ScrollView,FlatList,Alert } from 'react-native';
+import React, { useState,useEffect } from "react";
 import { allocation } from '../Category';
 import {AllocationTable} from '../Table/AllocationTable';
 import {FacilityTable} from '../Table/FacilityTable';
 import Modal from "react-native-modal";
 
 const {height,width}=Dimensions.get("window");
+//그 시설의 allocation만 보여준다.
 
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'hante1',
-    time:'09:00'
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'hante1',
-    time:'10:00'
-  
-  },
-  {
-    id: '58694a0f-3da-471f-bd96-145571e29d72',
-    title: 'hanfs3',
-    time:'10:00'
-  },
-  {
-      id: '58694a0f-3da1-471f-bd96-145571e2d72',
-      title: 'hanfs3',
-      time:'10:00'
-    },
-    {
-      id: '58694a0f-3da1-471f-bd96145571e29d72',
-      title: 'hanfs3',
-      time:'10:00'
-    },
-];
 const Item = ({ item, onPress}) => (
   <TouchableOpacity onPress={onPress}>
+     <View style={{marginVertical:5}}>
     <Text style={[styles.title]}>{item.title}</Text>
-  </TouchableOpacity>
-);
-const MItem = ({ item, onPress}) => (
-  <TouchableOpacity onPress={onPress}>
-      <View style={{flexDirection:'row',justifyContent:'space-evenly'}}>
-    <Text style={[styles.title]}>{item.title}</Text>
-    <Text style={[styles.title]}>{item.time}</Text>
     </View>
   </TouchableOpacity>
 );
+const MItem = ({ item, onLongPress}) => (
+  <TouchableOpacity onLongPress={onLongPress}>
+      <View style={{marginVertical:5}}>
+    <Text style={[styles.title]}>{item.id}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
 
 
 export default function GenerateAllocation(){
@@ -62,33 +37,105 @@ export default function GenerateAllocation(){
   //console.log(ThatDay)
   const allocationTable=new AllocationTable();
   const facilityTable=new FacilityTable();
+
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedTime,setSelectedTime]=useState(null);
+  const [alloArray,setAlloArray]=useState(setBeforeTime);
+  //const [data,setData]=useState([]);
+
   /*facilityTable의 정보를 받아옴*/ 
   let i=0;
 const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,title:elem.id}});
 //console.log(facilityArray)
   //console.log(facilityTable.facilitys)
   let openTime,closeTime,unitTime;
-  const ta=[];
-    const timeArray=facilityTable.facilitys.map((elem)=>{
-       openTime=elem.openTime
-       closeTime=elem.closeTime
-       unitTime=elem.unitTime
-
-        let j=0;
-        const t=[];
-        
-        let k=0;
-        while(openTime+j*unitTime<closeTime){
-         openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
-         ta.push(openTime+j*unitTime)
-          t.push(ThatDay+"T"+(openTime+j*unitTime)+":00")
-            j++;
-        }
-        return ({id:elem.id,time:t});
-    });
-//console.log(timeArray)
-  const [selectedId, setSelectedId] = useState(null);
+function setBeforeTime(){//여기서는 available이 모두 true인 allocation생성만 하고
+  let timeArray=[];
+  timeArray=facilityTable.facilitys.map((elem)=>{
+     openTime=elem.openTime
+     closeTime=elem.closeTime
+     unitTime=elem.unitTime
+      let j=0;
+      const t=[];
+      
+      let k=0;
+      while(openTime+j*unitTime<closeTime){
+       openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
+      t.push({"time":ThatDay+"T"+(openTime+j*unitTime)+":00","available":true})
+          j++;
+      }
+      return ({id:elem.id,time:t});//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
+  });
+  return timeArray
+}
   
+
+  
+//time의 available이 true인거만 화면에 표시할 data에 담음
+
+let data=[]
+alloArray.map((e)=>{
+  if((e.id===selectedId)){
+    e.time.map((t)=>{
+      if(t.available==true){
+     data.push({id:t.time,available:t.available,facilityId:e.id})
+      }
+   })
+  
+  }
+})
+//console.log(alloArray)
+  //console.log("data---------------------",data)
+
+
+ //여기 뭔가 이상한데 어떻게하는지 몰라서 일단 이렇게 해놓음
+   //선택된 시간이 바뀔때마다 data에 다시 계산된 데이터를 집어넣게 함
+   useEffect(()=>{
+    //console.log("============alloArray changed!========")
+    data.length=0
+    alloArray.map((e)=>{
+      if((e.id===selectedId)){
+        e.time.map((t)=>{
+          if(t.available==true){
+         data.push({id:t.time,available:t.available,facilityId:e.id})
+          }
+       })
+      
+      }
+    })
+    },[selectedTime])
+
+  function setAfterTime(item,array){//선택된 item을 array에서 false로 바꾼다.
+      array.map((e)=>{//alloArray에서 찾아서
+       e.time.map((t)=>{
+         if(t.time===item.id&&item.facilityId===e.id){
+         t.available=false//false로 바꾼다음에
+       }})
+
+     })
+     return array;
+    
+  }
+  
+
+  //예약 못하게 하기
+  const makeBreakTime=(item)=>{
+    Alert.alert(
+      item.id,
+      "이 타임을 쉬는시간으로 설정하시겠습니까?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "OK", onPress: () => {
+          setSelectedTime(item.id);
+          setAlloArray(setAfterTime(item,alloArray))
+        } }
+      ]
+    );
+  }
 
   //마지막 모달
   const [isModalVisible, setModalVisible] = useState(false);
@@ -97,20 +144,14 @@ const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,titl
   setModalVisible(!isModalVisible);
   };
 
-  const generate=()=>{
-      //toggleModal();
-      console.log(selectedId)
-      timeArray.map((elem)=>{
-        if(elem.id===selectedId){
-          elem.time.map((i)=>{
-            allocationTable.add(new allocation(selectedId,i,9,true));
 
-          })
-      }})
-      //allocationTable.add(new allocation(selectedId,,1,true))
-    //  allocationTable.add(new allocation("hante1","2022-06-01T09:00",9,true));
-     // allocationTable.add(new allocation("hante2","2022-06-01T10:00",10,true));
-      console.log("-------------------변경후-------",allocationTable.allocations)
+  const generate=()=>{//여기서 생성한다.
+    console.log(data)
+    data.map((elem)=>{
+      allocationTable.add(new allocation(elem.facilityId,elem.id,1,elem.available));
+
+    })
+       console.log("-------------------변경후-------",allocationTable.allocations)
 
   }
 
@@ -121,23 +162,23 @@ const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,titl
           item={item}
           onPress={()=>{
             setSelectedId(item.id)
-            generate()}
+            toggleModal();
+          }
           }
        
         />
       );
     };
+    
     const renderMItem = ({ item }) => {
       return (
         <MItem
           item={item}
-          onPress={() => {
-              setSelectedId(item.id)
-             
-              //list를 available을 true인거만  보여주기
-              //롱클릭하면 available을 false로 바꾸게(alert?)
-             
-          }}
+          onLongPress={()=>{
+            //setSelectedTime(item.id);
+            makeBreakTime(item);
+          }
+          }
        
         />
       );
@@ -150,11 +191,8 @@ const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,titl
 
   return(
       <View style={{marginTop:50,alignItems:'center',flex:1}}>
-     <TouchableOpacity
-     onPress={toggleModal}
-     ><Text style={{fontSize:30,marginVertical:height*0.02}}>{ThatDay} 한번에 예약 생성하기</Text>
-     </TouchableOpacity>
-     <Text style={{fontSize:30,marginVertical:height*0.02}}>{ThatDay} 시설별로 예약 생성하기</Text>
+     
+     <Text style={{fontSize:30,marginVertical:height*0.02}}>{ThatDay+"\n"}시설별로 예약 생성</Text>
       <FlatList
       data={facilityArray}
       renderItem={renderItem}
@@ -169,16 +207,18 @@ const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,titl
        style={{marginVertical:height*0.1}}
        backdropOpacity={1}
     >
-        <Text>아래 예약목록이 생성됩니다.</Text>
+        <Text style={styles.title}>아래 예약목록이 생성됩니다.</Text>
+        <Text>길게 눌러 쉬는시간 설정 가능</Text>
       <FlatList
-      data={DATA}
+      data={data}
       renderItem={renderMItem}
       keyExtractor={(item) => item.id}
       extraData={selectedId}
     />        
   <View style={{flexDirection:'row',justifyContent:'space-evenly'}}>
         <TouchableOpacity onPress={toggleModal} ><Text style={styles.SelectionTitle}>취소</Text></TouchableOpacity>
-        <TouchableOpacity onPress={generate} ><Text style={styles.SelectionTitle}>생성</Text></TouchableOpacity>
+        <TouchableOpacity onPress={ generate} ><Text style={styles.SelectionTitle}>생성</Text></TouchableOpacity>
+      
         </View>
     </Modal>
 
@@ -212,3 +252,4 @@ SelectionTitle: {
   fontSize:25,
 },
 });
+
