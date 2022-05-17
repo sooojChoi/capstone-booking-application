@@ -263,6 +263,7 @@ useEffect(()=>{
                       style={styles.input} 
                       onChangeText={setPW}
                       secureTextEntry={true}
+                      
                       textContentType="oneTimeCode"
                       placeholder="비밀번호를 입력해주세요."
                       />

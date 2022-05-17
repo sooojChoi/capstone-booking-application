@@ -11,6 +11,7 @@ import AdminSignUpAndAddFacility from './AdminSignUpAndAddFacility';
 import SearchAddress from './SearchAddress';
 import DetailAdminSignUp from './DetailAdminSignUp';
 import * as ImagePicker from 'expo-image-picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 //import { launchImageLibrary} from 'react-native-image-picker';
 //import MultipleImagePicker from '@baronha/react-native-multiple-image-picker';
 
@@ -59,14 +60,21 @@ function AdminSignUp({navigation, route}) {
     const [facAddress, onChangeAddressText] = useState("");
     const [facDetailAddress, onChangeDetailAddressText] = useState("");
 
+    const [adminId, setAdminId] = useState("");
+    const [adminPw, setAdminPw] = useState("");
+
     const [image1, setImage1] = useState();
     const [image2, setImage2] = useState();
     const [image3, setImage3] = useState();
 
+    const [explain, setExplain] = useState("");  // 시설에 대한 설명
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
     const goToNextScreen = () =>{
-        navigation.navigate('SelectFacilitySort', {facilityName: facName})
+        navigation.navigate('SelectFacilitySort', {facilityName: facName, facilityNumber: facNumber,
+        facilityAddress: facAddress+' '+facDetailAddress,
+         image1: image1, image2: image2, image3: image3, explain: explain,
+        id: adminId, password: adminPw})
     }
     
     // 도로명 검색하는 화면으로 이동
@@ -141,8 +149,33 @@ function AdminSignUp({navigation, route}) {
     return <SafeAreaView style={{flex:1, backgroundColor: 'white', alignItems:'center'}}>
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}
         horizontal={false} >
+          <KeyboardAwareScrollView>
             <View style={{alignItems:'center', marginTop: 10,}}>
               <View>
+              <Text style={styles.titleText}>관리자 아이디</Text>
+            <TextInput 
+            style={styles.textinput}
+            onChangeText={setAdminId}
+            placeholder="관리자 아이디"
+            value={adminId}
+            maxLength={50}
+            editable={true}
+            autoCorrect={false}
+            ></TextInput>
+
+            <Text style={styles.titleText}>관리자 비밀번호</Text>
+            <TextInput 
+            style={styles.textinput}
+            onChangeText={setAdminPw}
+            placeholder="관리자 비밀번호"
+            value={adminPw}
+            maxLength={50}
+            editable={true}
+            autoCorrect={false}
+            secureTextEntry={true}
+            ></TextInput>
+
+
               <Text style={styles.titleText}>시설 이름</Text>
             <TextInput 
             style={styles.textinput}
@@ -151,17 +184,19 @@ function AdminSignUp({navigation, route}) {
             value={facName}
             maxLength={50}
             editable={true}
+            autoCorrect={false}
             ></TextInput>
              
               <Text style={styles.titleText}>시설 전화번호</Text>
             <TextInput 
             style={styles.textinput}
             onChangeText={onChangeNumberText}
-            placeholder="시설 전화번호 (예: 02-111-1111)"
+            placeholder="'-' 없이 입력하세요."
             value={facNumber}
             maxLength={15}
             keyboardType='number-pad'
             editable={true}
+            autoCorrect={false}
             ></TextInput>
           
              
@@ -186,6 +221,7 @@ function AdminSignUp({navigation, route}) {
             maxLength={40}
             editable={true}
             selectTextOnFocus={true}
+            autoCorrect={false}
             ></TextInput>
                 </View>
 
@@ -204,7 +240,7 @@ function AdminSignUp({navigation, route}) {
             // </TouchableOpacity>
             }
             
-            <View style={{flexDirection:'row',alignSelf:'center',marginTop:10, marginBottom:50,
+            <View style={{flexDirection:'row',alignSelf:'center',marginTop:10, marginBottom:30,
              alignSelf:'stretch', justifyContent:'space-evenly'}}>
                 {// 아마 flatList로 바뀔 듯. 선택한 사진 수 만큼 띄워지도록.. 최대 선택할 수 있는 사진 개수 제한 걸기.
                 // 각 사진마다 우측 상단에 x 표시가 있어서, 클릭하면 해당 사진을 flatList에서 제거하고 db에서도 제거하도록.
@@ -250,10 +286,33 @@ function AdminSignUp({navigation, route}) {
                 }
                 </TouchableOpacity>
             </View>
+
+            <View style={{paddingHorizontal:SCREEN_WIDTH*0.1, marginBottom:50}}>
+                        <Text style={{...styles.titleText,}}>시설 소개 및 설명</Text>
+                        <Text style={{...styles.titleText,marginBottom:20, fontSize:14, color:"#646464"}}>
+                          세부시설이 있다면 뒤에서 추가로 소개 및 설명을 입력할 수 있습니다.
+                      </Text>
+                        <TextInput 
+                        style={{...styles.textinput, marginBottom:0, height:SCREEN_WIDTH*0.2}}
+                        onChangeText={setExplain}
+                        placeholder="시설에 대한 소개 및 설명을 입력해주세요."
+                        value={explain}
+                        maxLength={100}
+                        editable={true}
+                        autoCorrect={false}
+                        numberOfLines={3}
+                        multiline={true}
+                        
+                        ></TextInput>
+              </View>
+
             </View>
             
+
+              
+            </KeyboardAwareScrollView>
         </ScrollView>
-        {(facAddress !== "" && facName !=="" && facNumber !== "") ? (
+        {(facAddress !== "" && facName !=="" && facNumber !== "" && adminId !== "" && adminPw !== "") ? (
             <TouchableOpacity 
             style={{alignItems:'center',width:SCREEN_WIDTH, justifyContent:'center', backgroundColor:'#3262d4',
             paddingTop:20, paddingBottom:20}}
@@ -278,13 +337,17 @@ function AdminSignUp({navigation, route}) {
 
 
 function SelectFacilitySort({navigation, route}) {
-  const { facilityName } = route.params; 
-    const goToDetailScene = () =>{
-      navigation.navigate('DetailAdminSignUp', {sort: 'final', facility: facilityName})
+  const { facilityName, facilityNumber, facilityAddress, image1, image2, image3, explain,  id, password } = route.params; 
+  const facilityBasicInfo = { facilityBasicName: facilityName, facilityNumber:facilityNumber,
+    facilityAddress:facilityAddress, image1:image1, image2:image2, image3:image3, explain:explain,
+    id: id, password: password}
+    console.log(facilityBasicInfo)  
+  const goToDetailScene = () =>{
+      navigation.navigate('DetailAdminSignUp', {sort: 'final', facility: facilityBasicInfo})
       //navigation.reset({routes: [{name: 'AdminSignUpAndAddFacility'}]})
     }
     const goToAddFacilityScene = () =>{
-      navigation.navigate('AdminSignUpAndAddFacility', {facility:null})
+      navigation.navigate('AdminSignUpAndAddFacility', {facilityBasicInfo:facilityBasicInfo})
       //navigation.reset({routes: [{name: 'AdminSignUpAndAddFacility'}]})
   }
     
