@@ -25,7 +25,7 @@ import CloudFirestore from './CloudFirestore';
 
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
-  //return (<Home></Home>) // 홈(유진)
+  return (<Home></Home>) // 홈(유진)
 
   ////////// 관리자(Admin) UI
 
