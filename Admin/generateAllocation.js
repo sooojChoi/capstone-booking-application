@@ -45,10 +45,11 @@ export default function GenerateAllocation(){
 
   /*facilityTable의 정보를 받아옴*/ 
   let i=0;
-const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,title:elem.id}});
+  const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,title:elem.id}});
 //console.log(facilityArray)
   //console.log(facilityTable.facilitys)
   let openTime,closeTime,unitTime;
+
 function setBeforeTime(){//여기서는 available이 모두 true인 allocation생성만 하고
   let timeArray=[];
   timeArray=facilityTable.facilitys.map((elem)=>{
@@ -68,6 +69,7 @@ function setBeforeTime(){//여기서는 available이 모두 true인 allocation�
   });
   return timeArray
 }
+
   
 
   

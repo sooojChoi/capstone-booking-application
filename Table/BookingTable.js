@@ -1,6 +1,5 @@
 import { booking, user } from "../Category";
 
-
 export class BookingTable {
     bookings = [
         new booking("yjb", "hante1", "2022-03-25T12:00", "2022-03-25T09:00", 4, false,20000,"010-1234-5678"),
@@ -68,7 +67,6 @@ export class BookingTable {
         }
     }
 
-
     // userId로 예약 내역 가져오기
     getsByUserId(userId) {
         var result = []
@@ -104,7 +102,7 @@ export class BookingTable {
         return result
     }
 
-    // 해당하는 예약내역 가져오기
+    // 해당하는 예약 내역 가져오기
     getsByUserIdAndFacilityIdAndUsingTime(userId, facilityId, usingTime) {
         var result = []
         for (var existing of this.bookings) {
@@ -119,7 +117,7 @@ export class BookingTable {
         return result
     }
 
-    //예약내역가져오기
+    //예약 내역 가져오기
     getByUserIdNotCancle(userId) {
         var result = []
         //현재 날짜보다 전 내역은 가져오지 않기위해
@@ -135,7 +133,7 @@ export class BookingTable {
         return result
     }
 
-    //취소내역 userId로 가져오기
+    //취소 내역 userId로 가져오기
     getByUserIdCancle(userId) {
         var result = []
         //현재 날짜보다 전 내역은 가져오지 않기위해
@@ -150,7 +148,7 @@ export class BookingTable {
         return result
     }
 
-    //지난예약내역가져오기
+    //지난 예약 내역 가져오기
     getByUserIdNotCancleLast(userId){
         var result = []
         //현재 날짜보다 전 내역은 가져오지 않기위해
@@ -170,7 +168,7 @@ export class BookingTable {
         return result
     }
 
-    // 취소내역 불러오기
+    // 취소 내역 불러오기
     getsAllWithNotCancel(todayDate) {
         var result = []
         for (var existing of this.bookings) {

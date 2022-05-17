@@ -90,6 +90,7 @@ export class FacilityTable {
         }
         return result
     }
+    
     getsPlayerById(id) {
         var result = []
         for (var existing of this.facilitys) {
@@ -99,6 +100,7 @@ export class FacilityTable {
         }
         return result
     }
+
     getNameById(id){
         var result = []
         for(var existing of this.facilitys){

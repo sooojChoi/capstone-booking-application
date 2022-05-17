@@ -46,3 +46,9 @@ User 파일에 사용자와 관련된 화면들이 있고, Admin 파일에 관�
 - Image Picker
 
     expo install expo-image-picker
+
+- Daum Post Code
+
+    npm install @actbase/react-daum-postcode
+
+    npm install react-native-webview
