@@ -33,7 +33,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<GenerateAllocation></GenerateAllocation>)//관리자 allocation 생성(혜림)
 
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
-  return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
+  //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
 
   //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
@@ -47,7 +47,8 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   ////////// 사용자(User) UI
 
-  //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
+  // return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
+
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)
   //return (<LogIn></LogIn>) // 로그인(혜림)
 
@@ -60,10 +61,9 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
 
-  return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
+  //return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
 
-  //return (<View></View>) // 에러 방지 View
-
+  return (<View></View>) // 에러 방지 View
 }
 
 const styles = StyleSheet.create({

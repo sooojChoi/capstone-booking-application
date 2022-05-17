@@ -2,7 +2,7 @@ import { booking, user } from "../Category";
 
 export class BookingTable {
     bookings = [
-        new booking("yjb", "hante1", "2022-03-25T12:00", "2022-03-25T09:00", 4, false,20000,"010-1234-5678"),
+        new booking("yjb", "hante1", "2022-03-25T12:00", "2022-03-25T09:00", 4, false,10000,"010-1234-5678"),
         new booking("yjb", "hante1", "2022-03-25T13:00", "2022-03-25T09:00", 4, false,20000,"010-1234-5678"),
         new booking("yjb", "hante1", "2022-03-25T14:00", "2022-03-25T09:00", 4, false,20000,"010-1234-5678"),
         new booking("yjb", "hante1", "2022-03-25T15:00", "2022-03-25T09:00", 4, false,20000,"010-1234-5678"),

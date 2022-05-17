@@ -32,6 +32,7 @@
     "react-native-easy-toast": "^2.0.0",
     "react-native-gesture-handler": "~2.1.0",
     "react-native-image-picker": "^4.8.3",
+    "react-native-image-slider-box": "^1.1.23",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-modal": "^13.0.1",
     "react-native-modal-datetime-picker": "^13.1.2",

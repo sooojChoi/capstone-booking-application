@@ -5,7 +5,6 @@ import { StyleSheet, Text, View, FlatList, SafeAreaView } from 'react-native';
 import {FacilityTable} from '../Table/FacilityTable';
 import { Dimensions } from 'react-native';
 import {BookingTable} from '../Table/BookingTable';
-import {PermissionTable} from '../Table/PermissionTable';
 
 export default function App() {
   const {height,width}=Dimensions.get("window");
@@ -13,27 +12,21 @@ export default function App() {
   const facilityTable = new FacilityTable();
   const [bookingTable, setBookingTable] = useState(new BookingTable)
 
-  //유저 등급을 가져오기 위해
-  const permissionTable = new PermissionTable();
-
   //유저아이디 임의로 지정 => DB연결하면 변경해야함
   const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancleLast("yjb"))
 
 
   //예약내역
   const yItem = (itemData) => {
-    const userGrade = permissionTable.getsByUserIdFacilityId(itemData.item.userId,itemData.item.facilityId)
-    //해당하는 시설에서 유저 등급에 따른 가격
-    const facilitieCost = facilityTable.getCostById(itemData.item.facilityId, userGrade)
     const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
     //usingTime에서 T빼기위해
     const usingTimearr = itemData.item.usingTime.split("T")
 
-    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.9, height: 75,}}>
+    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.89, height: 75,}}>
     <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text3}>{facilitieCost}W 인원{itemData.item.usedPlayers}명</Text>
+      <Text style={styles.text3}>{itemData.item.cost}W 인원{itemData.item.usedPlayers}명</Text>
     <Text style={{fontSize:14, color:'white'}}>예약취소</Text>
       
     </View>

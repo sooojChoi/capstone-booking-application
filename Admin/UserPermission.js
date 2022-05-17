@@ -16,6 +16,8 @@ import { user } from '../Category';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import DetailUserDeny from './DetailUserDeny';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -23,7 +25,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 //const flexNotChecked = 5.5
 const flexChecked = 5
-const thisFacilityId = "hante2"
+const thisFacilityId = "Hante1"
 const permissionTable = new PermissionTable();  //function안에 두면 안됨.
 const userTable = new UserTable();
 const Stack = createStackNavigator();
@@ -141,20 +143,21 @@ function UserPermission({navigation, route}) {
   }
 
   // DB 또는 특정 파일에서 승인 요청한 사용자 리스트를 가져오는 함수
-  const getAllUsers = () => {
+  const getAllUsers = (temp) => {
     // 어디서 가져오든, 깊은 복사(원본 데이터가 바뀌지 않도록)해야할 것 같음. 아직 구현 못함.
     // const tempUserArray = ... ;
     console.log("again------")
     var tempArray = []
-    //console.log(userTable.users);
-    const temp = userTable.getsAllowWithNull();
-  //  console.log(temp)
+    //const temp = userTable.getsAllowWithNull();
+    console.log(temp)
+
 
     newUserCheck.length = 0
     temp.map((user, index) => {
       const id = user.id
       const name = user.name
-      const phone = user.phone
+      const realPhone = user.phone
+      const phone = realPhone.substring(0,3)+'-'+realPhone.substring(3,7)+'-'+realPhone.substring(7,11);
       const registerDate = user.registerDate
       const allowDate = user.allowDate
       const isCheck = false
@@ -171,6 +174,34 @@ function UserPermission({navigation, route}) {
    // console.log(tempArray)
     console.log("-------------------------")
   }
+
+
+   // User 목록 가져오기
+   const ReadUserList = () => {
+    // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+    const ref = collection(db, "User")
+    
+   
+    const data = query(ref, where("allowDate", "==", null)) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+    let result = [] // 가져온 User 목록을 저장할 변수
+
+    getDocs(data)
+        // Handling Promises
+        .then((snapshot) => {
+            snapshot.forEach((doc) => {
+                //console.log(doc.id, " => ", doc.data())
+                result.push(doc.data())
+              
+            });
+            getAllUsers(result);
+        })
+        .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+        })
+   // setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
+}
+
 
   // "전체 선택" 버튼 눌리면 호출되는 함수
   const setAllUserCheckState = (isCheck) => {
@@ -211,7 +242,8 @@ function UserPermission({navigation, route}) {
        // const newarray = newUserCheck.filter((value)=>value.id !== userId)
        // setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
 
-          getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
+        //  getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
+        ReadUserList();
       },},
       {text: "거절", onPress:() => {
         console.log(userName+' 거절 완료 (id: '+userId+')')
@@ -266,7 +298,10 @@ function UserPermission({navigation, route}) {
         // check값이 true인 것들은 배열에서 모두 제거한다. (승인된 사용자는 목록에서 제외)
       //  const newarray = newUserCheck.filter((value)=>value.isCheck === false)
       //  setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
-        getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
+
+
+      //  getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
+        ReadUserList();  // 테이블에서 사용자를 다시 불러옴.
         setCheckMode(false);  // 체크 버튼을 사라지게 한다.
        // setFlexByMode(flexNotChecked);
         setIsAllChecked(false);  //"전체 선택" 버튼 해제
@@ -436,9 +471,9 @@ function UserPermission({navigation, route}) {
 
   const renderGridItem = (itemData, index) => {
     const date = itemData.item.registerDate;
-    const year = parseInt(date/10000)
-    const month = parseInt((date%10000)/100)
-    const day = date%100
+    const year = date.substring(0,4)
+    const month = date.substring(5,7)
+    const day = date.substring(8,10)
 
     return    checkMode === false ? (
     <TouchableOpacity  style={{...styles.facilityFlatList,  }} 
@@ -509,13 +544,15 @@ function UserPermission({navigation, route}) {
   }
 
   useEffect(()=>{
-    getAllUsers();
+    //getAllUsers();
+    ReadUserList();
   },[])
 
    // 거절 사유를 입력하는 화면으로 갔다가 돌아오면 불린다.
    useEffect(()=>{
     if(route.params?.post !== null){
-      getAllUsers();  // 다시 userTable에서 값을 가져온다.
+    //  getAllUsers();  // 다시 userTable에서 값을 가져온다.
+    ReadUserList();
       console.log("테이블에서 사용자 목록을 다시 가져옴.")
     }
     console.log(route.params?.post)
@@ -673,6 +710,7 @@ function UserPermission({navigation, route}) {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -729,3 +767,4 @@ AndroidSafeArea: {
   paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
 }
 });
+

@@ -83,7 +83,10 @@ export default function CloudFirestore() {
                 snapshot.forEach((doc) => {
                     //console.log(doc.id, " => ", doc.data())
                     result.push(doc.data())
+                  
                 });
+                console.log("--------------user 목록 가져오기----------------")
+                console.log(result)
                 setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
             })
             .catch((error) => {
