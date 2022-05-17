@@ -83,11 +83,13 @@ const [items, setItems] = useState(facilityArray);
 const SItem = ({ item, onPress}) => (
   <TouchableOpacity onPress={onPress}>
     
-     <View style={{width: width*0.9, height: height*0.05,borderColor:'grey',
-     alignItems:'center',flexDirection:'row',justifyContent:'space-evenly',marginVertical:2}}>
-    <Text style={{fontSize:17}}>{item.id}</Text>
-    <Text>{item.title}</Text>
-    <Text>{item.phone}</Text>
+     <View style={{width: width*0.9, height: height*0.05,  borderBottomColor:"#c8c8c8",
+        borderBottomWidth:1,marginVertical:2, marginHorizontal:width*0.02}}>
+    <Text style={{fontSize:15, color:"#191919"}}>{item.title}</Text>
+    <View style={{flexDirection:'row',flex:1}}>
+    <Text style={{fontSize:14,marginTop:8, color:"#191919",flex:1}}>{item.id}</Text>
+    <Text style={{fontSize:14,marginTop:8, color:"#191919",flex:2}}>{item.phone}</Text>
+    </View>
     </View>
   </TouchableOpacity>
 );
@@ -337,13 +339,16 @@ allocationTable.allocations.map((elem)=>{
 
 
  //user가 입력하면 계속 userIdArray에서 찾아서 여기다 저장한다.
+ //이름과 id로 검색가능
 let searchedUserIdArray=[];
 
     userIdArray.map((e)=>{
-      if(e.id.includes(currentUserId)){
+      if(e.id.includes(currentUserId)||e.title.includes(currentUserId)){
         searchedUserIdArray.push(e)
         }
     })
+
+
    //console.log(searchedUserIdArray)
 
   
@@ -435,6 +440,15 @@ const toggleSearchModal=()=>{
     
     </View>
       </View>
+      {
+                (selectedStartDate === null || value === null)  ? (
+                  <View style={{paddingVertical:70}}>
+                  </View>
+                ) : (
+                  <View style={{paddingVertical:0}}>
+                  </View>
+                )
+              }
 
       <View>
       
@@ -508,7 +522,7 @@ const toggleSearchModal=()=>{
             <View style={{flexDirection:'row', alignItems:'center'}}>
                       <TextInput 
                         style={styles.input}
-                        placeholder="사용자 id 검색"
+                        placeholder="사용자 id 또는 이름 검색"
                         returnKeyType='search'
                         maxLength={30}
                         onChangeText={onChangeId}
@@ -530,6 +544,7 @@ const toggleSearchModal=()=>{
                         </Text>
                     </View>
                 ) : (
+                
                   <FlatList
                   data={searchedUserIdArray}
                   renderItem={srenderItem}
