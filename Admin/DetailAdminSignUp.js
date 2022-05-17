@@ -7,6 +7,9 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Toast, {DURATION} from 'react-native-easy-toast'
 import { AntDesign } from '@expo/vector-icons';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { max } from 'moment';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -28,17 +31,19 @@ export default function DetailAdminSignUp({navigation, route}) {
 
     const [infoMode, setInfoMode] = useState(false) // 등급에 대한 설명을 볼지, 안볼지 모드..
     const [facName, onChangeNameText] = useState("");  // 세부 시설 등록이면 있고, 아니면 이름 입력은 안함.
-    const [booking1, setBooking1] = useState(); // 가장 높은 등급의 예약 가능일
-    const [booking2, setBooking2] = useState(); // 중간 등급의 예약 가능일
-    const [booking3, setBooking3] = useState(); // 가장 낮은 등급의 예약 가능일
+    const [booking1, setBooking1] = useState(""); // 가장 높은 등급의 예약 가능일
+    const [booking2, setBooking2] = useState(""); // 중간 등급의 예약 가능일
+    const [booking3, setBooking3] = useState(""); // 가장 낮은 등급의 예약 가능일
 
-    const [cost1, setCost1] = useState()
-    const [cost2, setCost2] = useState()
-    const [cost3, setCost3] = useState()
+    const [cost1, setCost1] = useState("")
+    const [cost2, setCost2] = useState("")
+    const [cost3, setCost3] = useState("")
 
     const [gradeSetting, setGradeSetting] = useState(false);  // 등급 기능을 사용한다면 true, 아니면 false
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
+    const [explain, setExplain] = useState("");  // 시설에 대한 설명
+
     const showTimePicker = (timeSort) => {
         setTimeSort(timeSort);
         setTimePickerVisibility(true);
@@ -82,20 +87,25 @@ export default function DetailAdminSignUp({navigation, route}) {
         const closeHour = Number(closeTime.substring(0,2))*60
         const closeMin = Number(closeTime.substring(4,6))
 
+
         var Facility = { }
         if(gradeSetting === false){
             Facility = {
-                facilityName: facName,
+                name: facName, 
                 openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
-                minPlayer:minPlayer, maxPlayer: maxPlayer, booking1: null,
-                booking2: null, booking3:null, cost1: null, cost2:null, cost3:null
+                minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
+                booking1: null,booking2: null, booking3:null, 
+                cost1: null, cost2:null, cost3:null,
+                explain: explain
             }
         }else{
             Facility = {
-                facilityName: facName,
+                name: facName,
                 openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
-                minPlayer:minPlayer, maxPlayer: maxPlayer, booking1: booking1,
-                booking2: booking2, booking3:booking3, cost1: cost1, cost2:cost2, cost3:cost3
+                minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
+                booking1: Number(booking1),booking2: Number(booking2), booking3: Number(booking3), 
+                cost1: Number(cost1), cost2:Number(cost2), cost3:Number(cost3),
+                explain: explain
             }
         }
         
@@ -110,9 +120,58 @@ export default function DetailAdminSignUp({navigation, route}) {
     const goToAppHome = () => {
         // 시설 테이블에 추가하고, 관리자 어플의 홈화면으로 이동.
         console.log("시설 입력 완료, 홈화면으로 이동")
-
         // 인원 예약 단위에서 최대인원이 최소인원보다 작으면 toast를 띄우고 return 한다.
+        const unitTime = (Number(unitHour)*60)+Number(unitMin)
+        const openHour = Number(openTime.substring(0,2))*60
+        const openMin = Number(openTime.substring(4,6))
+        const closeHour = Number(closeTime.substring(0,2))*60
+        const closeMin = Number(closeTime.substring(4,6))
 
+        var facilityDoc = {}
+        if(gradeSetting === true){
+            facilityDoc = {
+                id: facility.id, password: facility.password,
+                name: facName, address: facility.facilityAddress, tel: facility.facilityNumber,
+                openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
+                minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
+                booking1: Number(booking1),booking2: Number(booking2), booking3: Number(booking3), 
+                cost1: Number(cost1), cost2:Number(cost2), cost3:Number(cost3),
+                explain: facility.explain
+            }
+        }else{
+            facilityDoc = {
+                id: facility.id, password: facility.password,
+                name: facName, address: facility.facilityAddress,tel: facility.facilityNumber,
+                openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
+                minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
+                booking1: null, booking2: null, booking3:null,
+                cost1: null, cost2: null, cost3: null,
+                explain:facility.explain
+    
+            }
+        }
+        console.log("-----------------------시설 추가---------------------")
+        console.log(facilityDoc)
+        // database에 시설을 추가한다.
+        CreateFacility(facilityDoc)
+       
+        
+    }
+
+    // Random ID로 문서 생성 -> Facility Document
+    const CreateFacility = (docData) => {
+
+        const docRef = doc(db, "Facility", docData.id)
+
+        // setDoc(문서 위치, 데이터)
+        setDoc(docRef, docData)
+            // Handling Promises
+            .then(() => {
+                alert("User Document Created!")
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
     }
      
     useEffect(()=>{
@@ -120,9 +179,9 @@ export default function DetailAdminSignUp({navigation, route}) {
             console.log("nothing")
         }else{
             if(sort === "final"){
-                onChangeNameText(facility)
+                onChangeNameText(facility.facilityBasicName)
             }else{
-                onChangeNameText(facility.facilityName)
+                onChangeNameText(facility.name)
 
                 const open = Number(facility.openTime)
                 var openH = 0
@@ -163,19 +222,20 @@ export default function DetailAdminSignUp({navigation, route}) {
                     setUnitHour(String(hour))
                     setUnitMin(String(min))
                 }
-                setMinPlayer(facility.minPlayer)
-                setMaxPlayer(facility.maxPlayer)
+                setMinPlayer(String(facility.minPlayer))
+                setMaxPlayer(String(facility.maxPlayer))
                 if(facility.booking1 !== null && facility.booking1 !== undefined){
                     setGradeSetting(true)
-                    setBooking1(facility.booking1===null ? null : facility.booking1)
-                    setBooking2(facility.booking2===null ? null : facility.booking2)
-                    setBooking3(facility.booking3===null ? null : facility.booking3)
-                    setCost1(facility.cost1===null ? null : facility.cost1)
-                    setCost2(facility.cost2===null ? null : facility.cost2)
-                    setCost3(facility.cost3===null ? null : facility.cost3)
+                    setBooking1(facility.booking1===null ? null : String(facility.booking1))
+                    setBooking2(facility.booking2===null ? null : String(facility.booking2))
+                    setBooking3(facility.booking3===null ? null : String(facility.booking3))
+                    setCost1(facility.cost1===null ? null : String(facility.cost1))
+                    setCost2(facility.cost2===null ? null : String(facility.cost2))
+                    setCost3(facility.cost3===null ? null : String(facility.cost3))
                 }else{
                     setGradeSetting(false)
                 }
+                setExplain(facility.explain)
             }
 
         }
@@ -343,7 +403,7 @@ export default function DetailAdminSignUp({navigation, route}) {
                                     <AntDesign name="caretup" size={15} color="grey" />
                                 </TouchableOpacity>
                                 <Text style={{...styles.normalTextBlack, marginTop:10}}>높은 등급일수록 많은 일수, 적은 금액을 설정하면 됩니다.
-                    일수는 오늘부터 며칠 뒤까지 예약이 가능한지를 의미합니다. 금액은 시간 단위별 예약 금액을 의미합니다.</Text>
+                    일수는 며칠 전부터 예약이 가능한지를 의미합니다. 금액은 시간 단위별 예약 금액을 의미합니다.</Text>
                             </View>
                         )
                     }
@@ -351,7 +411,7 @@ export default function DetailAdminSignUp({navigation, route}) {
     
                     {
                         gradeSetting === false ? (
-                        <TouchableOpacity style={{marginTop:20, marginBottom:30}} onPress={() => setGradeSetting(true)}>
+                        <TouchableOpacity style={{marginTop:20,}} onPress={() => setGradeSetting(true)}>
                             <Text style={{fontSize:14, color:"#1789fe", textDecorationLine:'underline'}}>
                                 등급 기능 이용하기
                             </Text>
@@ -479,13 +539,47 @@ export default function DetailAdminSignUp({navigation, route}) {
                     }
                     
                 </View>
+
+                {
+                    sort !== "final" ? (
+                    <View style={{...styles.borderBottomStyle, borderTopColor:"#bebebe",
+                        borderTopWidth:1, borderBottomWidth:0,marginBottom:30, paddingTop:10}}>
+                    
+                    
+                        <View>
+                        <Text style={{...styles.titleText, marginTop:5}}>시설 소개 및 설명</Text>
+                        <TextInput 
+                        style={{...styles.textinput, marginBottom:0, height:SCREEN_WIDTH*0.2}}
+                        onChangeText={setExplain}
+                        placeholder="시설에 대한 소개 및 설명을 입력해주세요."
+                        value={explain}
+                        maxLength={100}
+                        editable={true}
+                        autoCorrect={false}
+                        numberOfLines={3}
+                        multiline={true}
+                        
+                        ></TextInput>
+                    </View>
+                    
+                    
+                </View>
+                    ) : (
+                        <View></View>
+                    )
+                }
+
+             
                 
             </View>
 
             </KeyboardAwareScrollView>
         </ScrollView>
     
-        {isAllInfoEntered === true ? (
+        {facName!==""&&openTime!==""&&closeTime!==""&&(unitHour!==""||unitMin!=="")
+        &&minPlayer!==""&&maxPlayer!=="" === true&&(gradeSetting === true ? (cost1!==""&&
+        cost2!==""&&cost3!==""&&booking1!==""&&booking2!==""&&booking3!==""): (true))
+         ? (
             <View>
                 {
                     sort === 'add' || sort === 'modify' ? (
@@ -495,7 +589,7 @@ export default function DetailAdminSignUp({navigation, route}) {
                         disabled={false} onPress={() => goToPreScreen(facName)}>
                             <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
                         </TouchableOpacity>
-                    ) : (
+                    ) : (  // final인 경우 (최종 입력인 경우)
                         <TouchableOpacity 
                         style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
                         paddingTop:20, paddingBottom:20}}
