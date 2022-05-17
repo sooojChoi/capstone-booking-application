@@ -64,6 +64,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
 
 
+
   return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
 
   //return (<View></View>) // 에러 방지 View
