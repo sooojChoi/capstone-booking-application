@@ -93,7 +93,6 @@ export default function CloudFirestore() {
                 // MARK : Failure
                 alert(error.message)
             })
-       // setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
     }
 
     // userDoc에 저장한 User 목록 출력하기
@@ -217,7 +216,7 @@ export default function CloudFirestore() {
             closeTime: 1320,
             unitTime: 60,
             minPlayers: 1,
-            maxplayers: 6,
+            maxPlayers: 6,
             booking1: 21,
             booking2: 14,
             booking3: 7,

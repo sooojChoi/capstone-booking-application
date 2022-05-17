@@ -213,8 +213,8 @@ export class BookingTable {
     // 날짜 필터링
     getsWithDateFilter(usingTime, todayDate) {
         var result = []
-        for (var existing of this.bookings && existing.usingTime.substr(0, 10) >= todayDate) {
-            if (existing.cancel == false) {
+        for (var existing of this.bookings) {
+            if (existing.cancel == false && existing.usingTime.substr(0, 10) >= todayDate) {
                 if (existing.usingTime.substr(0, 10) == usingTime)
                     result.push(existing)
             }
