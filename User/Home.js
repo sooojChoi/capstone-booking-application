@@ -72,7 +72,7 @@ function Home({navigation, route}) {
     paddingRight:10,
     marginBottom:5,
     marginLeft:width*0.1}} onPress={() => {navigation.navigate('BookingFacility')}}>
-    <Text style={{fontSize:18, color:'white', alignSelf:'center',}}>예약하기</Text>
+    <Text style={{fontSize:18, color:'white', alignSelf:'center',marginTop: height*0.075,}}>예약하기</Text>
     </TouchableOpacity>
     <TouchableOpacity style={{backgroundColor:'#3262d4',
    // justifyContent:'space-around',
@@ -85,7 +85,7 @@ function Home({navigation, route}) {
     paddingRight:10,
     marginBottom:5,
     marginLeft:width*0.1}} onPress={()=>{navigation.navigate('MyBookingList')}}>
-    <Text style={{fontSize:18, color:'white', alignSelf:'center',}}>예약 내역</Text>
+    <Text style={{fontSize:18, color:'white', alignSelf:'center',marginTop: height*0.065,}}>예약 내역</Text>
     <Text style={{fontSize:18, color:'white', alignSelf:'center',}}>취소 내역</Text>
     </TouchableOpacity>
     </View>
@@ -101,7 +101,7 @@ function Home({navigation, route}) {
     paddingRight:10,
     marginBottom:5,
     marginLeft:width*0.1}} onPress={() => {navigation.navigate('MyInfoManagement')}}>
-    <Text style={{fontSize:18, color:'white', alignSelf:'center',}}>내 정보 수정</Text>
+    <Text style={{fontSize:18, color:'white', alignSelf:'center',marginTop: height*0.075,}}>내 정보 수정</Text>
     </TouchableOpacity>
     <TouchableOpacity style={{backgroundColor:'#3262d4',
    // justifyContent:'space-around',
@@ -114,7 +114,8 @@ function Home({navigation, route}) {
     paddingRight:10,
     marginBottom:5,
     marginLeft:width*0.1}} onPress={()=>{navigation.navigate('MyLastBookingList')}}>
-    <Text style={{fontSize:18, color:'white', alignSelf:'center',}}>지난 예약 내역</Text>
+    <Text style={{fontSize:18, color:'white', alignSelf:'center',marginTop: height*0.065,}}>지난</Text>
+    <Text style={{fontSize:18, color:'white', alignSelf:'center',}}>예약 내역</Text>
     </TouchableOpacity>
 
 
