@@ -22,7 +22,7 @@ export default function App() {
   //예약내역 db에서 가져오기
   const ReadBookingList = () => {
     const ref = collection(db, "Booking")
-    const data = query(ref) //where id인것만, cancel이 false인것만 추가해야함
+    const data = query(ref, where("cancel", "==", false)) //where id인것만 날짜 현재보다 이후만 추가해야함 //////////////////////////
     let result = []
 
     getDocs(data)
@@ -39,38 +39,61 @@ export default function App() {
                 alert(error.message)
             })
   }
+  // 예약 취소하기 ///////////해야함 문서이름 랜덤인거 어케?
+//   const UpdateBookingCancel = (merge) => {
+//     // doc(db, 컬렉션 이름, 문서 ID)
+//     const docRef = doc(db, "Booking",)
 
-const [fa, setfa] = useState("")
+//     const docData = {
+//         cancel: true
+//     } // 문서에 담을 필드 데이터
+
+
+//     // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함 => 필드가 사라질 수 있음
+//     // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함 => 필드가 사라지지 않음(실수 방지)
+//     // updateDoc(문서 위치, 데이터) == setDoc(문서 위치, 데이터, { merge: true })
+
+//     //setDoc(docRef, docData, { merge: merge })
+//     updateDoc(docRef, docData)
+//         // Handling Promises
+//         .then(() => {
+//             alert("Updated Successfully!")
+//         })
+//         .catch((error) => {
+//             alert(error.message)
+//         })
+// }
+
   //예약내역
   const yItem = (itemData) => {
+
     //const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
     
-    //db에서 facilitiyName 가져오기
-    const docRef = doc(db, "Facility", "Hansung", "Detail", itemData.item.facilityId) //Hansung 시설안에서
-    let result //facility 1개를 저장할 변수
+    //db에서 facilitiyName 가져오기 -> 지금은 booking 테이블의 ㄹacilityId로 가져왔음
+  //   const docRef = doc(db, "Facility", itemData.item.adminId, "Detail", itemData.item.facilityId) 
+  //   let result //facility 1개를 저장할 변수
     
-    getDoc(docRef)
-    // Handling Promises
-    .then((snapshot) => {
-      // MARK : Success
-      if (snapshot.exists) {
-          //console.log(snapshot.data())
-          result = snapshot.data()
-          setfa(result)
-      }
-      else {
-          alert("No Doc Found")
-      }
-  })
-  .catch((error) => {
-      // MARK : Failure
-      alert(error.message)
-  })
-  const facilitieName = fa.name
+  //   getDoc(docRef)
+  //   // Handling Promises
+  //   .then(function(snapshot) {
+  //     // MARK : Success
+  //     if (snapshot.exists) {
+  //         //console.log(snapshot.data())
+  //         result = snapshot.data()
+  //     }
+  //     else {
+  //         alert("No Doc Found")
+  //     }
+  // })
+  // .catch((error) => {
+  //     // MARK : Failure
+  //     alert(error.message)
+  // })
+  var facilitieName = itemData.item.facilityId
 
   
     //usingTime에서 T빼기위해
-    const usingTimearr = itemData.item.allocationUsingTime.split("T")
+    const usingTimearr = itemData.item.usingTime.split("T")
 
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.89, height: 75,}}>
     <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
@@ -114,13 +137,34 @@ const [fa, setfa] = useState("")
 
 
   //취소내역
+  //취소내역 db에서 가져오기
+  const ReadBookingListCancel = () => {
+    const ref = collection(db, "Booking")
+    const data = query(ref, where("cancel", "==", true)) //where id인것만 추가해야함//////////////////////////
+    let result = []
+
+    getDocs(data)
+    // Handling Promises
+            .then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    //console.log(doc.id, " => ", doc.data())
+                    result.push(doc.data())
+                    setBookingCancel(result)
+                });
+            })
+            .catch((error) => {
+                // MARK : Failure
+                alert(error.message)
+            })
+  }
   //const bookingCancle = bookingTable.getByUserIdCancle("yjb")
    //유저아이디 임의로 지정 => DB연결하면 변경해야함
-  const [bookingCancel, setBookingCancel] = useState(bookingTable.getByUserIdCancle("yjb"))
+  const [bookingCancel, setBookingCancel] = useState("")
   
 
   const nItem = (itemData) => {
-    const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
+    // const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
+    const facilitieName = itemData.item.facilityId
     const usingTimearr = itemData.item.usingTime.split("T")
     return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.89, height: 75,}}>
     <Text style={styles.text4}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
@@ -142,7 +186,7 @@ const [fa, setfa] = useState("")
 
       <View style={{padding: 10, margin: 8}}>
       <Text style={styles.text2}>예약내역</Text>
-      <Button title='Read User' onPress={ReadBookingList}></Button>
+      <Button title='예약내역보기' onPress={ReadBookingList}></Button>
 
       <View style={{height:height*0.35}}>
       <FlatList
@@ -157,6 +201,7 @@ const [fa, setfa] = useState("")
     {/* 취소내역 */}
       <View style={{padding: 10, margin: 8}}>
       <Text style={styles.text2}>취소내역</Text>
+      <Button title='취소내역보기' onPress={ReadBookingListCancel}></Button>
       <View style={{height:height*0.35}}>
       <FlatList
       data={bookingCancel}
