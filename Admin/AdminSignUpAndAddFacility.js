@@ -28,9 +28,9 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
         const basicInfo = {
             id: facilityBasicInfo.id,
             password: facilityBasicInfo.password,
-            name: facilityBasicInfo.facilityBasicName,
+            name: facilityBasicInfo.name,
             address: facilityBasicInfo.facilityAddress,
-            tel: facilityBasicInfo.facilityNumber,
+            tel: facilityBasicInfo.tel,
             explain: facilityBasicInfo.explain
         }
         facInfo.map((value)=>{
@@ -61,7 +61,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
                     setDoc(ref2, detailRef)
                     // Handling Promises
                     .then(() => {
-                        alert("User Document Created!")
+                        //alert("User Document Created!")
                     })
                     .catch((error) => {
                         alert(error.message)
@@ -225,7 +225,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
                 <Text style={{...styles.normalText, }}>시설 추가</Text>
             </TouchableOpacity>
         </View>
-        <View style={{flex:1, backgroundColor: 'white', borderTopColor:"#a0a0a0", borderTopWidth:1}}>
+        <View style={{flex:1, backgroundColor: '#f0f0f0', borderTopColor:"#a0a0a0", borderTopWidth:1}}>
             {
                 facInfo.length === 0 ? (
                     <Text style={{fontSize:15, color:"#a0a0a0", alignSelf:'center', marginTop:SCREEN_HEIGHT*0.2}}>
