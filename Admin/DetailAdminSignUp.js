@@ -307,10 +307,10 @@ export default function DetailAdminSignUp({navigation, route}) {
                 <View style={{...styles.borderBottomStyle}}>
                
                     <Text style={{...styles.titleText, }}>시설 운영 시간</Text>
-                    <View style={{flexDirection:'row', marginTop:10}}>
+                    <View style={{flexDirection:'row', marginTop:10, justifyContent:'center'}}>
                         <View style={{alignItems:'center', }}>
                             <Text style={{...styles.normalTextBlack}}>오픈 시간</Text>
-                            <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10 , width:SCREEN_WIDTH*0.3}}
+                            <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10 , width:SCREEN_WIDTH*0.3, }}
                             onPress={() => showTimePicker("open")}>
                                 {
                                     openTime === null || openTime === undefined || openTime==="" ? (

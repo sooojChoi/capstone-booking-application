@@ -9,6 +9,9 @@ import CalendarPicker from 'react-native-calendar-picker';
 import Toast, {DURATION} from 'react-native-easy-toast'
 import { permission } from '../Category';
 import { user } from '../Category';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
+
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -18,10 +21,11 @@ export default function DetailUserManagement({ route, navigation }) {
   const { userId, userGrade } = route.params;
   const permissionTable = new PermissionTable();
   const userTable = new UserTable();
-  const myFacilityId = "hante1"  // 내 facility의 id이다. (실제로는 어디 다른데서 가져올 값)
+  const myFacilityId = "AdminTestId"  // 내 facility의 id이다. (실제로는 어디 다른데서 가져올 값)
   const [userInfo, setUserInfo] = useState({});  
   const [allowDateInfo, setAllowDateInfo] = useState("");
   const [dateForAllow, setDateForAllow] = useState();
+ 
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
@@ -46,30 +50,51 @@ export default function DetailUserManagement({ route, navigation }) {
   const [selectedDate,onDateChange]=useState(null);
 
   const setInfoAtFirst = () =>{
-    const tempArray = userTable.users
-    tempArray.find((user)=>{
-      if(user.id===userId){  //gradeInfo에 id, name, grade정보가 있음(현재 등급이 수정되고 있는 사람의 정보)
-        const grade = userGrade
-        const phone = user.phone
-        const name = user.name
-        const allowDate = user.allowDate
-        const registerDate = user.registerDate
-        
-        const temp  = {
-          userId: userId, name: name, grade: grade, phone: phone, 
-          registerDate: registerDate,allowDate: allowDate
-        }
-        setUserInfo(temp);
-        
-        if(allowDate === null){
-          setAllowDateInfo("예약 금지일이 설정되지 않았습니다.")
-        }else{
-          setAllowDateInfo("예약 금지일: "+allowDate);
-          setDateForAllow(new Date(allowDate));
-        }
+    //const tempArray = userTable.users
+    let userArray = []
+    // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+    const ref = collection(db, "User")
+    const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
 
-      }
-    })
+    getDocs(data)
+          // Handling Promises
+          .then((snapshot) => {
+              snapshot.forEach((doc) => {
+                  //console.log(doc.id, " => ", doc.data())
+                  userArray.push(doc.data())
+                  
+              });
+              userArray.find((user)=>{
+                if(user.id===userId){  //gradeInfo에 id, name, grade정보가 있음(현재 등급이 수정되고 있는 사람의 정보)
+                  const grade = userGrade
+                  const realPhone = user.phone
+                  const phone = realPhone.substring(0,3)+'-'+realPhone.substring(3,7)+'-'+realPhone.substring(7,11);
+                  const name = user.name
+                  const allowDate = user.allowDate
+                  const registerDate = user.registerDate
+                  
+                  const temp  = {
+                    userId: userId, name: name, grade: grade, phone: phone, 
+                    registerDate: registerDate,allowDate: allowDate
+                  }
+                  setUserInfo(temp);
+                  
+                  if(allowDate === null){
+                    setAllowDateInfo("예약 금지일이 설정되지 않았습니다.")
+                  }else{
+                    setAllowDateInfo("예약 금지일: "+allowDate);
+                    setDateForAllow(new Date(allowDate));
+                  }
+          
+                }
+              })
+              
+          })
+          .catch((error) => {
+              // MARK : Failure
+            //  alert(error.message)
+            alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오.");
+          })
 
   }
 
@@ -89,18 +114,88 @@ export default function DetailUserManagement({ route, navigation }) {
         {text:"취소"},
         {text: "확인", onPress: () => {
           // 여기서 등급 테이블 수정
-          permissionTable.modify(new permission(userInfo.userId, myFacilityId, value))
-          console.log("######################")
-          console.log("사용자 등급 수정됨.")
-          console.log(permissionTable.getsByUserId(userInfo.userId));
+        //  permissionTable.modify(new permission(userInfo.userId, myFacilityId, value))
+          const permissionInfo = {
+            userId: userInfo.userId,
+            facilityId: myFacilityId,
+            grade: value
+          }
 
-          // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
-          const tempArray = userInfo
-          tempArray.grade = value
-          setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
+          console.log("?")
+          UpdatePermission(permissionInfo)
+          // // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
+          // const tempArray = userInfo
+          // tempArray.grade = value
+          // setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
         },},
       ]);
      // console.log(value)
+    }
+      // permission 정보 업데이트 하기
+    const UpdatePermission = (docData) => {
+      console.log("??")
+      // db에서 읽어온다.
+      const ref = collection(db, "Permission")
+      const data = query(ref, where("facilityId", "==", docData.facilityId),
+      where("userId", "==", docData.userId)) 
+      console.log(docData.facilityId+", "+docData.userId)
+  
+      getDocs(data)
+          // Handling Promises
+          .then((snapshot) => {
+            
+              snapshot.forEach((doc) => {
+
+
+                  console.log(doc.id, " => ", doc.data())
+                  // doc(db, 컬렉션 이름, 문서 ID)
+                  
+                  const docRef = doc(db, "Permission",  doc.id)
+            
+                  //setDoc(docRef, docData, { merge: merge })
+                  updateDoc(docRef, docData)
+                      // Handling Promises
+                      .then(() => {
+                          //alert("Updated Successfully!")
+                          console.log("Updated Successfully!")
+                            // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
+                          const tempArray = userInfo
+                          tempArray.grade = docData.grade
+                          setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
+                      })
+                      .catch((error) => {
+                          alert(error.message)
+                      })
+                
+              });
+
+              
+          })
+          .catch((error) => {
+            console.log("ddd")
+              // MARK : Failure
+              //alert(error.message)
+              alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오. ")
+          })
+        
+    }
+
+     // 유저 정보 업데이트 하기
+    const UpdateUser = (docData) => {
+      // doc(db, 컬렉션 이름, 문서 ID)
+      const docRef = doc(db, "User", docData.id)
+
+      //setDoc(docRef, docData, { merge: merge })
+      updateDoc(docRef, docData)
+          // Handling Promises
+          .then(() => {
+              //alert("Updated Successfully!")
+              console.log("Updated Successfully!")
+              ReadUserList();    // db에서 사용자 목록을 다시 불러옴.
+          })
+          .catch((error) => {
+              alert(error.message)
+          })
     }
 
 

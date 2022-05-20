@@ -220,6 +220,9 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
 
     return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
         <View style={{alignItems:'center', padding:30}}>
+            <Text style={{fontSize:14, color:'grey', marginBottom:25, marginHorizontal:10}}>
+                동일한 이름의 시설을 여러 개 추가할 수 없습니다. 
+            </Text>
             <TouchableOpacity style={{...styles.smallButtonStyle, paddingLeft:40, paddingRight:40}}
             onPress={() => goToDetailScene()}>
                 <Text style={{...styles.normalText, }}>시설 추가</Text>
