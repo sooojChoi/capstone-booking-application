@@ -1,6 +1,6 @@
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,Image,ScrollView,TouchableOpacity,FlatList,TextInput,Button,Alert
+import { StyleSheet, Text, View,Image,ScrollView,SafeAreaView,TouchableOpacity,FlatList,TextInput,Button,Alert
  } from 'react-native';
 import React,{useState,useEffect} from "react";
 import { Dimensions } from 'react-native';
@@ -10,6 +10,11 @@ import Modal from "react-native-modal";
 import { SliderBox } from "react-native-image-slider-box";
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
+import { Fontisto } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import {Linking, Platform} from 'react-native'
+import { AntDesign } from '@expo/vector-icons';
+import call from 'react-native-phone-call'
 
 
 /*모바일 윈도우의 크기를 가져온다*/
@@ -39,7 +44,17 @@ const ReadEntireFacility = () => {
           if (snapshot.exists) {
               //console.log(snapshot.data())
               result = snapshot.data()
-              setExplain(result.explain+"\n"+result.address)
+              setExplain(result.explain)
+              if(result.explain.length > 150){
+                // 시설 설명이 200자를 넘어가면 다 보여주지 않는다.
+                setShowingExplain(result.explain.substring(0,150)+'...');
+                setExplainTooLong(true);
+                setExplainShowing(false);
+              }else{
+                setShowingExplain(result.explain);
+              }
+              setTel(result.tel);
+              setAddress(result.address)
               setTitleName(result.name)
               console.log(result)
 
@@ -231,6 +246,12 @@ const [dcList,setDclist]=useState();
   // 세부시설의 1개 정보 가져오기
   const [titleName,setTitleName]=useState();
   const [explain,setExplain]=useState('전체시설의 정보');
+  const [showingExplain, setShowingExplain] = useState("");  // 시설 설명이 200자가 넘어가면 전체를 다 보여주지 않는다.
+  const [explainTooLong, setExplainTooLong] = useState(false);
+  const [explainShowing, setExplainShowing] = useState(false);
+  const [address, setAddress]=useState("");
+  const [tel, setTel] = useState(null);
+
   const [maxPlayers,setMaxPlayer]=useState();
   const [cost1,setCost1]=useState();
   const [cost2,setCost2]=useState();
@@ -288,6 +309,14 @@ function setInfo(){
   booking2=selectedDetailedFacility.booking2
   booking3=selectedDetailedFacility.booking3
   setExplain(selectedDetailedFacility.explain)
+  if(selectedDetailedFacility.explain.length > 150){
+    console.log("true: "+selectedDetailedFacility.explain.length)
+    setExplainTooLong(true);
+    setShowingExplain(selectedDetailedFacility.explain.substring(0,150)+'...')
+  }else{
+    console.log("false: "+selectedDetailedFacility.explain.length)
+    setExplainTooLong(false);
+  }
   setTitleName(selectedDetailedFacility.name)
   
   }
@@ -371,13 +400,16 @@ useEffect(()=>{
 //시간선택
 //cost는 등급에 따라 달라진다.
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
+
   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
+    <View style={{paddingHorizontal:15, paddingVertical:10, borderBottomColor:'#b4b4b4', borderBottomWidth:1}}>
     <View><Text style>{item.time.split('T')[1]}</Text></View>
-    <View style={{width: width*0.9, height: height*0.06,flexDirection:'row'}}>
-    <Text style={[styles.title, textColor,{fontSize:16}]}>{item.cost}</Text>
-    <Text style={{...styles.title,fontSize:16}}>최대 인원: {maxPlayers}</Text>
+    <View style={{width: width,flexDirection:'row'}}>
+      <Text style={[styles.title, textColor,{fontSize:15}]}>{item.cost}원</Text>
+      <Text style={{...styles.title,fontSize:15}}>최대 인원: {maxPlayers}</Text>
     </View>
-  </TouchableOpacity>
+    </View>
+</TouchableOpacity>
 );
 
 const [selectedId, setSelectedId] = useState([]);
@@ -579,10 +611,32 @@ const onPressedFin=()=>{
   QueryAllo();  
 }
 
+// 전화 걸기
+const phoneCall = () => {
+  console.log(tel)
+  // 첫 번째 방법
+  // const args = {
+  //   number: String(tel), // String value with the number to call
+  //   prompt: false // Optional boolean property. Determines if the user should be prompt prior to the call 
+  // }
+  // call(args).catch(console.error)
+
+  // 두 번째 방법
+  if (Platform.OS !== 'android') {
+    Linking.openURL(`telprompt:${tel}`)
+  }
+  else  {
+    Linking.openURL(`tel:${tel}`)
+  }
+
+  // 첫 번째 두 번째 방법 모두 android에서만 동작함. ios는 뭔가 더 추가해야하는데 아직 구현 못함..
+}
+
   return (
 
 
-    <View>
+    <View style={{flex:1}}>
+      <SafeAreaView style={{flex:1}}>
     <ScrollView bounces={false}>
 {/*시설 이미지*/}
       <View> 
@@ -592,21 +646,84 @@ const onPressedFin=()=>{
       </View>
 
 {/*페이지 제목을 예약 시설 이름으로 변경*/}
-      <View>
+      <View style={{marginTop:8, marginBottom:15}}>
             <Text style={styles.title}>{titleName}</Text>
       </View>
-{/*시설정보 (세부시설 선택 전:전체시설정보, 세부시설 선택 후: 세부시설 정보)*/}
-      <View style={styles.FacilityInfoText}> 
-            <Text>{explain}</Text>
-            <Button title="버튼" onPress={modifyAllocation}/>
+
+      <View style={{marginBottom:0}}>
+        <TouchableOpacity onPress={()=> phoneCall()}>
+          <View style={{flexDirection:'row', marginHorizontal:20, marginBottom:10, alignItems:'center'}}>
+          <Ionicons name="call" size={19} color="#1789fe" />
+          <Text style={{fontSize:14, color:'#1789fe', marginLeft:5}}>
+            전화걸기
+          </Text>
+          </View>
+        </TouchableOpacity>
+       
       </View>
+      <View style={{flexDirection:'row', marginHorizontal:20, marginBottom:10, alignItems:'center'}}>
+        <Fontisto name="map-marker-alt" size={18} color="grey" />
+        <Text style={{fontSize:14, color:'grey', marginLeft:5}}>
+          {address}
+        </Text>
+      </View>
+     
+      
+{/*시설정보 (세부시설 선택 전:전체시설정보, 세부시설 선택 후: 세부시설 정보)*/}
+      <View style={{...styles.FacilityInfoText, alignSelf:'center'}}> 
+      {
+        explainTooLong === false ? (
+          <View>
+            {
+              explain === "" || explain.length === 0 ? (
+                <Text>
+                  {titleName}입니다.
+                </Text>
+              ) : (
+                <Text style={{fontSize:14, color: "#191919"}}>{explain}</Text>
+              )
+            }
+          </View>
+          
+        ) : (
+          <View>
+            {
+              explainShowing === false ? (
+                <View>
+                <Text style={{fontSize:14, color: "#191919"}}>{showingExplain}</Text>
+                <TouchableOpacity onPress={()=> setExplainShowing(true)}
+                style={{marginTop:10}}>
+                  <Text style={{fontSize:14, color:"grey", textDecorationLine:'underline'}}>더보기</Text>
+                </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                <Text style={{fontSize:14, color: "#191919"}}>{explain}</Text>
+                <TouchableOpacity onPress={()=> setExplainShowing(false)}
+                 style={{marginTop:10}}>
+                  <Text style={{fontSize:14, color:"grey", textDecorationLine:'underline'}}>줄이기</Text>
+                </TouchableOpacity>
+                </View>
+              )
+            }
+          </View>
+        )
+      }
+            
+            {/* <Button title="버튼" onPress={modifyAllocation}/> */}
+      </View>
+
+    
 
 
 {/*달력과 picker의 부모뷰. 여기에 style을 주지 않으면 picker와 달력이 겹쳐서 선택이 안된다. */}
-      <View style={{backgroundColor:'white',paddingVertical:20}}>
+  
+      <Text  style={{...styles.SelectionTitle, paddingVertical:0, paddingBottom:10,
+      marginTop:20}}>시설 선택</Text>
+      <View style={{backgroundColor:'white',marginBottom:20, marginTop:10}}>
 
             <DropDownPicker
-             containerStyle={{width:width*0.9,marginHorizontal:width*0.05}}
+             containerStyle={{width:width*0.9,marginHorizontal:width*0.05,}}
             open={open}
             value={value}
             items={items}
@@ -619,9 +736,9 @@ const onPressedFin=()=>{
               nestedScrollEnabled: true,
             }}
             
-  />
+      />
 
-          <Text style={styles.SelectionTitle}>예약 날짜 선택</Text>
+          <Text style={{...styles.SelectionTitle, marginTop:30}}>예약 날짜 선택</Text>
           <CalendarPicker
                 onDateChange={onDateChange}
                 weekdays={['일', '월', '화', '수', '목', '금', '토']}
@@ -635,6 +752,8 @@ const onPressedFin=()=>{
 
 
 </View>    
+
+
 {
                 (selectedStartDate === null || value === null)  ? (
                   <View style={{paddingVertical:70}}>
@@ -648,19 +767,23 @@ const onPressedFin=()=>{
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
 
             {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
-          <View style={{height:showTimeSelect?800:0,width:showTimeSelect?400:0}}>
+          <View style={{height:showTimeSelect?800:0,width:showTimeSelect?400:0, marginTop:20}}>
                      
                         <Text style={styles.SelectionTitle}>시간 선택</Text>
                           <View>
                             <View style={{height:showTimeSelect?300:0,width:showTimeSelect?400:0}}>
                           <ScrollView horizontal={true} style={{ width: "100%" }} bounces={false}>
-                                <FlatList
+                            <View style={{width:width, paddingHorizontal:20}}>
+                            <FlatList
+                                style={{borderWidth:1,borderColor:'#646464', borderRadius:5, }}
                                   data={data}
                                   renderItem={renderItem}
                                   keyExtractor={(item) => item.id}
                                   //horizontal={true}
               
                                 />
+                            </View>
+                        
                          </ScrollView>
                          </View>
 
@@ -670,7 +793,7 @@ const onPressedFin=()=>{
        
           <View>
       {/*예약자가 회원인 경우 value값으로 전화번호 띄워줌*/ }
-      <Text style={styles.SelectionTitle}>예약자 전화번호</Text>
+      <Text style={{...styles.SelectionTitle, marginTop:20}}>예약자 전화번호</Text>
       <TextInput style={styles.textinput1} 
       placeholder="전화번호를 입력해주세요." 
       keyboardType='phone-pad'
@@ -680,25 +803,33 @@ const onPressedFin=()=>{
       </View>
       
 
-      <View style={{flexDirection:'row'}}>
-      <Text style={styles.SelectionTitle}>예약 인원:</Text>
-      <Button title='-' onPress={() => {if(count > 0) setCount(count - 1)}}></Button>
+      <View style={{flexDirection:'row', alignItems:'center'}}>
+      <Text style={{...styles.SelectionTitle, marginTop:10}}>예약 인원:</Text>
+      <TouchableOpacity onPress={() => {if(count > 0) setCount(count - 1)}}>
+        <AntDesign name="minus" size={20} color="#1789fe" />
+      </TouchableOpacity>
+      <Text style={{...styles.SelectionTitle, fontSize:19, fontWeight:'normal'}}>{count}</Text>
+      <TouchableOpacity onPress={() => {if(count<maxPlayers)setCount(count + 1)}}>
+        <AntDesign name="plus" size={20} color="#1789fe" />
+      </TouchableOpacity>
+      {/* <Button title='-' onPress={() => {if(count > 0) setCount(count - 1)}}></Button>
       <Text style={styles.SelectionTitle}>{count}</Text>
       <Button title='+' onPress={() => {if(count<maxPlayers)setCount(count + 1)}}
-        ></Button>
+        ></Button> */}
       </View>
 
-      <View>
-      <Text style={styles.SelectionTitle}>공간사용료</Text>
-      <Text style={styles.SelectionTitle}>₩ {totalCost}</Text>
+      {/* <View style={{flexDirection:'row'}}>
+        <Text style={styles.SelectionTitle}>공간사용료:</Text>
+        <Text style={{...styles.SelectionTitle, fontSize:18, fontWeight:'normal'}}>{totalCost} 원</Text>
       </View>
       <TouchableOpacity 
-      style={{marginHorizontal:width/3}}
+      style={{ marginTop:30, backgroundColor:'#3262d4', alignItems:'center',marginHorizontal:width/5,
+    borderRadius:10, paddingVertical:15,}}
       onPress={toggleModal}
       >
-        <Text style={{fontSize:30,fontWeight:'bold'}}>예약하기</Text>
-        </TouchableOpacity>
-          </View>
+        <Text style={{fontSize:23,fontWeight:'bold', color:'white'}}>예약하기</Text>
+        </TouchableOpacity> */}
+      </View>
 
     
       <Modal 
@@ -725,6 +856,20 @@ const onPressedFin=()=>{
 
 
     </ScrollView>
+
+    <View style={{backgroundColor:'white', height:height*0.1, justifyContent:'space-between',
+    borderTopWidth:1,borderColor:'grey', flexDirection:'row', alignItems:'center'}}>
+       <Text style={{fontSize:18, marginLeft:20}}>{totalCost} 원</Text>
+        <TouchableOpacity 
+        style={{  backgroundColor:'#3262d4', alignItems:'center',
+      borderRadius:10, paddingVertical:15,paddingHorizontal:15, marginRight:15}}
+      onPress={toggleModal}
+      >
+        <Text style={{fontSize:18, color:'white'}}>예약하기</Text>
+        </TouchableOpacity>
+    </View>
+
+    </SafeAreaView>
     </View>
    
     );
@@ -737,7 +882,8 @@ const styles = StyleSheet.create({
     paddingTop:15,
     paddingHorizontal:20,
     fontWeight:'bold',
-    fontSize:30,
+    fontSize:22,
+    color:'#191919'
   },
  
 
@@ -747,29 +893,32 @@ const styles = StyleSheet.create({
     height:height/3,
   },
   FacilityInfoText:{
-    borderWidth:1,
+    borderTopWidth:1,
+    borderBottomWidth:1,
     width:width*0.9,
-    height:height*0.2, 
+   // height:height*0.18, 
+
     justifyContent:'center',
     marginBottom:20,
     alignItems:'center',
-    marginStart:20,
-    borderColor:'grey',
+    borderColor:'#b4b4b4',
+    paddingVertical:25,
+    paddingHorizontal:15,
+    borderRadius:2
   },
   SelectionTitle: {
     paddingVertical:15,
     paddingHorizontal:20,
     fontWeight:'bold',
-    fontSize:25,
+    fontSize:20,
   },
    textinput1: {
     borderColor: '#999',
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
-    height: 38,
-    width: 300,
-    marginLeft: 5,
+    width: width*0.7,
+    marginLeft: 20,
   },
 
 });
