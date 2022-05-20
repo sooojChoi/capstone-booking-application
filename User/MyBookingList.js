@@ -17,12 +17,14 @@ export default function App() {
 
   //유저아이디 임의로 지정 => DB연결하면 변경해야함
   //const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancle("yjb"))
-  const [bookings, setBookings] = useState([])
+  const [bookings, setBookings] = useState()
+  const [bookingId, setBookingId] = useState()
   
   //예약내역 db에서 가져오기
   const ReadBookingList = () => {
     const ref = collection(db, "Booking")
-    const data = query(ref, where("cancel", "==", false)) //where id인것만 날짜 현재보다 이후만 추가해야함 //////////////////////////
+    let now = new Date(+new Date() + 3240 * 10000).toISOString().split("T")[0]; //현재 날짜
+    const data = query(ref, where("cancel", "==", false), where("userId", "==", "yjb123")) //where id인것만 추가해야함 //////////////////////////
     let result = []
 
     getDocs(data)
@@ -30,8 +32,12 @@ export default function App() {
             .then((snapshot) => {
                 snapshot.forEach((doc) => {
                     //console.log(doc.id, " => ", doc.data())
+                    //현재 날짜보다 전 내역은 가져오지 않기위해
+                    if (doc.data().usingTime.split("T")[0]>=now) {
                     result.push(doc.data())
                     setBookings(result)
+                    //console.log(doc.id)
+                    }
                 });
             })
             .catch((error) => {
@@ -68,6 +74,8 @@ export default function App() {
 //         })
 // }
 
+
+
   //예약내역
   const yItem = (itemData) => {
 
@@ -93,6 +101,49 @@ export default function App() {
   //     // MARK : Failure
   //     alert(error.message)
   // })
+
+      // 예약 취소하기 시작 //
+      const CancelBooking = (merge) => {
+        //문서id가져오기위해
+        const bookingRef = collection(db, "Booking")
+        const bookingData = query(bookingRef, where("usingTime", "==", itemData.item.usingTime), where("facilityId", "==", itemData.item.facilityId))
+        
+        getDocs(bookingData)
+        .then((snapshot) => {
+          snapshot.forEach((doc) => {
+            setBookingId(doc.id) //반영이 안됨
+            // doc(db, 컬렉션 이름, 문서 ID)
+        const docRef = doc(db, "Booking", doc.id)
+  
+        const docData = {
+          cancel: true
+        } // 문서에 담을 필드 데이터
+  
+  
+        // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함 => 필드가 사라질 수 있음
+        // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함 => 필드가 사라지지 않음(실수 방지)
+        // updateDoc(문서 위치, 데이터) == setDoc(문서 위치, 데이터, { merge: true })
+  
+        //setDoc(docRef, docData, { merge: merge })
+        updateDoc(docRef, docData)
+            // Handling Promises
+            .then(() => {
+                alert("취소가 완료되었습니다")
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+            console.log(bookingId)
+            console.log(doc.id)
+          })
+        })
+        .catch((error) => {
+          alert(error.message)
+        })
+        
+    }
+    /// 예약 취소 끝 ////
+
   var facilitieName = itemData.item.facilityId
 
   
@@ -121,10 +172,12 @@ export default function App() {
         onPress: () => console.log("아니라는데"),     //onPress 이벤트시 콘솔창에 로그를 찍는다
         style: "cancel"
       },
-      { text: "확인", onPress: () => {bookingTable.modify(new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true))
-        setBookingTable(bookingTable)
-        setBookings(bookingTable.getByUserIdNotCancle(itemData.item.userId))
-        setBookingCancel(bookingTable.getByUserIdCancle(itemData.item.userId))}
+      { text: "확인", onPress: () => { CancelBooking(true)
+        // bookingTable.modify(new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true))
+        // setBookingTable(bookingTable)
+        // setBookings(bookingTable.getByUserIdNotCancle(itemData.item.userId))
+        // setBookingCancel(bookingTable.getByUserIdCancle(itemData.item.userId))
+      }
       }, //버튼 제목
 //new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true)
     ],
