@@ -1,6 +1,6 @@
 // 예약 내역(사용자) -> 유진
 
-import React, {useState, createRef} from 'react';
+import React, {useState, createRef, useEffect} from 'react';
 import { Button, StyleSheet, Text, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
 import {FacilityTable} from '../Table/FacilityTable';
 import { Dimensions } from 'react-native';
@@ -39,6 +39,10 @@ export default function App() {
                 alert(error.message)
             })
   }
+  useEffect(() => {
+    ReadBookingList();
+    ReadBookingListCancel();
+  },[])
   // 예약 취소하기 ///////////해야함 문서이름 랜덤인거 어케?
 //   const UpdateBookingCancel = (merge) => {
 //     // doc(db, 컬렉션 이름, 문서 ID)
@@ -99,7 +103,7 @@ export default function App() {
     <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text3}>{itemData.item.cost}W 인원{itemData.item.usedPlayers}명</Text>
+      <Text style={styles.text3}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
       <TouchableOpacity style={{backgroundColor:'#3262d4',
    // justifyContent:'space-around',
     alignSelf:'flex-start',
@@ -170,7 +174,7 @@ export default function App() {
     <Text style={styles.text4}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
 
     <View style={{flexDirection:'row',}}>
-      <Text style={styles.text4}>{itemData.item.cost}W 인원{itemData.item.usedPlayers}명</Text>
+      <Text style={styles.text4}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
     </View>
   </View>
   
@@ -186,7 +190,6 @@ export default function App() {
 
       <View style={{padding: 10, margin: 8}}>
       <Text style={styles.text2}>예약내역</Text>
-      <Button title='예약내역보기' onPress={ReadBookingList}></Button>
 
       <View style={{height:height*0.35}}>
       <FlatList
@@ -201,7 +204,6 @@ export default function App() {
     {/* 취소내역 */}
       <View style={{padding: 10, margin: 8}}>
       <Text style={styles.text2}>취소내역</Text>
-      <Button title='취소내역보기' onPress={ReadBookingListCancel}></Button>
       <View style={{height:height*0.35}}>
       <FlatList
       data={bookingCancel}
