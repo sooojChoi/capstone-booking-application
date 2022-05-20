@@ -6,16 +6,9 @@ import React,{useState,useEffect} from "react";
 import { Dimensions } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
-import {FacilityTable} from '../Table/FacilityTable';
-import {AllocationTable} from '../Table/AllocationTable';
-import { UserTable } from '../Table/UserTable';
-import {PermissionTable} from '../Table/PermissionTable';
-import { DiscountRateTable } from '../Table/DiscountRateTable';
 import Modal from "react-native-modal";
-import { allocation, booking } from '../Category';
-import { BookingTable } from '../Table/BookingTable';
 import { SliderBox } from "react-native-image-slider-box";
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 
@@ -23,15 +16,6 @@ import { db } from '../Core/Config';
 const {height,width}=Dimensions.get("window");
 
 export default function BookingFacility() {
-
-  const facilityTable=new FacilityTable();
-  const allocationTable=new AllocationTable();
-  const permissionTable=new PermissionTable();
-  const userTable=new UserTable();
-  const discountRateTable=new DiscountRateTable();
-  const bookingTable=new BookingTable();
-
-
   const imgData=[
     require('../assets/library1.png'),
     require('../assets/hansung1.png'),
@@ -40,14 +24,42 @@ export default function BookingFacility() {
   ]
   const [img,setImg]=useState(imgData);
 
+const [adminId,setAdminId]=useState('AdminTestId')
+const [facility,setFacility]=useState(adminId);
+// 전체시설 정보 가져오기
+const ReadEntireFacility = () => {
+  // doc(db, 컬렉션 이름, 문서 ID)
+  const docRef = doc(db, "Facility", facility)
+  let result 
 
-// Storing User Data -> 기존 UserTable에서 데이터를 받아 저장하는 방식과 동일함
-const [facilityDoc, setFacilityDoc] = useState([])
+  getDoc(docRef)
+      // Handling Promises
+      .then((snapshot) => {
+          // MARK : Success
+          if (snapshot.exists) {
+              //console.log(snapshot.data())
+              result = snapshot.data()
+              setExplain(result.explain+"\n"+result.address)
+              setTitleName(result.name)
+              console.log(result)
+
+          }
+          else {
+              alert("No Doc Found")
+          }
+      })
+      .catch((error) => {
+          // MARK : Failure
+          alert(error.message)
+      })
+}
+
+
 let facilitys;
- // Facility 목록 가져오기
+ // 세부시설 목록 가져오기
     const ReadFacilityList = () => {
         // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
-        const ref = collection(db, "Facility")//내가 가져온건 전체꺼. 세부시설을 가져와야 한다.
+        const ref = collection(db, "Facility",facility,"Detail")
         const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
         let result = [] // 가져온 User 목록을 저장할 변수
 
@@ -55,15 +67,12 @@ let facilitys;
             // Handling Promises
             .then((snapshot) => {
                 snapshot.forEach((doc) => {
-                    //console.log(doc.id, " => ", doc.data())
                     result.push({id:doc.id,detail:doc.data()})
                 });
-                setFacilityDoc(result) // useState에 데이터를 저장
                 facilitys=makeFacilityArray(result)
-                console.log("this is facilitys",facilitys)
                 //dropdown list에 들어갈 시설 리스트
                 facilitys.map((elem)=>{facilityArray.push({label:elem.label,value:elem.value})});
-               
+        
               })
             .catch((error) => {
                 // MARK : Failure
@@ -73,34 +82,9 @@ let facilitys;
     }
     
 
-    // FacilityDoc에 저장한 Facillity 목록 출력하기
-    const printFacilityDoc = () => {
-    
-        console.log("----------facilityDoc----------")
-        console.log(facilityDoc) // User 목록
-
-        let newFacility = [] // userDoc.map를 위한 변수
-        //let findUser = [] // userDoc.find를 위한 변수
-
-        // 가져온 데이터는 기존처럼 배열로 다양한 함수를 사용할 수 있음
-        facilityDoc.map((f) => {
-            const label = f.detail.name
-            const value = f.id//id는 document의 이름이 되어야 한다.
-            newFacility.push({
-                label: label, value: value
-            })
-        })
-
-        console.log("----------facilityDoc.map----------")
-        console.log(newFacility) // facilityDoc.map 결과
-      }
-
       function makeFacilityArray(facilityDoc){
         let newFacility = [] // userDoc.map를 위한 변수
-        //let findUser = [] // userDoc.find를 위한 변수
 
-        // 가져온 데이터는 기존처럼 배열로 다양한 함수를 사용할 수 있음
-        console.log("facilityDoc:------",facilityDoc)
         facilityDoc.map((f) => {
             const label = f.detail.name
             const value = f.id//id는 document의 이름이 되어야 한다.
@@ -110,13 +94,22 @@ let facilitys;
         })
         return newFacility;
       }
+ //const currentUserId="sjc1234";//현재 user의 id(임시) grade:1
+ const currentUserId="psb123";//현재 user의 id(임시) grade:2
+//const currentUserId="leemz22";//현재 user의 id(임시) grade :0
+
+      /*userTable의 정보를 가져옴*/
+let phone=null;
+const [name,setName]=useState();
+const [allowDate,setAllowDate]=useState();
 
   /*facilityTable의 정보를 받아옴*/ 
   let facilityArray=[];
   useEffect(()=>{
-    //facilityTable.facilitys.map((elem)=>{facilityArray.push({label:elem.name,value:elem.id})});
+    ReadEntireFacility();
+    QueryPermission(currentUserId);
      ReadFacilityList();
-  
+     ReadUser(currentUserId);//user의정보를 받아와서 출력함
   },[]);
 
  
@@ -126,40 +119,108 @@ let facilitys;
   const [value, setValue] = useState(null);
   const [items, setItems] = useState(facilityArray);
 
+  //console.log("this is value----------------",value)
+
   /*discountRateTable의 정보를 가져옴*/
   //시간 할인되는거
-  const dc=discountRateTable.gets(value)
-  let rate,time;
-  if(dc[0]){
-    rate=1-(dc[0].rate*0.01)
-    time=dc[0].time+":00"
-  }
+let dc=[];
+let time;
+//let dcList=[];
+const [dcList,setDclist]=useState();
+  function QueryDiscountRate(){
+    let tempDclist=[];
+    const ref = collection(db, "DiscountRate");
+    const data = query(
+        ref,
+        where("facilityId","==",value)
+    );
+  
+    getDocs(data)
+        // Handling Promises
+        .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+               dc.push(doc.data());
+              
+            });
+            dc.map((e)=>{
+              if(Number.isInteger(e.time/60)){//3시인 경우
+                time=(e.time/60)+":00"
+              }else{//3시 45분, 3시 30분 등인경우
+                time=((e.time/60)-parseInt(e.time/60))*60
+              }
+              tempDclist.push({rate:1-(e.rate*0.01),time:time})
+            
+            })
+            console.log(dc)
+            setDclist(tempDclist)
+            console.log(dcList)
+
+        })
+        .catch((error) => {
+            alert(error.message);
+        });
+  };
 
 
-    /*userTable의 정보를 가져옴*/
-  const currentUserId="leemz22";//현재 user의 id(임시)
-  //const currentUserId="sbp";//현재 user의 id(임시)
-  const currentUser=userTable.getsById(currentUserId); //현재 user의 정보 가져옴
-  let allowDate,name,phone=null;
-  console.log(currentUser[0].allowDate);
-  if(currentUser[0]){
-    allowDate=currentUser[0].allowDate
-    name=currentUser[0].name
-    phone=currentUser[0].phone
-  }
-  //null이면 승인되지 않은 user
-  //allowdate가 되기 전까진 어플 정지먹는다. 
-    //console.log("--------------------allowdate",allowDate)
+  // User 1명 정보 가져오기
+  const ReadUser = (id) => {
+    // doc(db, 컬렉션 이름, 문서 ID)
+    const docRef = doc(db, "User", id)
+    let result // 가져온 User 1명 정보를 저장할 변수
+
+    getDoc(docRef)
+        // Handling Promises
+        .then((snapshot) => {
+            // MARK : Success
+            if (snapshot.exists) {
+                //console.log(snapshot.data())
+                result = snapshot.data()
+                onChangePhoneNumber(result.phone);
+                setName(result.name)
+                setAllowDate(result.allowDate)
+
+            }
+            else {
+                alert("No Doc Found")
+            }
+        })
+        .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+        })
+}
+
 
   /*permissionTable의 정보를 가져옴 */
-  const userPermission=permissionTable.getsByUserId(currentUserId)
-  let thisUserPermission=[]
-  userPermission.map((elem)=>{if(elem.facilityId===value) thisUserPermission.push(elem)})//현재시설에서 등급 가져오기
-  //console.log("-------------",thisUserPermission)
-  let grade;
-  if(thisUserPermission[0]){
-      grade=thisUserPermission[0].grade
-  }
+  
+ 
+  const [grade,setGrade]=useState();
+  let thisUserPermission;
+  function  QueryPermission(currentUserId){
+    const ref = collection(db, "Permission");
+    const data = query(
+        ref,
+        where("facilityId","==",facility),//전체시설 id
+        where("userId","==",currentUserId)
+    );
+  
+    getDocs(data)
+        // Handling Promises
+        .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                // doc.data() is never undefined for query doc snapshots
+               //console.log("doc data~~~~~~~~~~~~~~~~~",doc.data())
+               thisUserPermission=doc.data()
+               setGrade(thisUserPermission.grade);
+               console.log("this userpermsision.grade::::",grade)
+            });
+           
+        })
+        .catch((error) => {
+            alert(error.message);
+        });
+  };
+
 
   
   //예약 후 총 금액
@@ -167,39 +228,80 @@ let facilitys;
 
   
   //dropdownpicker로 선택된 시설 정보 가져오는 부분
+  // 세부시설의 1개 정보 가져오기
+  const [titleName,setTitleName]=useState();
+  const [explain,setExplain]=useState('전체시설의 정보');
+  const [maxPlayers,setMaxPlayer]=useState();
+  const [cost1,setCost1]=useState();
+  const [cost2,setCost2]=useState();
+  const [cost3,setCost3]=useState();
+
   let selectedDetailedFacility=null;
-  //console.log(value)
+  let limit,gradeCost;
+  let openTime,unitTime,closeTime,booking1,booking2,booking3=null;
+ const  ReadFacility = (v) => {
+  // doc(db, 컬렉션 이름, 문서 ID)
+  const docRef = doc(db, "Facility","AdminTestId","Detail", v)
+  let result // 가져온 User 1명 정보를 저장할 변수
+
+  getDoc(docRef)
+      // Handling Promises
+      .then((snapshot) => {
+          // MARK : Success
+          if (snapshot.exists) {
+              //console.log(snapshot.data())
+              result = snapshot.data()
+              selectedDetailedFacility=result;
+              setInfo();
+             // console.log("thisis Readfacilitydata result",selectedDetailedFacility)
+             // return result;
+          }
+          else {
+              alert("No Doc Found")
+          }
+      })
+      .catch((error) => {
+          // MARK : Failure
+          alert(error.message)
+      })
+}
+
+
   if (value){
-    selectedDetailedFacility=facilityTable.getsById(value)
+ // id로 세부시설의 정보를 가져오기
+    ReadFacility(value)
   }
-  //console.log(selectedDetailedFacility);
-  
 
-  let openTime,unitTime,cost1,cost2,cost3,closeTime,maxPlayers,booking1,booking2,booking3=null;
 
+function setInfo(){
   if (selectedDetailedFacility){
-  openTime=selectedDetailedFacility[0].openTime
-  unitTime=selectedDetailedFacility[0].unitTime
-  cost1=selectedDetailedFacility[0].cost1
-  cost2=selectedDetailedFacility[0].cost2
-  cost3=selectedDetailedFacility[0].cost3
-  closeTime=selectedDetailedFacility[0].closeTime
-  maxPlayers=selectedDetailedFacility[0].maxPlayers
-  booking1=selectedDetailedFacility[0].booking1
-  booking2=selectedDetailedFacility[0].booking2
-  booking3=selectedDetailedFacility[0].booking3
+    //console.log("-------------------세부시설 정보",selectedDetailedFacility);
+    //실제로 cost 123 제대로 적용되는지 확인, maxplayer도...
+  openTime=selectedDetailedFacility.openTime
+  unitTime=selectedDetailedFacility.unitTime
+  setCost1(selectedDetailedFacility.cost1)
+  setCost2(selectedDetailedFacility.cost2)
+  setCost3(selectedDetailedFacility.cost3)
+  closeTime=selectedDetailedFacility.closeTime
+  setMaxPlayer(selectedDetailedFacility.maxPlayer)
+  booking1=selectedDetailedFacility.booking1
+  booking2=selectedDetailedFacility.booking2
+  booking3=selectedDetailedFacility.booking3
+  setExplain(selectedDetailedFacility.explain)
+  setTitleName(selectedDetailedFacility.name)
+  
   }
-  let limit=booking3?booking3:0;//등급제가 아닌경우
-  let gradeCost=cost3;
-
+  // //이 사용자의 등급은 전체시설에 적용되는 등급이다. 세부시설마다 다르지 않다.
+  //등급제도를 이용하지 않는 경우 등급에 상관없이 가격과 limit은 동일하다.
+  limit=booking3;
+  gradeCost=cost3;
+  //console.log("gade in setinfo",grade)
   if(grade===0){gradeCost=cost1;  limit=booking1;}
   else if (grade===1){gradeCost=cost2;  limit=booking2;}
   else if (grade===2){gradeCost=cost3;  limit=booking3;}
-  //등급이 없는경우 3등급으로 처리
-  
-  
-
  
+}
+  
 
 //달력에서 예약 가능기간 설정
 const minDate = new Date(); // Today
@@ -224,18 +326,46 @@ const startDate = selectedStartDate ? selectedStartDate.toString() : '';
 let showTimeSelect=selectedStartDate && value;
 
 
+const [data,setData]=useState();
+//const data=[]
+let todayAvail=[]
+let d=new Date(selectedStartDate)
 
+
+let selectedAllo=[];
   /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
+  //value가 facilityId와 같은거만 가져와야 한다.
+function  QueryAllocation(){
+  const ref = collection(db, "Allocation");
+  const data = query(
+      ref,
+      where("facilityId","==",value)
+  );
 
-//console.log(allocationTable.allocations)
-  let selectedAllo=[];
-  allocationTable.allocations.map((i)=>{
-    if(i.facilityId===value){
-      selectedAllo.push(i);
-    }
-  });
-//console.log(selectedAllo)
-
+  getDocs(data)
+      // Handling Promises
+      .then((querySnapshot) => {
+         // alert("query Successfully!");
+        //  console.log("query-----------------------");
+          querySnapshot.forEach((doc) => {
+              // doc.data() is never undefined for query doc snapshots
+              selectedAllo.push(doc.data());
+             
+          });
+         
+          makeAllocationTime(selectedAllo);
+       
+        //  setData(dataPush())
+      })
+      .catch((error) => {
+          alert(error.message);
+      });
+};
+//날짜와 시설이 바뀔때마다 QueryAllo,QueryDiscountRate
+useEffect(()=>{
+  QueryAllocation();
+  QueryDiscountRate();
+},[selectedStartDate,value])
 
 
 //시간선택
@@ -275,50 +405,44 @@ const renderItem = ({ item }) => {
 //console.log(selectedId)
 
 //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
-
-const data=[]
-let todayAvail=[]
-let d=new Date(selectedStartDate)
-
-
-if(selectedAllo){
-  selectedAllo.map((elem)=>{//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
-    if(elem.usingTime.split('T')[0]==d.getFullYear()+'-'+0+(d.getMonth()+1)+"-"+d.getDate()){
-    todayAvail.push(elem)
-    }
-  });
-}
-
-
-
-//console.log("---------오늘 가능한거",todayAvail)//선택된 날짜에 가능한 object들 띄움(avilable이 true인건 아직 모름)
-//if time이 usingTime.split('T')[1]이거면 가격을 할인률 곱해서 cost에 넣기
-//console.log(time)
-// if(todayAvail[2]){
-// console.log(todayAvail[2].usingTime.split('T')[1])
-// }
-
-
-
-
-//cost는 사용자 등급에 따라 다르다. 현재 사용자의 등급을 가져와서 가격을 책정해서 넣어주어야 함.
- if(todayAvail){
+function makeAllocationTime(array){
+  let tempData=[];
+  if(array){
+    //console.log("selectedAllo:",array)
+    array.map((elem)=>{//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
+     // console.log(elem.usingTime,"-----------")
+      if(elem.usingTime.split('T')[0]==d.getFullYear()+'-'+0+(d.getMonth()+1)+"-"+d.getDate()){
+      todayAvail.push(elem)
+      }
+    });
+  }
+  const originalCost=gradeCost
   todayAvail.map((elem)=>{
     if (elem.available===true){//선택된 날짜에 개설된 시간들중에 available이 true인거
-      if(time==elem.usingTime.split('T')[1]){
-      //  console.log("됨~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-          gradeCost=gradeCost*rate
+    
 
-      }
-      data.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:gradeCost})
+     dcList.map((e)=>{
+       if (e.time==elem.usingTime.split('T')[1]){//할인되는 시간
+        gradeCost=gradeCost*e.rate;
+        }
+        else{//할인 안되는 시간
+        gradeCost=originalCost;
+        }
+      })
+    
+      tempData.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:gradeCost})
       //---------------------------id를 usingTime 전체다 넣어줌
     }
       
     })
+  //console.log(tempData)
+    setData(tempData)
+}
 
- }
- //console.log(data)
 
+
+
+//console.log("data!!!!",data)
 
 //선택된 id가 여러개이다.
 let SelectedTimeObject=[];//선택된 시간Object를 담는 배열
@@ -330,7 +454,6 @@ if (data){
   });
 
  
-  
   if (SelectedTimeObject){
    const temparr=SelectedTimeObject.map(elem=>{return elem.cost})//가격만 뽑아서 배열로 반환
    totalCost=temparr.reduce((sum,cv)=>{return sum+cv},0);//배열의 합을 계산
@@ -341,17 +464,12 @@ if (data){
   
 
 
-
-//console.log(data)
-
-
-
  //인원 선택
  const [count, setCount] = useState(0);
 
  //전화번호 입력
+
  const [number, onChangePhoneNumber] = useState(phone);
-//console.log("input phone number=",number);
 
 const reservedAlert = () =>
 Alert.alert(
@@ -372,35 +490,93 @@ const [isModalVisible, setModalVisible] = useState(false);
 const toggleModal = () => {
   setModalVisible(!isModalVisible);
 };
+// allocation false로 바꾸기
+const modifyAllocation = (id) => {
+  //id를 같이 저장해서 수정하기
+  const docRef = doc(db, "Allocation",id)
+ 
+  const docData = {
+    available:false,
+  } // 문서에 담을 필드 데이터
+  updateDoc(docRef, docData)
+      .then(() => {
+          alert("Updated Successfully!")
+      })
+      .catch((error) => {
+          alert(error.message)
+      })
+}
+/*bookingTable에 추가하는 부분 */
+const AddBooking = (bookingTime,cost,usedPlayer,usingTime) => {
+  const docData = {
+      adminId: adminId,
+      bookingTime: bookingTime,
+      cancel:false,
+      cost: cost,
+      facilityId:value,
+      phone:number,
+      usedPlayer:usedPlayer,
+      userId:currentUserId,
+      usingTime:usingTime,
+  } // 문서에 담을 필드 데이터
+
+  // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+  const ref = collection(db, "Booking") // Auto ID
+ 
+  addDoc(ref, docData)
+            .then(() => {
+                // MARK : Success
+                alert("Document Created!")
+            })
+            .catch((error) => {
+                // MARK : Failure
+                alert(error.message)
+            })
+}
 
 let reserveds=[]//예약된 allocation들
+const QueryAllo = () => {
+ // let tempReserveds=[];
+  let result=[];
+  const ref = collection(db, "Allocation");
+  const data = query(
+    ref,
+    where("facilityId","==",value),
+    where("adminId","==",adminId),//전체시설id
+);
+  getDocs(data)
+      .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+              result.push({id:doc.id,data:doc.data()});
+          });
+          result.map((elem)=>{
+              console.log(selectedId)
+            if(selectedId.includes(elem.data.usingTime)){//elem.usingTime이 selectedId 배열 안에 있으면
+              reserveds.push(elem)
+            }
+          });
+
+          const now=new Date();
+          const nowFormat=now.getFullYear()+'-'+0+(now.getMonth()+1)+"-"+now.getDate()+"T"+now.getHours()+":"+now.getMinutes()
+          reserveds.map((elem)=>{
+            modifyAllocation(elem.id);
+            AddBooking(nowFormat,totalCost,count,elem.data.usingTime);
+          })
+        
+          toggleModal();//예약 완료되고 그걸 어떻게 사용자한테  보여줄지
+          reservedAlert();//예약완료 alert
+      })
+      .catch((error) => {
+          alert(error.message);
+      });
+};
+
 //예약하기 버튼
 const onPressedFin=()=>{
- 
   /*예약된 타임 다른데서 예약안되도록 처리 allocation table에 false로 변경*/
 /*booking table에 전화번호, 가격정보 저장 */ 
-  allocationTable.allocations.map((elem)=>{
-   if( elem.facilityId===value){
-     if(selectedId.includes(elem.usingTime)){//elem.usingTime이 selectedId 배열 안에 있으면
-       reserveds.push(elem)
-     }
-    
-   }
-  })
-
-const now=new Date();
-  console.log("reserveds~~~~~~~",reserveds);
-  reserveds.map((elem)=>{
-    allocationTable.modify(new allocation(value,elem.usingTime,elem.discountRateTime,false))
-   bookingTable.add(new booking(currentUserId,value,elem.usingTime,now,count,false,totalCost,number))
-  })
-  console.log("---------------------변경된",allocationTable,"?------?")
-  console.log("---------------------변경된",bookingTable)
-
-  toggleModal();//예약 완료되고 그걸 어떻게 사용자한테  보여줄지
-  reservedAlert();//예약완료 alert
-
-  
+//allocation중에 이 시설의 정보들만 가지고와서, 그것들의 usingTime이 selectedId배열안에 있으면 reserved안에넣기
+  QueryAllo();  
 }
 
   return (
@@ -417,14 +593,12 @@ const now=new Date();
 
 {/*페이지 제목을 예약 시설 이름으로 변경*/}
       <View>
-            <Text style={styles.title}>{selectedDetailedFacility?selectedDetailedFacility[0].name:"한성대 체육관"}</Text>
+            <Text style={styles.title}>{titleName}</Text>
       </View>
 {/*시설정보 (세부시설 선택 전:전체시설정보, 세부시설 선택 후: 세부시설 정보)*/}
       <View style={styles.FacilityInfoText}> 
-            <Text>여기엔 시설 설명이 나옵니다.</Text>
-            <Button onPress={ReadFacilityList} title={"읽기"}/>
-            <Button onPress={printFacilityDoc} title={"프린트"}/>
-
+            <Text>{explain}</Text>
+            <Button title="버튼" onPress={modifyAllocation}/>
       </View>
 
 
@@ -510,7 +684,8 @@ const now=new Date();
       <Text style={styles.SelectionTitle}>예약 인원:</Text>
       <Button title='-' onPress={() => {if(count > 0) setCount(count - 1)}}></Button>
       <Text style={styles.SelectionTitle}>{count}</Text>
-      <Button title='+' onPress={() => {if(count<maxPlayers)setCount(count + 1)}}></Button>
+      <Button title='+' onPress={() => {if(count<maxPlayers)setCount(count + 1)}}
+        ></Button>
       </View>
 
       <View>
@@ -534,7 +709,7 @@ const now=new Date();
       >
        
           <Text style={{...styles.SelectionTitle,fontSize:20}}>예약자 이름: {name}</Text>
-          <Text style={{...styles.SelectionTitle,fontSize:20}}>예약 시설: {selectedDetailedFacility?selectedDetailedFacility[0].name:"한성대 체육관"}</Text>
+          <Text style={{...styles.SelectionTitle,fontSize:20}}>예약 시설: {titleName}</Text>
           <Text style={{...styles.SelectionTitle,fontSize:20}}>예약 시간: {selectedId.map((e)=>{return "\n"+e.split('T')[0]+"일 "+e.split('T')[1]+"시"})}</Text>
           <Text style={{...styles.SelectionTitle,fontSize:20}}>예약자 전화번호: {number}</Text>
           <Text style={{...styles.SelectionTitle,fontSize:20}}>인원: {count}</Text>
