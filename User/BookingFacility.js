@@ -14,7 +14,7 @@ import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import {Linking, Platform} from 'react-native'
 import { AntDesign } from '@expo/vector-icons';
-import call from 'react-native-phone-call'
+//import call from 'react-native-phone-call'
 
 
 /*모바일 윈도우의 크기를 가져온다*/
