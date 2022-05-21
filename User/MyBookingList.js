@@ -204,7 +204,7 @@ export default function App() {
   }
 
 
-  //취소내역
+  //취소내역 - 취소내역은 현재날짜보다 전 날짜 것들도 보여줌
   //취소내역 db에서 가져오기
   const ReadBookingListCancel = () => {
     const ref = collection(db, "Booking")
