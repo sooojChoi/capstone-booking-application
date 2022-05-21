@@ -46,7 +46,7 @@ const ReadEntireFacility = () => {
               result = snapshot.data()
               setExplain(result.explain)
               if(result.explain.length > 150){
-                // 시설 설명이 200자를 넘어가면 다 보여주지 않는다.
+                // 시설 설명이 150자를 넘어가면 다 보여주지 않는다.
                 setShowingExplain(result.explain.substring(0,150)+'...');
                 setExplainTooLong(true);
                 setExplainShowing(false);
@@ -632,6 +632,32 @@ const phoneCall = () => {
   // 첫 번째 두 번째 방법 모두 android에서만 동작함. ios는 뭔가 더 추가해야하는데 아직 구현 못함..
 }
 
+
+const getcostAndDateInfo = () => {
+  const dateForString = new Date(selectedStartDate);
+  var string = ""
+  if(selectedStartDate !== null){
+    const year = dateForString.getFullYear();
+    const month = dateForString.getMonth()+1;
+    const date = dateForString.getDate();
+    string = year+"."+month+"."+date+"."
+  }else{
+    string = ""
+  }
+
+
+  return(
+    <View>
+    <Text style={{fontSize:18, marginLeft:20}}>{totalCost} 원 / {string}</Text>
+      </View>
+  )
+
+}
+
+
+
+
+
   return (
 
 
@@ -674,9 +700,12 @@ const phoneCall = () => {
       {
         explainTooLong === false ? (
           <View>
-            {
+            { 
               explain === "" || explain.length === 0 ? (
                 <Text>
+                  {
+                    console.log('length: '+explain.length)
+                  }
                   {titleName}입니다.
                 </Text>
               ) : (
@@ -767,7 +796,8 @@ const phoneCall = () => {
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
 
             {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
-          <View style={{height:showTimeSelect?800:0,width:showTimeSelect?400:0, marginTop:20}}>
+          <View style={{height:showTimeSelect?(ScrollView.height):0,width:showTimeSelect?400:0, marginTop:20,
+          marginBottom: showTimeSelect?40:0}}>
                      
                         <Text style={styles.SelectionTitle}>시간 선택</Text>
                           <View>
@@ -859,7 +889,10 @@ const phoneCall = () => {
 
     <View style={{backgroundColor:'white', height:height*0.1, justifyContent:'space-between',
     borderTopWidth:1,borderColor:'grey', flexDirection:'row', alignItems:'center'}}>
-       <Text style={{fontSize:18, marginLeft:20}}>{totalCost} 원</Text>
+      {
+        getcostAndDateInfo()
+      }
+  
         <TouchableOpacity 
         style={{  backgroundColor:'#3262d4', alignItems:'center',
       borderRadius:10, paddingVertical:15,paddingHorizontal:15, marginRight:15}}

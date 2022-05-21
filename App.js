@@ -30,7 +30,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
-  //return (<GenerateAllocation></GenerateAllocation>)//관리자 allocation 생성(혜림)
+  // return (<GenerateAllocation></GenerateAllocation>)//관리자 allocation 생성(혜림)
 
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
   //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
@@ -48,13 +48,13 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   ////////// 사용자(User) UI
 
 
- // return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
+  return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
 
 
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)
   //return (<LogIn></LogIn>) // 로그인(혜림)
 
-  return <MyBookingList></MyBookingList> // 예약 내역(유진)
+  //return <MyBookingList></MyBookingList> // 예약 내역(유진)
   //return <MyLastBookingList></MyLastBookingList> // 지난 예약 내역(유진)
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
