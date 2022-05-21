@@ -21,7 +21,7 @@ export default function App() {
     //지난 이용예 내역 db에서 가져오기
     const ReadLastBookingList = () => {
       const ref = collection(db, "Booking")
-      let now = new Date(+new Date() + 3240 * 10000).toISOString().split("T")[0]; //현재 날짜
+      let now = new Date(+new Date() + 3240 * 10000).toISOString() //현재 날짜
       const data = query(ref, where("cancel", "==", false)) //where id인것만 추가해야함 //////////////////////////
       let result = []
   
@@ -31,11 +31,11 @@ export default function App() {
                   snapshot.forEach((doc) => {
                       //console.log(doc.id, " => ", doc.data())
                       //현재 날짜보다 전 내역만 가져오기 위해
-                      if (doc.data().usingTime.split("T")[0]<now) {
+                      if (doc.data().usingTime<now) {
                       result.push(doc.data())
-                      setBookings(result)
                       }
                   });
+                  setBookings(result)
               })
               .catch((error) => {
                   // MARK : Failure
@@ -44,7 +44,7 @@ export default function App() {
     }
     useEffect(() => {
       ReadLastBookingList();
-    },[])
+    },[bookings])
 
 
   //예약내역
