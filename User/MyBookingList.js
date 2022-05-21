@@ -6,7 +6,7 @@ import {FacilityTable} from '../Table/FacilityTable';
 import { Dimensions } from 'react-native';
 import {BookingTable} from '../Table/BookingTable';
 import { booking } from '../Category';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 export default function App() {
@@ -112,39 +112,46 @@ export default function App() {
         .then((snapshot) => {
           snapshot.forEach((doc) => {
             setBookingId(doc.id) //반영이 안됨
+            console.log(bookingId)
             // doc(db, 컬렉션 이름, 문서 ID)
-        const docRef = doc(db, "Booking", doc.id)
-  
-        const docData = {
-          cancel: true
-        } // 문서에 담을 필드 데이터
-  
-  
+            console.log(doc.id)
+            UpdateCancel(doc.id)
+            
         // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함 => 필드가 사라질 수 있음
         // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함 => 필드가 사라지지 않음(실수 방지)
         // updateDoc(문서 위치, 데이터) == setDoc(문서 위치, 데이터, { merge: true })
   
         //setDoc(docRef, docData, { merge: merge })
-        updateDoc(docRef, docData)
-            // Handling Promises
-            .then(() => {
-                alert("취소가 완료되었습니다")
-            })
-            .catch((error) => {
-                alert(error.message)
-            })
-            console.log(bookingId)
-            console.log(doc.id)
+        
           })
+          
         })
         .catch((error) => {
           alert(error.message)
         })
         
     }
+
+    const UpdateCancel = (id) => {
+      const docRef = doc(db, "Booking", id)
+  
+            const docData = {
+               cancel: true
+            } // 문서에 담을 필드 데이터
+
+            updateDoc(docRef, docData)
+              // Handling Promises
+            .then(() => {
+                alert("취소가 완료되었습니다")
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+      
+    }
     /// 예약 취소 끝 ////
 
-  var facilitieName = itemData.item.facilityId
+    const facilitieName = itemData.item.facilityId
 
   
     //usingTime에서 T빼기위해
@@ -173,6 +180,8 @@ export default function App() {
         style: "cancel"
       },
       { text: "확인", onPress: () => { CancelBooking(true)
+        ReadBookingList();
+    ReadBookingListCancel();
         // bookingTable.modify(new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true))
         // setBookingTable(bookingTable)
         // setBookings(bookingTable.getByUserIdNotCancle(itemData.item.userId))
