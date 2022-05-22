@@ -207,7 +207,7 @@ export default function CloudFirestore() {
         //const docRef = doc(db, "Facility/Hansung/Detail", "ookk33")
 
         // 2. 문자열의 연속으로 문서 위치 지정 -> 데이터를 입력받아 지정할 때 유용할 듯함
-        const docRef = doc(db, "Facility", "HanClass", "Detail", "HC3")
+        const docRef = doc(db, "Facility", "Hansung", "Detail", "Hante1")
 
         const docData = {
             id: "HC3",
