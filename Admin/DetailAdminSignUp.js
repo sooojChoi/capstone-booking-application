@@ -15,7 +15,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailAdminSignUp({navigation, route}) {
-    const { sort, facility} = route.params;  //sort는 'add' 또는 'final' (add이면 시설 추가하는 것, final이면 최종 입력(하나만))
+    const { sort, facility} = route.params;  //sort는 'add' 또는 'modify' (add이면 시설 추가하는 것, 'modify'이면 수정하는 것)
    // const {sort, facilityName} = route.params;
    const [time, setTime] = useState(() => new Date(2000, 1, 1, 0, 0))
 
@@ -39,7 +39,11 @@ export default function DetailAdminSignUp({navigation, route}) {
     const [cost2, setCost2] = useState("")
     const [cost3, setCost3] = useState("")
 
-    const [gradeSetting, setGradeSetting] = useState(false);  // 등급 기능을 사용한다면 true, 아니면 false
+    const [allGradeSameValue, setAllGradeSameValue] = useState(false); 
+    const [cost, setCost] = useState("");  // 모든 등급에 동일한 cost를 부여하기 위해..
+    const [booking, setBooking] = useState("");  // 모든 등급에 동일한 booking을 부여하기 위해..
+
+    const [gradeSetting, setGradeSetting] = useState(true);  // 등급 기능을 사용한다면 true, 아니면 false, -> 수정돼서 항상 true임!!
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
     const [explain, setExplain] = useState("");  // 시설에 대한 설명
@@ -66,7 +70,7 @@ export default function DetailAdminSignUp({navigation, route}) {
         hideTimePicker();
       };
 
-    // 내부 시설 여러개인 경우 (시설이 추가되는 개념일 때)
+
     const goToPreScreen = (name) =>{
         // 입력된 모든 정보를 함께 넘겨준다. 일단은 이름만..
         // 시설 리스트 보는 화면에서 최종 확인하면 그때 테이블에 추가함.
@@ -116,71 +120,68 @@ export default function DetailAdminSignUp({navigation, route}) {
         
     }
 
-    // 내부 시설이 하나인 경우 (시설 입력이 최종 완료된 개념일 때)
-    const goToAppHome = () => {
-        // 시설 테이블에 추가하고, 관리자 어플의 홈화면으로 이동.
-        console.log("시설 입력 완료, 홈화면으로 이동")
-        // 인원 예약 단위에서 최대인원이 최소인원보다 작으면 toast를 띄우고 return 한다.
-        const unitTime = (Number(unitHour)*60)+Number(unitMin)
-        const openHour = Number(openTime.substring(0,2))*60
-        const openMin = Number(openTime.substring(4,6))
-        const closeHour = Number(closeTime.substring(0,2))*60
-        const closeMin = Number(closeTime.substring(4,6))
+    // // 내부 시설이 하나인 경우 (시설 입력이 최종 완료된 개념일 때)
+    // const goToAppHome = () => {
+    //     // 시설 테이블에 추가하고, 관리자 어플의 홈화면으로 이동.
+    //     console.log("시설 입력 완료, 홈화면으로 이동")
+    //     // 인원 예약 단위에서 최대인원이 최소인원보다 작으면 toast를 띄우고 return 한다.
+    //     const unitTime = (Number(unitHour)*60)+Number(unitMin)
+    //     const openHour = Number(openTime.substring(0,2))*60
+    //     const openMin = Number(openTime.substring(4,6))
+    //     const closeHour = Number(closeTime.substring(0,2))*60
+    //     const closeMin = Number(closeTime.substring(4,6))
 
-        var facilityDoc = {}
-        if(gradeSetting === true){
-            facilityDoc = {
-                id: facility.id, password: facility.password,
-                name: facName, address: facility.facilityAddress, tel: facility.facilityNumber,
-                openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
-                minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
-                booking1: Number(booking1),booking2: Number(booking2), booking3: Number(booking3), 
-                cost1: Number(cost1), cost2:Number(cost2), cost3:Number(cost3),
-                explain: facility.explain
-            }
-        }else{
-            facilityDoc = {
-                id: facility.id, password: facility.password,
-                name: facName, address: facility.facilityAddress,tel: facility.facilityNumber,
-                openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
-                minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
-                booking1: null, booking2: null, booking3:null,
-                cost1: null, cost2: null, cost3: null,
-                explain:facility.explain
+    //     var facilityDoc = {}
+    //     if(gradeSetting === true){
+    //         facilityDoc = {
+    //             id: facility.id, password: facility.password,
+    //             name: facName, address: facility.facilityAddress, tel: facility.facilityNumber,
+    //             openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
+    //             minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
+    //             booking1: Number(booking1),booking2: Number(booking2), booking3: Number(booking3), 
+    //             cost1: Number(cost1), cost2:Number(cost2), cost3:Number(cost3),
+    //             explain: facility.explain
+    //         }
+    //     }else{
+    //         facilityDoc = {
+    //             id: facility.id, password: facility.password,
+    //             name: facName, address: facility.facilityAddress,tel: facility.facilityNumber,
+    //             openTime: openHour+openMin, closeTime: closeHour+closeMin, unitTime: unitTime,
+    //             minPlayer:Number(minPlayer), maxPlayer: Number(maxPlayer), 
+    //             booking1: null, booking2: null, booking3:null,
+    //             cost1: null, cost2: null, cost3: null,
+    //             explain:facility.explain
     
-            }
-        }
-        console.log("-----------------------시설 추가---------------------")
-        console.log(facilityDoc)
-        // database에 시설을 추가한다.
-        CreateFacility(facilityDoc)
+    //         }
+    //     }
+    //     console.log("-----------------------시설 추가---------------------")
+    //     console.log(facilityDoc)
+    //     // database에 시설을 추가한다.
+    //     CreateFacility(facilityDoc)
        
         
-    }
+    // }
 
-    // Random ID로 문서 생성 -> Facility Document
-    const CreateFacility = (docData) => {
+    // // Random ID로 문서 생성 -> Facility Document
+    // const CreateFacility = (docData) => {
 
-        const docRef = doc(db, "Facility", docData.id)
+    //     const docRef = doc(db, "Facility", docData.id)
 
-        // setDoc(문서 위치, 데이터)
-        setDoc(docRef, docData)
-            // Handling Promises
-            .then(() => {
-                alert("User Document Created!")
-            })
-            .catch((error) => {
-                alert(error.message)
-            })
-    }
+    //     // setDoc(문서 위치, 데이터)
+    //     setDoc(docRef, docData)
+    //         // Handling Promises
+    //         .then(() => {
+    //             alert("User Document Created!")
+    //         })
+    //         .catch((error) => {
+    //             alert(error.message)
+    //         })
+    // }
      
     useEffect(()=>{
         if(facility === null || facility === undefined){
             console.log("nothing")
         }else{
-            if(sort === "final"){
-                onChangeNameText(facility.facilityBasicName)
-            }else{
                 onChangeNameText(facility.name)
 
                 const open = Number(facility.openTime)
@@ -225,7 +226,7 @@ export default function DetailAdminSignUp({navigation, route}) {
                 setMinPlayer(String(facility.minPlayer))
                 setMaxPlayer(String(facility.maxPlayer))
                 if(facility.booking1 !== null && facility.booking1 !== undefined){
-                    setGradeSetting(true)
+                    //setGradeSetting(true)
                     setBooking1(facility.booking1===null ? null : String(facility.booking1))
                     setBooking2(facility.booking2===null ? null : String(facility.booking2))
                     setBooking3(facility.booking3===null ? null : String(facility.booking3))
@@ -233,14 +234,34 @@ export default function DetailAdminSignUp({navigation, route}) {
                     setCost2(facility.cost2===null ? null : String(facility.cost2))
                     setCost3(facility.cost3===null ? null : String(facility.cost3))
                 }else{
-                    setGradeSetting(false)
+                   // setGradeSetting(false)
                 }
                 setExplain(facility.explain)
-            }
+            
 
         }
     },[])
 
+
+    const allGradeButtonClicked = (value) => {
+        if(value === 'ok'){
+            setCost1(cost)
+            setCost2(cost)
+            setCost3(cost)
+
+            setBooking1(booking)
+            setBooking2(booking)
+            setBooking3(booking)
+
+            setAllGradeSameValue(false);
+
+        }else if(value === 'cancel'){
+            setCost("")
+            setBooking("")
+            setAllGradeSameValue(false);
+        }
+
+    }
     
 
     return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
@@ -286,10 +307,10 @@ export default function DetailAdminSignUp({navigation, route}) {
                 <View style={{...styles.borderBottomStyle}}>
                
                     <Text style={{...styles.titleText, }}>시설 운영 시간</Text>
-                    <View style={{flexDirection:'row', marginTop:10}}>
+                    <View style={{flexDirection:'row', marginTop:10, justifyContent:'center'}}>
                         <View style={{alignItems:'center', }}>
                             <Text style={{...styles.normalTextBlack}}>오픈 시간</Text>
-                            <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10 , width:SCREEN_WIDTH*0.3}}
+                            <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10 , width:SCREEN_WIDTH*0.3, }}
                             onPress={() => showTimePicker("open")}>
                                 {
                                     openTime === null || openTime === undefined || openTime==="" ? (
@@ -402,8 +423,9 @@ export default function DetailAdminSignUp({navigation, route}) {
                                     <Text style={{fontSize:14, marginRight:5, color:"grey"}}>설명닫기</Text>
                                     <AntDesign name="caretup" size={15} color="grey" />
                                 </TouchableOpacity>
-                                <Text style={{...styles.normalTextBlack, marginTop:10}}>높은 등급일수록 많은 일수, 적은 금액을 설정하면 됩니다.
-                    일수는 며칠 전부터 예약이 가능한지를 의미합니다. 금액은 시간 단위별 예약 금액을 의미합니다.</Text>
+                                <Text style={{...styles.normalTextBlack, marginTop:10}}>높은 등급일수록 많은 일수, 적은 금액을 입력하세요.
+                    일수는 며칠 전부터 예약이 가능한지를 의미합니다. 금액은 시간 단위별 이용 금액을 의미합니다. 
+                    금액은 사용자에게 안내하기 위함이며, 앱 내에 결제 시스템은 존재하지 않습니다. </Text>
                             </View>
                         )
                     }
@@ -418,11 +440,70 @@ export default function DetailAdminSignUp({navigation, route}) {
                         </TouchableOpacity>
                         ) : (
                             <View>
-                            <TouchableOpacity style={{marginTop:20}} onPress={() => setGradeSetting(false)}>
-                                <Text style={{fontSize:14, color:"#1789fe", textDecorationLine:'underline'}}>
-                                    취소하기
-                                </Text>
-                            </TouchableOpacity>
+                                {
+                                    allGradeSameValue === false ? (
+                                        <TouchableOpacity style={{marginTop:20,}} onPress={() => setAllGradeSameValue(true)}>
+                                        <Text style={{fontSize:14, color:"#1789fe", textDecorationLine:'underline'}}>
+                                            모든 등급에 동일한 일수, 금액 적용하기
+                                        </Text>
+                                    </TouchableOpacity>
+                                    ) : (
+                                    <View style={{backgroundColor:'#e6e6e6', borderRadius:10, padding:10, paddingLeft:0,marginTop:10}}>
+
+                                        <View style={{flexDirection:'row', alignItems:'center',marginBottom:0}}>
+                                        <View style={{marginTop:15,  marginLeft:15, alignItems:'center'}}>
+                                                <View style={{flexDirection:'row', alignItems:'center'}}>
+                                                    <Text style={{...styles.normalTextBlack, marginRight:15}}>전체 등급</Text>
+                                                    <TextInput 
+                                                        style={{...styles.textinput,borderColor:'#323232', marginBottom:0,width:SCREEN_WIDTH*0.17 }}
+                                                        onChangeText={setBooking}
+                                                        placeholder="일수"
+                                                        value={booking}
+                                                        maxLength={4}
+                                                        keyboardType='number-pad'
+                                                        editable={true}
+                                                        ></TextInput>
+                                                        <Text style={{...styles.normalTextBlack, marginLeft:5}}>일</Text>
+                                                </View>
+                                        </View>
+                                        <View style={{marginTop:15, marginLeft:15, alignItems:'center'}}>
+                                        <View style={{flexDirection:'row', alignItems:'center'}}>
+                                            <TextInput 
+                                            style={{...styles.textinput,borderColor:'#323232', marginBottom:0,width:SCREEN_WIDTH*0.2 }}
+                                            onChangeText={setCost}
+                                            value={cost}
+                                            maxLength={8}
+                                            keyboardType='number-pad'
+                                            placeholder="금액"
+                                            editable={true}
+                                            ></TextInput>
+                                            <Text style={{...styles.normalTextBlack, marginLeft:5}}>원</Text>
+                                        </View>
+                                        </View>
+                                        </View>
+
+                                        <View style={{flexDirection:'row', justifyContent:'flex-end', marginBottom:10 }}>
+
+                                            <TouchableOpacity style={{marginTop:10,marginRight:10}} onPress={() => allGradeButtonClicked('ok')}>
+                                            <Text style={{fontSize:14, color:"#1789fe", textDecorationLine:'underline'}}>
+                                                확인
+                                            </Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity style={{marginTop:10, marginRight:5}} onPress={() => allGradeButtonClicked('cancel')}>
+                                            <Text style={{fontSize:14, color:"#1789fe", textDecorationLine:'underline'}}>
+                                                취소
+                                            </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                   
+
+                                    </View>
+                                    )
+                                }
+
+                            {
+
+                            }
 
                         <View style={{flexDirection:'row', alignItems:'center',marginBottom:20}}>
                                 
@@ -540,9 +621,7 @@ export default function DetailAdminSignUp({navigation, route}) {
                     
                 </View>
 
-                {
-                    sort !== "final" ? (
-                    <View style={{...styles.borderBottomStyle, borderTopColor:"#bebebe",
+                <View style={{...styles.borderBottomStyle, borderTopColor:"#bebebe",
                         borderTopWidth:1, borderBottomWidth:0,marginBottom:30, paddingTop:10}}>
                     
                     
@@ -564,11 +643,6 @@ export default function DetailAdminSignUp({navigation, route}) {
                     
                     
                 </View>
-                    ) : (
-                        <View></View>
-                    )
-                }
-
              
                 
             </View>
@@ -581,23 +655,12 @@ export default function DetailAdminSignUp({navigation, route}) {
         cost2!==""&&cost3!==""&&booking1!==""&&booking2!==""&&booking3!==""): (true))
          ? (
             <View>
-                {
-                    sort === 'add' || sort === 'modify' ? (
-                        <TouchableOpacity 
+                <TouchableOpacity 
                         style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
                         paddingTop:20, paddingBottom:20}}
                         disabled={false} onPress={() => goToPreScreen(facName)}>
                             <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
-                        </TouchableOpacity>
-                    ) : (  // final인 경우 (최종 입력인 경우)
-                        <TouchableOpacity 
-                        style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
-                        paddingTop:20, paddingBottom:20}}
-                        disabled={false} onPress={() => goToAppHome()}>
-                            <Text style={{fontSize:16, color:'white'}}>입력 완료</Text>
-                        </TouchableOpacity>
-                    )
-                }
+                </TouchableOpacity>
             </View>
             
         ) : (

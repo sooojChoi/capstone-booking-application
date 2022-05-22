@@ -15,6 +15,10 @@ import { StyleSheet, Text, View,TextInput,Button,KeyboardAvoidingView,TouchableO
  import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import SearchFacility from './searchFacility';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
+
 
 /*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. */
 const {height,width}=Dimensions.get("window");
@@ -77,22 +81,26 @@ function SignIn({navigation, route}) {
   }
 
 
-  const [isDuplicated,setIsDuplicated]=useState(true);// id중복검사
-  const [InputId,setInputId]=useState();//입력된 id
+  //const [isDuplicated,setIsDuplicated]=useState(true);// id중복검사
+  const [InputId,setInputId]=useState("");//입력된 id
+
+  const [idCheck, setIdCheck] = useState(false);  // id 중복검사 결과 (true면 사용가능, false면 불가능)
+  const [isIdCheck, setIsIdCheck] = useState(false);  // 현재 text input에 입력된 id가 중복검사된 아이디인지 알기 위함.
+
   const id=userTable.users.map((elem)=>{return elem.id});
   const [facName, setFacName] = useState("");  // 가입할 시설 이름
 
-  const checkId=()=>{
-    if (id.includes(InputId)){
-      setIsDuplicated(false)//중복되면 false
+  // const checkId=()=>{
+  //   if (id.includes(InputId)){
+  //     setIsDuplicated(false)//중복되면 false
 
-    }
-    else{
-      setIsDuplicated(true)//중복안되면 true
+  //   }
+  //   else{
+  //     setIsDuplicated(true)//중복안되면 true
 
 
-    }
-  }
+  //   }
+  // }
 
 //토스트 메시지 출력
 const toastRef = useRef(); // toast ref 생성
@@ -111,31 +119,24 @@ const notValid = useCallback(() => {
 
 const complete=()=>{  
   
-  checkId()
+  //checkId()
 
 
-  if (isValid){//폼이 모두 입력되었으면
-    if (isDuplicated){//id 중복 안됐으면
-            if(InputPW===checkPW){//입력된 PW, 재입력된 PW가 동일하면
-              const now = new Date();//오늘날짜 생성해서 넣음~
-              const newUser=new user(InputId,InputName,phone,now,null)
-              userTable.add(newUser)
-              console.log(userTable);
-              }else{//틀리면 toast메시지
-              showToast()
-              }
-      }else{
-          console.log("-------------ID가 중복됨")
-      }
-
-    }else{//입력안된게 있으면
-      notValid()
+  if(InputPW===checkPW){//입력된 PW, 재입력된 PW가 동일하면
+    const now = new Date();//오늘날짜 생성해서 넣음~
+    const newUser=new user(InputId,InputName,phone,now,null)
+    userTable.add(newUser)
+    console.log(userTable);
+    }else{//틀리면 toast메시지
+    showToast()
     }
+
+  
 
   
 }
 //모든 칸을 다 입력해야지만 유효한 정보이다.. 
-const isValid=(facName!="" && facName != undefined)&&InputId&&InputName&&phone&&InputPW
+//const isValid=(facName!="" && facName != undefined)&&InputId&&InputName&&phone&&InputPW
 
 // 검색하려고 클릭하면 호출됨
 const searchFacOnFocus = () =>{
@@ -157,6 +158,55 @@ useEffect(()=>{
 
 
 
+ //id 중복검사하는 버튼 눌리면 불리는 함수
+ const idCheckButtonClicked = () => {
+  CheckUserId();
+}
+
+const CheckUserId = () => {
+    // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+    const ref = collection(db, "User")
+    const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+    let result = [] // 가져온 User 목록을 저장할 변수
+
+    getDocs(data)
+        // Handling Promises
+        .then((snapshot) => {
+            snapshot.forEach((doc) => {
+                //console.log(doc.id, " => ", doc.data())
+                result.push(doc.data())
+              
+            });
+            var check = 0
+            result.map((value) => {
+              if(value.id === InputId){
+                setIsIdCheck(true);
+                setIdCheck(false);
+                check=1;
+                return;
+              }
+            })
+            if(check===0){
+              setIsIdCheck(true);
+              setIdCheck(true);
+            }
+           
+        })
+        .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+        })
+}
+
+   //userId를 입력하는 textinput의 onChangeText에 등록된 함수임.
+   const changeIdText = (value) => {
+    //텍스트에 변경이 생겼기 때문에 중복 검사 결과와 유무를 false로 함.
+    setIdCheck(false)
+    setIsIdCheck(false)
+
+    setInputId(value)
+
+  }
 
 
   return (
@@ -165,8 +215,9 @@ useEffect(()=>{
            // navigation 으로 헤더 생기니까 title 없앴음
            //<Text style={styles.title}>회원가입</Text>
          }
-      <SafeAreaView style={{flex:1}}>
+      <SafeAreaView style={{flex:1, backgroundColor:'white'}}>
         <ScrollView showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView>
         {
           // 안드로이드에서 실행할 때 safeAreaView가 적용안돼서 아래의 view에 paddingTop을 20으로 해놨다.
           // 네비게이션 연결하고 헤더 붙이면 0으로...
@@ -189,9 +240,9 @@ useEffect(()=>{
          
           <View style={styles.signInForm}>
 
-              <View>
+              <View style={{alignItems:'center'}}>
 
-                <View>
+                <View style={{}}>
                   <Text style={{...styles.text,}}>가입할 시설 검색</Text>
                   {
                     facName === "" || facName === null ?(
@@ -230,31 +281,75 @@ useEffect(()=>{
                 </View>
  
                 <View>
-                  <Text style={styles.text}>이름</Text> 
-                  <TextInput 
-                  style={styles.input}
-                  onChangeText={setInputName}
-                  value={InputName}
-                  placeholder="이름을 입력해주세요."
-                  />
+                  <Text style={styles.text}>이름</Text>
+            
+                      <TextInput 
+                      style={{...styles.input,}}
+                      onChangeText={setInputName}
+                      value={InputName}
+                      autoCorrect={false}
+                      placeholder="이름을 입력해주세요."
+                      />
+                     
                 </View>
+
  
       
-                <View>
+                <View style={{alignSelf:'flex-start'}}>
 
-                  <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                  
                     <Text style={styles.text}>ID</Text> 
-                    <View style={{height:isDuplicated?0:height*0.03,width:isDuplicated?0:width*0.35
+                    {/* <View style={{height:isDuplicated?0:height*0.03,width:isDuplicated?0:width*0.35
                       }}>
                       <Text style={{...styles.text,color:'red'}}>이미 존재하는 id</Text> 
-                    </View>
+                    </View> */}
+                          {
+                      InputId !== "" && idCheck === false ? (
+                        <View>
+                          {
+                            // 중복검사를 한 경우
+                            isIdCheck === true ? (
+                              <Text style={{fontSize:14, color:'#ff3232', marginBottom:8}}>
+                                사용 불가능한 아이디입니다.
+                              </Text>
+                            ) : (
+                              // 아직 중복검사를 하지 않은 경우
+                              <Text style={{fontSize:14, color:'#ff3232', marginBottom:8}}>
+                                중복 확인이 필요한 아이디입니다.
+                              </Text>
+                            )
+                          }
+                          </View>
+                      ) : (
+                        <View>
+                          {
+                            // 입력이 없으면 아무것도 나타내지 않는다.
+                            InputId === "" ? (
+                              <View></View>
+                            ) : (
+                              // 입력이 있는데 idCheck가 true인 경우임.
+                              <Text style={{fontSize:14, color:'#1789fe', marginBottom:8}}>
+                                {InputId}는(은) 사용 가능한 아이디입니다.
+                              </Text>
+                            )
+                          }
+                        </View>
+                      )
+                    }
+            
+                  <View style={{flexDirection:'row',alignItems:'center'}}> 
+                      <TextInput 
+                        style={{...styles.input, width:width*0.5}}
+                        onChangeText={(value) => changeIdText(value)}
+                        value={InputId}
+                        autoCorrect={false}
+                        placeholder="아이디를 입력해주세요."
+                        />
+                     <TouchableOpacity style={{...styles.btnStyle2, marginLeft:15}}
+                      onPress={() => idCheckButtonClicked()}>
+                        <Text style={{fontSize:14, color:"white",}}>중복확인</Text>
+                      </TouchableOpacity>
                   </View>
-                  <TextInput 
-                    style={styles.input}
-                    onChangeText={setInputId}
-                    value={InputId}
-                    placeholder="아이디를 입력해주세요."
-                    />
                 </View>
  
                 <View>
@@ -315,7 +410,7 @@ useEffect(()=>{
    
         
               {
-                (facName!="" && facName != undefined)&&InputId&&InputName&&phone&&InputPW&&checkPW ? (
+                (facName!="" && facName != undefined)&&InputId&&InputName&&phone&&InputPW&&checkPW&&idCheck? (
               
                 <TouchableOpacity  
                 style={{...styles.signInBtn,}}
@@ -342,6 +437,7 @@ useEffect(()=>{
  
           </View>    
         </View>
+        </KeyboardAwareScrollView>
         </ScrollView>
       </SafeAreaView>
      
@@ -393,5 +489,15 @@ const styles = StyleSheet.create({
     marginTop:20,
     paddingVertical:10,
     borderRadius:1,
-    }
+    },
+    btnStyle2:{
+      backgroundColor:'#3262d4',
+      justifyContent:'center',
+      alignItems:'center',
+      borderRadius:8,
+      paddingHorizontal:10,
+      paddingVertical:10,
+      alignSelf:'center',
+      //width:SCREEN_WIDTH*0.2
+    },
 });

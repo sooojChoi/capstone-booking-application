@@ -25,7 +25,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 //const flexNotChecked = 5.5
 const flexChecked = 5
-const thisFacilityId = "Hante1"
+const thisFacilityId = "testtt"
 const permissionTable = new PermissionTable();  //function안에 두면 안됨.
 const userTable = new UserTable();
 const Stack = createStackNavigator();
@@ -68,11 +68,20 @@ function UserPermission({navigation, route}) {
     {label: grade[1], value: 1},
     {label: grade[2], value: 2},
   ]
+
+  const [fresh, setFresh] = useState(true);
+
+
   const toastRef = useRef(); // toast ref 생성
 
    // Toast 메세지 출력
    const showCopyToast = useCallback(() => {
     toastRef.current.show('사용자를 먼저 선택해주세요. ');
+  }, []);
+
+   // Toast 메세지 출력
+   const showSuccessToast = useCallback(() => {
+    toastRef.current.show('승인되었습니다. ');
   }, []);
 
   const toggleModal = () => {
@@ -142,6 +151,7 @@ function UserPermission({navigation, route}) {
     }
   }
 
+
   // DB 또는 특정 파일에서 승인 요청한 사용자 리스트를 가져오는 함수
   const getAllUsers = (temp) => {
     // 어디서 가져오든, 깊은 복사(원본 데이터가 바뀌지 않도록)해야할 것 같음. 아직 구현 못함.
@@ -157,13 +167,13 @@ function UserPermission({navigation, route}) {
       const id = user.id
       const name = user.name
       const realPhone = user.phone
-      const phone = realPhone.substring(0,3)+'-'+realPhone.substring(3,7)+'-'+realPhone.substring(7,11);
+      //const phone = realPhone.substring(0,3)+'-'+realPhone.substring(3,7)+'-'+realPhone.substring(7,11);
       const registerDate = user.registerDate
       const allowDate = user.allowDate
       const isCheck = false
       const gradeIndex = grade.length-1
       newUserCheck.push({
-        id: id, name : name, phone : phone,
+        id: id, name : name, phone : realPhone,
         registerDate: registerDate, allowDate : allowDate, 
         isCheck : isCheck, gradeIndex: gradeIndex,   // 원래 배열에서 새로 추가한 것.
       })
@@ -171,6 +181,8 @@ function UserPermission({navigation, route}) {
     // register date(등록일)이 오래된 순서대로 정렬함.
     tempArray = newUserCheck.sort((a, b)=>a.registerDate - b.registerDate) 
     setUserCheck(...[tempArray]);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
+    setFresh(!fresh)  //flatlist를 리렌더링하기 위함.
+    
    // console.log(tempArray)
     console.log("-------------------------")
   }
@@ -200,7 +212,7 @@ function UserPermission({navigation, route}) {
             alert(error.message)
         })
    // setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
-}
+    }
 
 
   // "전체 선택" 버튼 눌리면 호출되는 함수
@@ -213,6 +225,48 @@ function UserPermission({navigation, route}) {
       setIsAllChecked(false);
     }
   }
+   // Random Id로 생성함. Read한 데이터를 배열로 옮긴 후 조건문으로 데이터를 추출해야 할 듯함(기존 동일)
+   const CreateWithRandomId = (tableName, docRef) => {
+    // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+    const ref = collection(db, tableName) // Auto ID
+
+    // 데이터 추가 시 컬렉션 이름 수정 후 추가하기!!!
+
+    // // Permission 정보
+    // const docRef = {
+    //     userId: "gt33",
+    //     facilityId: "Hante1",
+    //     grade: 2
+    // }
+
+    addDoc(ref, docRef)
+        .then(() => {
+            console.log(tableName+", Document Created!")
+        })
+        .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+        })
+}
+
+  // 유저 정보 업데이트 하기
+    const UpdateUser = (docData) => {
+        // doc(db, 컬렉션 이름, 문서 ID)
+        const docRef = doc(db, "User", docData.id)
+
+        //setDoc(docRef, docData, { merge: merge })
+        updateDoc(docRef, docData)
+            // Handling Promises
+            .then(() => {
+                //alert("Updated Successfully!")
+                console.log("Updated Successfully!")
+                ReadUserList();    // db에서 사용자 목록을 다시 불러옴.
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+    }
+
 
   // '승인' 버튼을 눌러서 한 명의 사용자만 승인 또는 거절하는 함수
   const AllowOneUser = (userId, userName) => {
@@ -227,15 +281,32 @@ function UserPermission({navigation, route}) {
         newUserCheck.find((userFind)=>{
           if(userFind.id===userId){
             // 승인 되었으므로 permissionTable에 추가..
-            permissionTable.add(new permission(userId, thisFacilityId, userFind.gradeIndex))
-            console.log("------시설 "+thisFacilityId+"의 현재 등록 인원------")
-            console.log(permissionTable.getsByFacilityId(thisFacilityId));
+            // permissionTable.add(new permission(userId, thisFacilityId, userFind.gradeIndex))
+            // console.log("------시설 "+thisFacilityId+"의 현재 등록 인원------")
+            // console.log(permissionTable.getsByFacilityId(thisFacilityId));
+            const permissionData = {
+              userId: userId,
+              facilityId: thisFacilityId, 
+              grade: userFind.gradeIndex
+            }
+            CreateWithRandomId("Permission", permissionData)
 
             // userTable에서 allow date를 수정 (null이면 아직 승인되지 않은 user니까)
-            userTable.modify(new user(userId, userFind.name, userFind.phone, userFind.registerDate, "permission"))
-            console.log(" ")
-            console.log("-------사용자 "+userId+"("+userFind.name+") 의 정보")
-            console.log(userTable.getsById(userId))
+           // userTable.modify(new user(userId, userFind.name, userFind.phone, userFind.registerDate, "permission"))
+            // console.log(" ")
+            // console.log("-------사용자 "+userId+"("+userFind.name+") 의 정보")
+            // console.log(userTable.getsById(userId))
+
+            const userData = {
+              id: userId,
+              name: userFind.name,
+              phone: userFind.phone,
+              registerDate: userFind.registerDate,
+              allowDate: "permission"
+            } // 문서에 담을 필드 데이터
+            UpdateUser(userData)
+
+        
           }
         })
         // 승인된 사용자는 목록에서 제외.
@@ -243,17 +314,17 @@ function UserPermission({navigation, route}) {
        // setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
 
         //  getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
-        ReadUserList();
+        //ReadUserList();    // db에서 사용자 목록을 다시 불러옴.
       },},
-      {text: "거절", onPress:() => {
-        console.log(userName+' 거절 완료 (id: '+userId+')')
-        navigation.navigate('DetailUserDeny', {deletedUser: userId, userOrUsers: "user"})
+      // {text: "거절", onPress:() => {
+      //   console.log(userName+' 거절 완료 (id: '+userId+')')
+      //   navigation.navigate('DetailUserDeny', {deletedUser: userId, userOrUsers: "user"})
 
-        // 거절 화면 구현하면서 코드 막아둠.
-        // resetUserCheck(null);  //newUserCheck 초기화
-        // const newarray = newUserCheck.filter((value)=>value.id !== userId)
-        // setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
-      }}
+      //   // 거절 화면 구현하면서 코드 막아둠.
+      //   // resetUserCheck(null);  //newUserCheck 초기화
+      //   // const newarray = newUserCheck.filter((value)=>value.id !== userId)
+      //   // setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+      // }}
     ]);
   }
 
@@ -283,12 +354,28 @@ function UserPermission({navigation, route}) {
         newUserCheck.map((userFind)=>{
           if(userFind.isCheck === true){
             // 승인 되었으므로 permissionTable에 추가..
-            permissionTable.add(new permission(userFind.id, thisFacilityId, userFind.gradeIndex))
+         //   permissionTable.add(new permission(userFind.id, thisFacilityId, userFind.gradeIndex))
             // userTable에서 allow date를 수정 (null이면 아직 승인되지 않은 user니까)
-            userTable.modify(new user(userFind.id, userFind.name, userFind.phone, userFind.registerDate, "permission"))
-            console.log(" ")
-            console.log("-------사용자 "+userFind.id+"("+userFind.name+") 의 정보")
-            console.log(userTable.getsById(userFind.id))
+            // userTable.modify(new user(userFind.id, userFind.name, userFind.phone, userFind.registerDate, "permission"))
+            // console.log(" ")
+            // console.log("-------사용자 "+userFind.id+"("+userFind.name+") 의 정보")
+            // console.log(userTable.getsById(userFind.id))
+
+            const permissionData = {
+              userId: userFind.id,
+              facilityId: thisFacilityId, 
+              grade: userFind.gradeIndex
+            }
+            CreateWithRandomId("Permission", permissionData)
+
+            const userData = {
+              id: userFind.id,
+              name: userFind.name,
+              phone: userFind.phone,
+              registerDate: userFind.registerDate,
+              allowDate: "permission"
+            } // 문서에 담을 필드 데이터
+            UpdateUser(userData)
           }
         })
        
@@ -310,39 +397,39 @@ function UserPermission({navigation, route}) {
   }
 
   // "거절" 버튼 눌러서 여러명을 거절하는 함수
-  const denyUsers = () => {
-    const subtitle = ""
-    const usersForDeny = []
-    // 어떠한 사용자도 선택하지 않았을 경우에는 사용자를 먼저 선택해달라는 토스트를 띄운다.
-    resetUserCheck(null);   // newUserCheck 초기화
-    newUserCheck.map((userFind)=>{
-      if(userFind.isCheck === true){
-        usersForDeny.push(userFind.id);
-      }
-    })
-    if(usersForDeny.length === 0){
-      showCopyToast();
-      return;
-    }
+  // const denyUsers = () => {
+  //   const subtitle = ""
+  //   const usersForDeny = []
+  //   // 어떠한 사용자도 선택하지 않았을 경우에는 사용자를 먼저 선택해달라는 토스트를 띄운다.
+  //   resetUserCheck(null);   // newUserCheck 초기화
+  //   newUserCheck.map((userFind)=>{
+  //     if(userFind.isCheck === true){
+  //       usersForDeny.push(userFind.id);
+  //     }
+  //   })
+  //   if(usersForDeny.length === 0){
+  //     showCopyToast();
+  //     return;
+  //   }
 
-     // 사용자를 선택했을 경우 정말 거절할 것인지 다시 물어보는 alert를 띄운다.
-    Alert.alert("거절하시겠습니까?", subtitle ,[
-      {text:"취소"},
-      {text: "확인", onPress: () => {
-   //     resetUserCheck(null);   // newUserCheck 초기화
+  //    // 사용자를 선택했을 경우 정말 거절할 것인지 다시 물어보는 alert를 띄운다.
+  //   Alert.alert("거절하시겠습니까?", subtitle ,[
+  //     {text:"취소"},
+  //     {text: "확인", onPress: () => {
+  //  //     resetUserCheck(null);   // newUserCheck 초기화
 
-        // check값이 true인 것들은 배열에서 모두 제거한다. (승인된 사용자는 목록에서 제외)
-    //    const newarray = newUserCheck.filter((value)=>value.isCheck === false)
-     //   setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
-        setCheckMode(false);  // 체크 버튼을 사라지게 한다.
-        setIsAllChecked(false);  //"전체 선택" 버튼 해제
-        navigation.navigate('DetailUserDeny', {deletedUser: usersForDeny, userOrUsers: "users"})
-      },},
-    ]);
+  //       // check값이 true인 것들은 배열에서 모두 제거한다. (승인된 사용자는 목록에서 제외)
+  //   //    const newarray = newUserCheck.filter((value)=>value.isCheck === false)
+  //    //   setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
+  //       setCheckMode(false);  // 체크 버튼을 사라지게 한다.
+  //       setIsAllChecked(false);  //"전체 선택" 버튼 해제
+  //       navigation.navigate('DetailUserDeny', {deletedUser: usersForDeny, userOrUsers: "users"})
+  //     },},
+  //   ]);
 
 
-    setIsAllChecked(false);  //"전체 선택" 버튼 해제
-  }
+  //   setIsAllChecked(false);  //"전체 선택" 버튼 해제
+  // }
 
   // 어떠한 사용자도 선택하지 않았을 경우에는 버튼 비활성화
   const permissionAndDenyButton = () =>{
@@ -361,12 +448,12 @@ function UserPermission({navigation, route}) {
            승인
          </Text>
        </TouchableOpacity>
-      <TouchableOpacity  style={{...styles.smallButtonStyle,backgroundColor:'#a0a0a0', paddingLeft:16, paddingRight:16}} 
+      {/* <TouchableOpacity  style={{...styles.smallButtonStyle,backgroundColor:'#a0a0a0', paddingLeft:16, paddingRight:16}} 
          onPress={()=>denyUsers()} disabled={true}>
          <Text style={{fontSize:14, color:'white'}}>
            거절
          </Text>
-       </TouchableOpacity>
+       </TouchableOpacity> */}
      </View>)
      }else{
        return ( <View style={{flexDirection:'row',}}>
@@ -376,12 +463,12 @@ function UserPermission({navigation, route}) {
            승인
          </Text>
        </TouchableOpacity>
-      <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
+      {/* <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16}} 
          onPress={()=>denyUsers()}>
          <Text style={{fontSize:14, color:'white'}}>
            거절
          </Text>
-       </TouchableOpacity>
+       </TouchableOpacity> */}
      </View>)
      }
   }
@@ -487,7 +574,8 @@ function UserPermission({navigation, route}) {
           <View>
             <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
               <Text style={{fontSize:15, fontWeight: "600", marginEnd:8}}>{itemData.item.name}</Text>
-              <Text style={{fontSize:14, color:'#373737'}}>{itemData.item.phone}</Text>
+              <Text style={{fontSize:14, color:'#373737'}}>{itemData.item.phone.substring(0,3)+'-'+
+              itemData.item.phone.substring(3,7)+'-'+itemData.item.phone.substring(7,11)}</Text>
             </View>
             <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
             <TouchableOpacity  style={styles.ButtonStyle2}
@@ -512,7 +600,8 @@ function UserPermission({navigation, route}) {
           <View>
             <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
               <Text style={{fontSize:15, fontWeight: "600", marginRight:10}}>{itemData.item.name}</Text>
-              <Text style={{fontSize:14, color:'#373737'}}>{itemData.item.phone}</Text>
+              <Text style={{fontSize:14, color:'#373737'}}>{itemData.item.phone.substring(0,3)+'-'+
+              itemData.item.phone.substring(3,7)+'-'+itemData.item.phone.substring(7,11)}</Text>
             </View>
             <View style={{flexDirection:'row', alignItems:'center', marginBottom:5}}>
             <TouchableOpacity  style={styles.ButtonStyle2}
@@ -638,7 +727,7 @@ function UserPermission({navigation, route}) {
         //   </View>
         }
          {checkMode === true ? (
-          <View style={{alignItems:'flex-end', marginBottom:5, borderBottomColor:"#a0a0a0", borderBottomWidth:1}}>
+          <View style={{alignItems:'flex-end', marginBottom:5, borderBottomColor:"#a0a0a0", borderBottomWidth:1, marginTop:5}}>
           <TouchableOpacity  style={{...styles.smallButtonStyle, paddingLeft:16, paddingRight:16, marginEnd:10, marginBottom:5}} 
           onPress={()=>cancelPermission()}>
             <Text style={{fontSize:14, color:'white'}}>
@@ -692,6 +781,7 @@ function UserPermission({navigation, route}) {
            <FlatList keyExtracter={(item) => item.id} 
                data={userCheck} 
                renderItem={renderGridItem} 
+               extraData={fresh}
                numColumns={1}/>
            </View>
           ) : (
@@ -699,6 +789,7 @@ function UserPermission({navigation, route}) {
             <FlatList keyExtracter={(item) => item.id} 
                 data={userCheck} 
                 renderItem={renderGridItem} 
+                extraData={fresh}
                 numColumns={1}/>
             </View>
           )

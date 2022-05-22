@@ -28,7 +28,7 @@ import CloudFirestore from './CloudFirestore';
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
   ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
 
-  return <ChooseModeNavigation></ChooseModeNavigation> // 사용자/관리자 선택(수빈)
+  //return <ChooseModeNavigation></ChooseModeNavigation> // 사용자/관리자 선택(수빈)
   //return (<Home></Home>) // 홈(유진)
 
   ////////// 관리자(Admin) UI
@@ -50,7 +50,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
 
   //return (<UserPermissionNavigation></UserPermissionNavigation>)  //사용자 승인(수진)
-  //return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진)
+  //return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진) -> 사용안함. 거절 기능 삭제.
 
   ////////// 사용자(User) UI
 
