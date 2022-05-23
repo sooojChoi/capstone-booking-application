@@ -9,6 +9,8 @@ import { StyleSheet, Text, View,TextInput,TouchableOpacity,Keyboard, KeyboardAvo
    import Toast from 'react-native-easy-toast'
    import { Feather } from '@expo/vector-icons';
    import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+   import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
   
   /*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. */
   const {height,width}=Dimensions.get("window");
@@ -35,10 +37,41 @@ import { StyleSheet, Text, View,TextInput,TouchableOpacity,Keyboard, KeyboardAvo
       if(facName === null || facName === ""){
         setFacList([])
       }else{
-        const list = facilityTable.getsByKeyWord(facName)
-        setFacList(list)
+        // const list = facilityTable.getsByKeyWord(facName)
+        // setFacList(list)
+        ReadFacilityList(facName)
       }
   }
+
+  // db에서 시설 목록을 가져온다.
+   const ReadFacilityList = (name) => {
+    // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+    const ref = collection(db, "Facility")
+    const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+    let result = [] // 가져온 User 목록을 저장할 변수
+
+    getDocs(data)
+        // Handling Promises
+        .then((snapshot) => {
+            snapshot.forEach((doc) => {
+                //console.log(doc.id, " => ", doc.data())
+                result.push(doc.data())
+              
+            });
+            var list = []
+            result.map((value)=>{
+              if(value.name.includes(name)){
+                list.push(value)
+              }
+            })
+            setFacList(list)
+        })
+        .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+        })
+    }
+
 
   const facItemOnPress = (facId) =>{
       // 선택된 시설 아이디를 보내준다.
@@ -55,7 +88,10 @@ import { StyleSheet, Text, View,TextInput,TouchableOpacity,Keyboard, KeyboardAvo
                 {itemData.item.name}
             </Text>
             <Text style={{fontSize:14,marginTop:8, color:"#a0a0a0"}}>
-                {facAddress}
+                {itemData.item.explain}
+            </Text>
+            <Text style={{fontSize:14,marginTop:8, color:"#a0a0a0"}}>
+                {itemData.item.address}
             </Text>
             </View>
           </TouchableOpacity>
@@ -134,6 +170,7 @@ import { StyleSheet, Text, View,TextInput,TouchableOpacity,Keyboard, KeyboardAvo
   const styles = StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor:'white'
     },
     title:{
       marginTop:40,
