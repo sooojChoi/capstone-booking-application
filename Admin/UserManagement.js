@@ -5,17 +5,13 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet,SafeAreaView, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
-import { PermissionTable } from '../Table/PermissionTable.js';
+//import { PermissionTable } from '../Table/PermissionTable.js';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
-import { UserTable } from '../Table/UserTable.js';
-import DropDownPicker from 'react-native-dropdown-picker';
-import CalendarPicker from 'react-native-calendar-picker';
-import Modal from "react-native-modal";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
+//import { UserTable } from '../Table/UserTable.js';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import DetailUserManagement from './DetailUserManagement.js';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import {onSnapshot ,doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 const Stack = createStackNavigator();
@@ -51,7 +47,64 @@ export default function UserManagementNavigation() {
   const [isModalVisible, setModalVisible] = useState(false);   // 사용자 정보 수정할 때 뜨는 모달 관련 변수
   const [userInfoForModal, setUserInfoForModal] = useState({});  // 수정되기 위해 모달에 띄워지는 사용자 정보 (한 명의 정보)
 
-  
+    const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        // if (change.type === "added") {
+        //     console.log("New city: ", change.doc.data());
+        // }
+        if (change.type === "modified") {
+            console.log("-------------------------------------")
+            console.log("Modified permission: ", change.doc.data());
+            const changeData = change.doc.data()
+           // const index = users.findIndex(element => element.id === changeData.userId)
+            let temp = [...users];
+            temp.map((value)=>{
+              if(value.id === changeData.userId){
+                value.grade = changeData.grade
+              }
+            })
+      
+            setUsers(temp)
+        }
+        // if (change.type === "removed") {
+        //     console.log("Removed city: ", change.doc.data());
+        // }
+      });
+    });
+
+    const userQ = query(collection(db, "User"));
+    const userUnsubscribe = onSnapshot(userQ, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        // if (change.type === "added") {
+        //     console.log("Added User: ", change.doc.data());
+        // }
+        if (change.type === "modified") {
+            console.log("-------------------------------------")
+            console.log("Modified User: ", change.doc.data());
+            const changeData = change.doc.data()
+            
+            let temp = [...users];
+            temp.map((value)=>{
+              if(value.id === changeData.id){
+               
+                value.phone = changeData.phone
+                value.allowDate = changeData.allowDate
+                value.name = changeData.name
+              }
+            })
+      
+            setUsers(temp)
+        }
+        // if (change.type === "removed") {
+        //     console.log("Removed User: ", change.doc.data());
+        // }
+      });
+    });
+
+
+
+
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
@@ -178,6 +231,7 @@ export default function UserManagementNavigation() {
 
     useEffect(()=>{
         getUsersFromTable();
+
     },[])
 
     const renderGridItem = (itemData, index) => {
@@ -188,13 +242,16 @@ export default function UserManagementNavigation() {
             <MaterialCommunityIcons name="account-circle" size={40} color="black" style={{marginRight:10}}/>
             <View>
               <View style={{flexDirection:'row', marginBottom:5}}>
-                <Text style={{fontSize:15, marginRight:10}}>{itemData.item.name}</Text>
+                <Text style={{fontSize:15, marginRight:8}}>{itemData.item.name}</Text>
+                {/* <Text style={{fontSize:14, color:'#3c3c3c',marginRight:10}}>{itemData.item.id}</Text> */}
                 <Text style={{fontSize:14, color:'#3c3c3c'}}>{grade[itemData.item.grade]}</Text>
               </View>
+              <Text style={{fontSize:14, color:'#3c3c3c', marginBottom:5}}>{itemData.item.id}</Text>
               <View>
                 <Text style={{fontSize:14, color:'#3c3c3c'}}>{itemData.item.phone.substring(0,3)+'-'
                 +itemData.item.phone.substring(3,7)+'-'+itemData.item.phone.substring(7,11)}</Text>
               </View>
+              
             </View>
           </View>
           <View style={{marginRight:3, justifyContent:'center'}}>

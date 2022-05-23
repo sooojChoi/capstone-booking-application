@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import AdminBooking from './Admin/AdminBooking';
+import AdminLogIn from './Admin/AdminLogIn';
 import AdminSignUp from './Admin/AdminSignUp';
 import AdminSignUpAndAddFacility from './Admin/AdminSignUpAndAddFacility';
 import SelectFacilitySort from './Admin/AdminSignUp';
@@ -12,6 +13,7 @@ import GenerateAllocation from './Admin/generateAllocation';
 import UserManagementNavigation from './Admin/UserManagement';
 import UserPermissionNavigation from './Admin/UserPermission';
 import BookingFacility from './User/BookingFacility';
+import ChooseModeNavigation from './User/ChooseMode';
 import DeleteAccount from './User/DeleteAccount';
 import Home from './User/Home';
 import LogIn from './User/LogIn';
@@ -24,20 +26,27 @@ import SignUpNavigation from './User/SignIn';
 import CloudFirestore from './CloudFirestore';
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
+
+  ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
+
+  //return <ChooseModeNavigation></ChooseModeNavigation> // 사용자/관리자 선택(수빈)
+
   //return (<Home></Home>) // 홈(유진)
 
   ////////// 관리자(Admin) UI
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
-  // return (<GenerateAllocation></GenerateAllocation>)//관리자 allocation 생성(혜림)
+  //return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
 
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
   //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
 
-  //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
+ // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
-  //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
+  //return (<AdminLogIn></AdminLogIn>) // 관리자 로그인(수빈)
+
+  return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
   //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
   //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
@@ -63,7 +72,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
 
- // return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
+  //return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
 
   return (<View></View>) // 에러 방지 View
 }
