@@ -343,7 +343,7 @@ let userSelected;//flatlist에서 선택된 사용자의 id가 저장된다.
                thisUserPermission=doc.data()
               
             });
-            console.log(thisUserPermission.grade,"왜안되 시발")
+            console.log(thisUserPermission.grade,"왜안되")
               setCostAndLimit(thisUserPermission.grade);
           //set된다음에 setCostAndLimit부르게 해야함.
             
