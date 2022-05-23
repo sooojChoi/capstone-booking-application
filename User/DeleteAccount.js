@@ -8,23 +8,40 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import Toast from 'react-native-easy-toast'
 import { UserTable } from '../Table/UserTable';
 import { AntDesign } from '@expo/vector-icons';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const {height,width}=Dimensions.get("window");
 
-
+//user id, pw 가져와야함, 탈퇴사유 저장해야함
 export default function DeleteAccount(){
 
   const userTable=new UserTable();
-  const currentUserId="hrr";//현재 user의 id(임시)
+  const currentUserId="youjin11";//현재 user의 id(임시)
 
   const [InputPW,setPW]=useState("");//입력된 PW
-  const currentUserPW="1234"//현재 User의 임시 PW
+  const currentUserPW="1234"//현재 User의 임시 PW 
 
   const toastRef = useRef(); // toast ref 생성
  // Toast 메세지 출력
  const showToast = useCallback(() => {
   toastRef.current.show('비밀번호가 틀렸습니다.');
 }, []);
+
+//DB 유저 삭제
+const DeleteUser = () => {
+  // MARK : Deleting Doc
+  const docRef = doc(db, "User", currentUserId)
+
+  deleteDoc(docRef)
+      // Handling Promises
+      .then(() => {
+          alert("Deleted Successfully!")
+      })
+      .catch((error) => {
+          alert(error.message)
+      })
+}
 
 
 
@@ -38,9 +55,9 @@ export default function DeleteAccount(){
             onPress: () =>{ //계정정보 삭제
               console.log("탈퇴 pressed")
               console.log("해당 user객체 삭제--------------------")
-              userTable.remove(currentUserId);
-              console.log(userTable)
-              
+              //userTable.remove(currentUserId);
+              //console.log(userTable)
+              DeleteUser()
             },
            
           },
