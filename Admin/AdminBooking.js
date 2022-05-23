@@ -286,6 +286,7 @@ const SItem = ({ item, onPress}) => (
               
                setThisUserPermission(result);
             });
+
            // console.log(thisUserPermission.grade,"thisuserpermission grade")
               setCostAndLimit();
 
@@ -293,6 +294,7 @@ const SItem = ({ item, onPress}) => (
           //thisuserpermisssion이 null이 아니어야 한다.
           setUserSelected(currentUserId);
      
+
         })
         .catch((error) => {
             alert(error.message);

@@ -5,16 +5,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet,SafeAreaView, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
-import { PermissionTable } from '../Table/PermissionTable.js';
+//import { PermissionTable } from '../Table/PermissionTable.js';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
-import { UserTable } from '../Table/UserTable.js';
-import DropDownPicker from 'react-native-dropdown-picker';
-import CalendarPicker from 'react-native-calendar-picker';
-import Modal from "react-native-modal";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
+//import { UserTable } from '../Table/UserTable.js';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import DetailUserManagement from './DetailUserManagement.js';
+import {onSnapshot ,doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const Stack = createStackNavigator();
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -41,13 +39,71 @@ export default function UserManagementNavigation() {
 }
 
  function UserManagement({navigation}) {
-  const permissionTable = new PermissionTable();
-  const userTable = new UserTable();
-  const myFacilityId = "hante1"  // 내 facility의 id이다. (실제로는 어디 다른데서 가져올 값)
+  //const permissionTable = new PermissionTable();
+  //const userTable = new UserTable();
+  const myFacilityId = "AdminTestId"  // 내 facility의 id이다. (실제로는 어디 다른데서 가져올 값)
   const [users, setUsers] = useState([]);  
   const tempUsersArray = []  // users 값을 바꾸기 위해 이용하는 전역 변수
   const [isModalVisible, setModalVisible] = useState(false);   // 사용자 정보 수정할 때 뜨는 모달 관련 변수
   const [userInfoForModal, setUserInfoForModal] = useState({});  // 수정되기 위해 모달에 띄워지는 사용자 정보 (한 명의 정보)
+
+    const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        // if (change.type === "added") {
+        //     console.log("New city: ", change.doc.data());
+        // }
+        if (change.type === "modified") {
+            console.log("-------------------------------------")
+            console.log("Modified permission: ", change.doc.data());
+            const changeData = change.doc.data()
+           // const index = users.findIndex(element => element.id === changeData.userId)
+            let temp = [...users];
+            temp.map((value)=>{
+              if(value.id === changeData.userId){
+                value.grade = changeData.grade
+              }
+            })
+      
+            setUsers(temp)
+        }
+        // if (change.type === "removed") {
+        //     console.log("Removed city: ", change.doc.data());
+        // }
+      });
+    });
+
+    const userQ = query(collection(db, "User"));
+    const userUnsubscribe = onSnapshot(userQ, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        // if (change.type === "added") {
+        //     console.log("Added User: ", change.doc.data());
+        // }
+        if (change.type === "modified") {
+            console.log("-------------------------------------")
+            console.log("Modified User: ", change.doc.data());
+            const changeData = change.doc.data()
+            
+            let temp = [...users];
+            temp.map((value)=>{
+              if(value.id === changeData.id){
+               
+                value.phone = changeData.phone
+                value.allowDate = changeData.allowDate
+                value.name = changeData.name
+              }
+            })
+      
+            setUsers(temp)
+        }
+        // if (change.type === "removed") {
+        //     console.log("Removed User: ", change.doc.data());
+        // }
+      });
+    });
+
+
+
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
@@ -68,52 +124,94 @@ export default function UserManagementNavigation() {
   const getUsersFromTable = async() => {
     // 어디서 가져오든, 깊은 복사(원본 데이터가 바뀌지 않도록)해야할 것 같음. 아직 구현 못함.
     console.log("again--------------")
-    var tempArray = []
-    const permArray = permissionTable.permissions
-    const userArray = userTable.users
+    const permArray = []
 
-    //map 도중 break할 수 없을까
-    permArray.map((obj) => {
-        const userId = obj.userId;
-        const grade = obj.grade;
-        if(obj.facilityId === myFacilityId){
-          userArray.map((user)=>{
-                const name = user.name
-                const phone = user.phone;
-                const registerDate = user.registerDate
-                const allowDate = user.allowDate
-                if(userId===user.id){
-                    tempArray.push({
-                        userId: userId, name: name, phone:phone,
-                        registerDate: registerDate, allowDate: allowDate, grade: grade
-                    });
-                }
-            })
-        }
-    });
-    setUsers(tempArray);
+    // db에서 읽어온다.
+    const ref = collection(db, "Permission")
+    const data = query(ref, where("facilityId", "==", myFacilityId)) 
+
+    getDocs(data)
+        // Handling Promises
+        .then((snapshot) => {
+            snapshot.forEach((doc) => {
+                //console.log(doc.id, " => ", doc.data())
+                permArray.push(doc.data())
+              
+            });
+            console.log(permArray.length)
+            getUsersFromTable2(permArray);
+            
+        })
+        .catch((error) => {
+            // MARK : Failure
+            //alert(error.message)
+            alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오. ")
+        })
   }
+  // 위 함수와 함께 불려야 한다.
+  const getUsersFromTable2 = (permArray) => {
+      let userArray = []
+      var tempArray = []
+      // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+      const ref = collection(db, "User")
+      const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+
+      getDocs(data)
+          // Handling Promises
+          .then((snapshot) => {
+              snapshot.forEach((doc) => {
+                  //console.log(doc.id, " => ", doc.data())
+                  userArray.push(doc.data())
+                  
+              });
+                //map 도중 break할 수 없을까
+              permArray.map((obj) => {
+                const userId = obj.userId;
+                const grade = obj.grade;
+                userArray.map((user)=>{
+                        if(userId===user.id){
+                          const name = user.name
+                          const phone = user.phone;
+                          const registerDate = user.registerDate
+                          const allowDate = user.allowDate
+                            tempArray.push({
+                                id: userId, name: name, phone:phone,
+                                registerDate: registerDate, allowDate: allowDate, grade: grade
+                            });
+                        }
+                  })
+              });
+              setUsers(tempArray);
+              
+          })
+          .catch((error) => {
+              // MARK : Failure
+            //  alert(error.message)
+            alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오.");
+          })
+  }
+
 
   // "수정" 버튼을 눌렀을 때 호출되는 함수
-  const changeUserInfoForMadal = (userId) => {
-    const newarray = users.filter((value)=>value.userId === userId)
+  // const changeUserInfoForMadal = (userId) => {
+  //   const newarray = users.filter((value)=>value.userId === userId)
 
-    const name = newarray[0].name
-    const phone = newarray[0].phone
-    const grade = newarray[0].grade
-    const allowDate = newarray[0].allowDate
-    const registerDate = newarray[0].registerDate
-    const newDictionary = {
-      userId: userId, name: name, phone: phone, 
-      grade: grade, allowDate: allowDate, registerDate: registerDate
-    }
+  //   const name = newarray[0].name
+  //   const phone = newarray[0].phone
+  //   const grade = newarray[0].grade
+  //   const allowDate = newarray[0].allowDate
+  //   const registerDate = newarray[0].registerDate
+  //   const newDictionary = {
+  //     userId: userId, name: name, phone: phone, 
+  //     grade: grade, allowDate: allowDate, registerDate: registerDate
+  //   }
 
-    setUserInfoForModal(newDictionary);
-    console.log(newDictionary);
+  //   setUserInfoForModal(newDictionary);
+  //   console.log(newDictionary);
 
-    toggleModal();
-    setValue(grade); 
-  }
+  //   toggleModal();
+  //   setValue(grade); 
+  // }
   // 모달을 띄우고 사라지게 하기 위한 함수
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -133,26 +231,32 @@ export default function UserManagementNavigation() {
 
     useEffect(()=>{
         getUsersFromTable();
+
     },[])
 
     const renderGridItem = (itemData, index) => {
-      return <TouchableOpacity style={{...styles.facilityFlatList,}} >
+      return <TouchableOpacity style={{...styles.facilityFlatList,}} 
+      onPress={() => navigation.navigate('DetailUserManagement', {userId: itemData.item.id, userGrade: itemData.item.grade})}>
         <View style={{flexDirection:'row', justifyContent:'space-between', marginBottom:2,marginTop:2}}>
           <View style={{flexDirection:'row', alignItems:'center'}}>
             <MaterialCommunityIcons name="account-circle" size={40} color="black" style={{marginRight:10}}/>
             <View>
               <View style={{flexDirection:'row', marginBottom:5}}>
-                <Text style={{fontSize:15, marginRight:10}}>{itemData.item.name}</Text>
+                <Text style={{fontSize:15, marginRight:8}}>{itemData.item.name}</Text>
+                {/* <Text style={{fontSize:14, color:'#3c3c3c',marginRight:10}}>{itemData.item.id}</Text> */}
                 <Text style={{fontSize:14, color:'#3c3c3c'}}>{grade[itemData.item.grade]}</Text>
               </View>
+              <Text style={{fontSize:14, color:'#3c3c3c', marginBottom:5}}>{itemData.item.id}</Text>
               <View>
-                <Text style={{fontSize:14, color:'#3c3c3c'}}>{itemData.item.phone}</Text>
+                <Text style={{fontSize:14, color:'#3c3c3c'}}>{itemData.item.phone.substring(0,3)+'-'
+                +itemData.item.phone.substring(3,7)+'-'+itemData.item.phone.substring(7,11)}</Text>
               </View>
+              
             </View>
           </View>
           <View style={{marginRight:3, justifyContent:'center'}}>
             <TouchableOpacity 
-            onPress={() => navigation.navigate('DetailUserManagement', {userId: itemData.item.userId, userGrade: itemData.item.grade})}
+            onPress={() => navigation.navigate('DetailUserManagement', {userId: itemData.item.id, userGrade: itemData.item.grade})}
             style={{backgroundColor:'#3262d4',padding:8,paddingLeft:15,paddingRight:15, borderRadius:8}}>
                  <Text style={{fontSize:14, color:'white'}}>수정</Text>
             </TouchableOpacity>

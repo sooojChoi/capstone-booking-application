@@ -1,7 +1,7 @@
 // 관리자 회원가입 화면
 
 import { StyleSheet, Text, View, Dimensions,Image,
-   TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
+   TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, FlatList, Platform } from 'react-native';
 import React, {useEffect, useState,} from "react";
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
@@ -13,7 +13,13 @@ import DetailAdminSignUp from './DetailAdminSignUp';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 //import { launchImageLibrary} from 'react-native-image-picker';
+//import * as ImagePicker from 'react-native-image-picker';
 //import MultipleImagePicker from '@baronha/react-native-multiple-image-picker';
+//import { ImageBrowser } from 'expo-image-picker-multiple';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db, storageDb } from '../Core/Config';
+import { getStorage, ref, uploadBytes, firebase,  } from "firebase/storage";
+
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -62,6 +68,8 @@ function AdminSignUp({navigation, route}) {
 
     const [adminId, setAdminId] = useState("");
     const [adminPw, setAdminPw] = useState("");
+    const [idCheck, setIdCheck] = useState(false);  // id 중복검사 결과 (true면 사용가능, false면 불가능)
+    const [isIdCheck, setIsIdCheck] = useState(false);  // 현재 text input에 입력된 id가 중복검사된 아이디인지 알기 위함.
 
     const [image1, setImage1] = useState();
     const [image2, setImage2] = useState();
@@ -71,10 +79,13 @@ function AdminSignUp({navigation, route}) {
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
     const goToNextScreen = () =>{
-        navigation.navigate('SelectFacilitySort', {facilityName: facName, facilityNumber: facNumber,
+      const facilityBasicInfo = {
+        name: facName, tel: facNumber,
         facilityAddress: facAddress+' '+facDetailAddress,
          image1: image1, image2: image2, image3: image3, explain: explain,
-        id: adminId, password: adminPw})
+        id: adminId, password: adminPw
+      }
+        navigation.navigate('AdminSignUpAndAddFacility', {facilityBasicInfo:facilityBasicInfo})
     }
     
     // 도로명 검색하는 화면으로 이동
@@ -82,56 +93,170 @@ function AdminSignUp({navigation, route}) {
       navigation.navigate('SearchAddress')
     }
 
+    const [images, setImages] =useState([]);
     // 사진을 선택하는 함수
     const pickImage = async (sort) => {
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [640, 480],
         quality: 1,
       });
   
       if (!result.cancelled) {
-        if(sort===1){
-          setImage1(result.uri);
-        }else if(sort===2){
-          setImage2(result.uri);
-        }else if(sort===3){
-          setImage3(result.uri);
+        // if(sort===1){
+        //   setImage1(result.uri);
+        // }else if(sort===2){
+        //   setImage2(result.uri);
+        // }else if(sort===3){
+        //   setImage3(result.uri);
+        // }
+
+        
+        const temp = [...images]
+        const item = {
+          id: result.uri,
+          uri: result.uri
         }
+        temp.unshift(item)
+
+        setImages(temp)
+        console.log("temp.length: "+temp.length)
+    
+
+       //const storageRef = ref(storageDb, result.name);
+       // 'file' comes from the Blob or File API
+        // uploadBytes(storageRef, file).then((snapshot) => {
+        //   console.log('Uploaded a blob or file!');
+        // });
+
+
+        // var path = null
+        
+        // if(Platform.OS === "ios"){
+        //   path = result.uri
+        //   path = "~" + path.substring(path.indexOf("/Documents"));
+        // }else{
+        //   path = result.path
+        // }
+        // const imageName = path.split("/").pop();
+    
        
+        // let reference = firebase.getStorage().ref("images/" + imageName);
+        // let task = reference.putFile(path);
+        // task.then(()=>{
+        //   console.log("image uploaded successfully")
+        // }).catch((e)=>{
+        //   console.log(e)
+        // })
+        
+        
       }
+
+     
     };
 
+
     // 선택된 사진을 지우는 함수. 현재 선택된 것이 없으면 아무것도 하지 않는다.
-    const deleteImage=(sort)=>{
-      if(sort===1){
-        if(image1 === null){
-          return;
-        }
-      }else if(sort === 2){
-        if(image2 === null){
-          return;
-        }
-      }
-      else if(sort === 3){
-        if(image3 === null){
-          return;
-        }
-      }
+    const deleteImage=(uri)=>{
+      // if(sort===1){
+      //   if(image1 === null){
+      //     return;
+      //   }
+      // }else if(sort === 2){
+      //   if(image2 === null){
+      //     return;
+      //   }
+      // }
+      // else if(sort === 3){
+      //   if(image3 === null){
+      //     return;
+      //   }
+      // }
       Alert.alert("삭제하시겠습니까?","" ,[
         {text:"취소"},
         {text: "삭제", onPress: () => {
-            if(sort === 1){
-              setImage1(null)
-            }else if(sort===2){
-              setImage2(null)
-            }else if(sort===3){
-              setImage3(null)
-            }
+            // if(sort === 1){
+            //   setImage1(null)
+            // }else if(sort===2){
+            //   setImage2(null)
+            // }else if(sort===3){
+            //   setImage3(null)
+            // }
+            const temp = images.filter((value)=>
+              (value.uri) !== (uri)
+            )
+            setImages(temp)
+            console.log('temp.length: '+temp.length)
         },},
       ]);
     }
+
+    //id 중복검사하는 버튼 눌리면 불리는 함수
+    const idCheckButtonClicked = () => {
+      CheckAdminId();
+    }
+
+    const CheckAdminId = () => {
+        // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+        const ref = collection(db, "Facility")
+        const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+        let result = [] // 가져온 User 목록을 저장할 변수
+
+        getDocs(data)
+            // Handling Promises
+            .then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    //console.log(doc.id, " => ", doc.data())
+                    result.push(doc.data())
+                  
+                });
+                var check = 0
+                result.map((value) => {
+                  if(value.id === adminId){
+                    setIsIdCheck(true);
+                    setIdCheck(false);
+                    check=1;
+                    return;
+                  }
+                })
+                if(check===0){
+                  setIsIdCheck(true);
+                  setIdCheck(true);
+                }
+               
+            })
+            .catch((error) => {
+                // MARK : Failure
+                alert(error.message)
+            })
+    }
+
+
+    //adminId를 입력하는 textinput의 onChangeText에 등록된 함수임.
+    const changeIdText = (value) => {
+      //텍스트에 변경이 생겼기 때문에 중복 검사 결과와 유무를 false로 함.
+      setIdCheck(false)
+      setIsIdCheck(false)
+
+      setAdminId(value)
+
+    }
+
+    const renderItem = ({ item }) => {
+      //console.log(item)
+
+      return (
+        <TouchableOpacity onLongPress={()=> deleteImage(item.uri)}
+        key={item.id}
+        style={{justifyContent:'center'}}>
+         <Image source={{uri: item.uri}} style={{   borderRadius:10, 
+            width: SCREEN_WIDTH*0.18, 
+            height:SCREEN_WIDTH*0.18, marginRight:10,
+             }}></Image>
+         </TouchableOpacity>
+      );
+    };
 
 
       // 시설 상세 입력하고 돌아오면 호출됨.
@@ -153,15 +278,60 @@ function AdminSignUp({navigation, route}) {
             <View style={{alignItems:'center', marginTop: 10,}}>
               <View>
               <Text style={styles.titleText}>관리자 아이디</Text>
-            <TextInput 
-            style={styles.textinput}
-            onChangeText={setAdminId}
-            placeholder="관리자 아이디"
-            value={adminId}
-            maxLength={50}
-            editable={true}
-            autoCorrect={false}
-            ></TextInput>
+              {
+                adminId !== "" && idCheck === false ? (
+                  <View>
+                    {
+                      // 중복검사를 한 경우
+                      isIdCheck === true ? (
+                        <Text style={{fontSize:14, color:'#ff3232', marginBottom:8}}>
+                          사용 불가능한 아이디입니다.
+                        </Text>
+                      ) : (
+                        // 아직 중복검사를 하지 않은 경우
+                        <Text style={{fontSize:14, color:'#ff3232', marginBottom:8}}>
+                          중복 확인이 필요한 아이디입니다.
+                        </Text>
+                      )
+                    }
+                    </View>
+                ) : (
+                  <View>
+                    {
+                      // 입력이 없으면 아무것도 나타내지 않는다.
+                      adminId === "" ? (
+                        <View></View>
+                      ) : (
+                        // 입력이 있는데 idCheck가 true인 경우임.
+                        <Text style={{fontSize:14, color:'#1789fe', marginBottom:8}}>
+                          {adminId}는(은) 사용 가능한 아이디입니다.
+                        </Text>
+                      )
+                    }
+                  </View>
+                )
+              }
+            
+              <View style={{flexDirection:'row',alignItems:'center'}}>
+                <TextInput 
+                style={{...styles.textinput, width:SCREEN_WIDTH*0.5}}
+                onChangeText={(value) => changeIdText(value)}
+                placeholder="관리자 아이디"
+                value={adminId}
+                maxLength={50}
+                editable={true}
+                autoCorrect={false}
+                ></TextInput>
+                <TouchableOpacity style={{...styles.btnStyle2, marginLeft:10}}
+                onPress={() => idCheckButtonClicked()}>
+          
+                <Text style={{fontSize:14, color:"white",}}>중복확인</Text>
+                </TouchableOpacity>
+
+              </View>
+            
+
+
 
             <Text style={styles.titleText}>관리자 비밀번호</Text>
             <TextInput 
@@ -226,10 +396,10 @@ function AdminSignUp({navigation, route}) {
                 </View>
 
                 
-            <View style={{ paddingHorizontal:SCREEN_WIDTH*0.1}}>
+            <View style={{ paddingHorizontal:SCREEN_WIDTH*0.1,alignSelf:'stretch'}}>
                 <Text style={{...styles.titleText,marginBottom:10, marginTop:20}}>시설 대표 사진</Text>
                 <Text style={{...styles.titleText,marginBottom:20, fontSize:14, color:"#646464"}}>
-                  선택된 사진은 앱 사용자들이 볼 수 있습니다. 선택된 사진을 꾹 누르면 삭제할 수 있습니다.
+                  등록된 사진은 시설 사용자들이 볼 수 있습니다. 등록된 사진을 꾹 누르면 삭제할 수 있습니다.
                 </Text>
             </View>
             {
@@ -240,7 +410,7 @@ function AdminSignUp({navigation, route}) {
             // </TouchableOpacity>
             }
             
-            <View style={{flexDirection:'row',alignSelf:'center',marginTop:10, marginBottom:30,
+            {/* <View style={{flexDirection:'row',alignSelf:'center',marginTop:10, marginBottom:30,
              alignSelf:'stretch', justifyContent:'space-evenly'}}>
                 {// 아마 flatList로 바뀔 듯. 선택한 사진 수 만큼 띄워지도록.. 최대 선택할 수 있는 사진 개수 제한 걸기.
                 // 각 사진마다 우측 상단에 x 표시가 있어서, 클릭하면 해당 사진을 flatList에서 제거하고 db에서도 제거하도록.
@@ -250,6 +420,7 @@ function AdminSignUp({navigation, route}) {
                 justifyContent:'center'}}
                 onPress={() => pickImage(1)}
                 onLongPress={() => deleteImage(1)}>
+                  
                 {
                   image1 !== undefined && image1 !== null?(
                     <Image source={{ uri: image1 }} style={{...styles.imageBoxStyle }} />
@@ -285,7 +456,40 @@ function AdminSignUp({navigation, route}) {
                   )
                 }
                 </TouchableOpacity>
+            </View> */}
+
+            <View style={{backgroundColor:'white',paddingHorizontal:SCREEN_WIDTH*0.1,alignSelf:'stretch',
+             flexDirection:'row', marginBottom:30, justifyContent:'flex-start', height:SCREEN_WIDTH*0.22,}}>
+              <TouchableOpacity 
+                style={{...styles.imageViewContainer, alignItems:'center', 
+                justifyContent:'center'}}
+                onPress={() => pickImage()}
+                >
+                     <AntDesign name="pluscircleo" size={28} color="grey" 
+                     style={{color:'#787878'}}/>
+              </TouchableOpacity>
+
+              {
+              images.length !== 0 ? (
+                <View style={{borderWidth:1, borderColor:'grey', flex:1, borderRadius:10,
+                borderStyle:'dashed', padding:5}}>
+                <FlatList
+                style={{}}
+                data={images}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                horizontal={true}
+                 />
+                 </View>
+              ) : (
+                <View style={{borderWidth:1, borderColor:'grey', flex:1, borderRadius:10,
+              borderStyle:'dashed', alignItems:'center', justifyContent:'center'}}>
+                <Text style={{fontSize:14, color:'grey'}}>등록된 사진이 없습니다.</Text>
+              </View>
+              )
+              }
             </View>
+            
 
             <View style={{paddingHorizontal:SCREEN_WIDTH*0.1, marginBottom:50}}>
                         <Text style={{...styles.titleText,}}>시설 소개 및 설명</Text>
@@ -312,7 +516,8 @@ function AdminSignUp({navigation, route}) {
               
             </KeyboardAwareScrollView>
         </ScrollView>
-        {(facAddress !== "" && facName !=="" && facNumber !== "" && adminId !== "" && adminPw !== "") ? (
+        {(facAddress !== "" && facName !=="" && facNumber !== "" && adminId !== "" &&
+         adminPw !== "" && idCheck === true) ? (
             <TouchableOpacity 
             style={{alignItems:'center',width:SCREEN_WIDTH, justifyContent:'center', backgroundColor:'#3262d4',
             paddingTop:20, paddingBottom:20}}
@@ -393,10 +598,19 @@ const styles = StyleSheet.create({
     marginBottom:10,
     width:SCREEN_WIDTH*0.3
   },
+  btnStyle2:{
+    backgroundColor:'#3262d4',
+    justifyContent:'center',
+    alignItems:'center',
+    borderRadius:8,
+    paddingHorizontal:10,
+    paddingVertical:10,
+    alignSelf:'center',
+    marginBottom:20
+    //width:SCREEN_WIDTH*0.2
+  },
   scrollView: {
     backgroundColor: 'white',
- 
-    
   },
   titleText:{
       fontSize:15,
@@ -407,9 +621,10 @@ const styles = StyleSheet.create({
       borderColor:'#a0a0a0',
       borderWidth:1,
       borderRadius:10,
-      width: SCREEN_WIDTH*0.2,
-      height:SCREEN_WIDTH*0.2,
+      width: SCREEN_WIDTH*0.22,
+      //height:SCREEN_WIDTH*0.2,
       marginRight:10,
+      padding:5
   },
   selectSortBtnStyle:{
     width:SCREEN_WIDTH*0.7,
@@ -432,3 +647,6 @@ const styles = StyleSheet.create({
     
   }
   });
+
+
+    

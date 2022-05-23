@@ -1,5 +1,7 @@
-// 상세 시설 관리(관리자) -> 수빈
+// 시설 기본 정보 관리(관리자) -> 수빈
 // 시설 추가 UI와 디자인 맞추기 !!! -> openTime, CloseTime : DatePicker 사용
+// password도 시설 관리에서 수정하는게 맞을까? -> onPress(회원정보 수정)
+// SearchAddress.js 동시 사용
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
@@ -13,43 +15,32 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailFacilityManagement({ route, navigation }) {
   const adminId = route.params.adminId // 시설 ID
-  const facilityId = route.params.facilityId // 세부 시설 ID
 
   // Cloud Firestore
   const [name, setName] = useState()
-  const [openTime, setOpenTime] = useState()
-  const [closeTime, setCloseTime] = useState()
-  const [unitTime, setUnitTime] = useState()
-  const [maxPlayer, setMaxPlayer] = useState()
-  const [minPlayer, setMinPlayer] = useState()
-  const [booking1, setBooking1] = useState()
-  const [booking2, setBooking2] = useState()
-  const [booking3, setBooking3] = useState()
-  const [cost1, setCost1] = useState()
-  const [cost2, setCost2] = useState()
-  const [cost3, setCost3] = useState()
+  const [tel, setTel] = useState()
+  const [address, setAddress] = useState()
   const [explain, setExplain] = useState()
+
+  const [pw, setPw] = useState() // 기존 PW
+  const [inputPw, setInputPw] = useState() // 입력 PW
+  const [checkPw, setCheckPw] = useState("") // 재입력 PW
+  const [equalPw, setEqualPw] = useState(false) // 입력 PW와 재입력된 일치 여부
+
+  console.log(pw)
 
   // 시설 정보 가져오기(초기값)
   // 사진, 설명에 대한 DB 관리는 어떻게 할 것인가?(Firebase 연동 시 고려하기)
   const getFacInfo = () => {
-    const ref = doc(db, "Facility", adminId, "Detail", facilityId)
+    const ref = doc(db, "Facility", adminId)
 
     getDoc(ref)
       .then((snapshot) => {
         if (snapshot.exists) {
+          setPw(snapshot.data().password)
           setName(snapshot.data().name)
-          setOpenTime(snapshot.data().openTime)
-          setCloseTime(snapshot.data().closeTime)
-          setUnitTime(snapshot.data().unitTime)
-          setMaxPlayer(snapshot.data().maxPlayer)
-          setMinPlayer(snapshot.data().minPlayer)
-          setBooking1(snapshot.data().booking1)
-          setBooking2(snapshot.data().booking2)
-          setBooking3(snapshot.data().booking3)
-          setCost1(snapshot.data().cost1)
-          setCost2(snapshot.data().cost2)
-          setCost3(snapshot.data().cost3)
+          setTel(snapshot.data().tel)
+          setAddress(snapshot.data().address)
           setExplain(snapshot.data().explain)
         }
         else {
@@ -85,21 +76,13 @@ export default function DetailFacilityManagement({ route, navigation }) {
 
   // 수정 버튼 선택
   const modifyInfo = () => {
-    const docRef = doc(db, "Facility", adminId, "Detail", facilityId)
+    const docRef = doc(db, "Facility", adminId)
 
     const docData = {
+      password: pw,
       name: name,
-      openTime: parseInt(openTime),
-      closeTime: parseInt(closeTime),
-      unitTime: parseInt(unitTime),
-      maxPlayer: parseInt(maxPlayer),
-      minPlayer: parseInt(minPlayer),
-      booking1: parseInt(booking1),
-      booking2: parseInt(booking2),
-      booking3: parseInt(booking3),
-      cost1: parseInt(cost1),
-      cost2: parseInt(cost2),
-      cost3: parseInt(cost3),
+      tel: tel,
+      address: address,
       explain: explain
     }
 
@@ -118,62 +101,25 @@ export default function DetailFacilityManagement({ route, navigation }) {
         <View>
           <View style={styles.list}>
             <Text style={styles.category}>ID</Text>
-            <Text style={styles.id}>{facilityId}</Text>
+            <Text style={styles.id}>{adminId}</Text>
+          </View>
+          <View style={styles.list}>
+            <Text style={styles.category}>PASSWORD</Text>
+            <TextInput style={styles.name} secureTextEntry={true} onChangeText={setInputPw}>{inputPw}</TextInput>
+          </View>
+          <View style={styles.list}>
+            <Text style={styles.category}>재입력</Text>
+            <TextInput style={styles.name} onChangeText={setCheckPw}>{checkPw}</TextInput>
           </View>
           <View style={styles.list}>
             <Text style={styles.category}>NAME</Text>
             <TextInput style={styles.name} onChangeText={setName}>{name}</TextInput>
           </View>
           <View style={styles.list}>
-            <Text style={styles.timeText}>OPEN TIME</Text>
-            <TextInput style={styles.timeInput} onChangeText={setOpenTime}>{openTime}</TextInput>
+            <Text style={styles.category}>TEL</Text>
+            <TextInput style={styles.name} onChangeText={setTel}>{tel}</TextInput>
           </View>
-          <View style={styles.list}>
-            <Text style={styles.timeText}>CLOSE TIME</Text>
-            <TextInput style={styles.timeInput} onChangeText={setCloseTime}>{closeTime}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.timeText}>UNIT TIME</Text>
-            <TextInput style={styles.timeInput} onChangeText={setUnitTime}>{unitTime}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.timeText}>최대 수용 인원</Text>
-            <TextInput style={styles.timeInput} onChangeText={setMaxPlayer}>{maxPlayer}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.timeText}>최소 수용 인원</Text>
-            <TextInput style={styles.timeInput} onChangeText={setMinPlayer}>{minPlayer}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.category}>예약 허용 날짜</Text>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeInput} onChangeText={setBooking1}>{booking1}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeInput} onChangeText={setBooking2}>{booking2}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeInput} onChangeText={setBooking3}>{booking3}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.category}>등급별 사용료</Text>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.gradeText}>1등급</Text>
-            <TextInput style={styles.gradeInput} onChangeText={setCost1}>{cost1}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.gradeText}>2등급</Text>
-            <TextInput style={styles.gradeInput} onChangeText={setCost2}>{cost2}</TextInput>
-          </View>
-          <View style={styles.list}>
-            <Text style={styles.gradeText}>3등급</Text>
-            <TextInput style={styles.gradeInput} onChangeText={setCost3}>{cost3}</TextInput>
-          </View>
+
           <View style={styles.list}>
             <Text style={styles.category}>시설 사진</Text>
           </View>
@@ -184,12 +130,19 @@ export default function DetailFacilityManagement({ route, navigation }) {
             </TouchableOpacity>
           </View>
           <View style={styles.list}>
+            <Text style={styles.category}>주소 설정</Text>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SearchAddress')}>
+              <Text style={{ fontSize: 18 }}>주소 찾기</Text>
+            </TouchableOpacity>
+          </View>
+          <TextInput style={styles.explain} multiline={true} onChangeText={setAddress}>{address}</TextInput>
+          <View style={styles.list}>
             <Text style={styles.category}>시설 설명</Text>
           </View>
           <TextInput style={styles.explain} multiline={true} onChangeText={setExplain}>{explain}</TextInput>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
             <TouchableOpacity style={{ ...styles.button, backgroundColor: 'skyblue' }}
-              onPress={() => Alert.alert("확인", "시설 정보를 수정하시겠습니까?",
+              onPress={() => Alert.alert("확인", "기본 정보를 수정하시겠습니까?",
                 [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => modifyInfo() }])}>
               <Text style={{ fontSize: 18 }}>수정</Text>
             </TouchableOpacity>
