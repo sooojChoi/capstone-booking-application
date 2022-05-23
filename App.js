@@ -26,9 +26,11 @@ import SignUpNavigation from './User/SignIn';
 import CloudFirestore from './CloudFirestore';
 
 export default function App() { // 확인할 UI의 retrun 문 주석만 제거 후 실행함
+
   ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
 
   //return <ChooseModeNavigation></ChooseModeNavigation> // 사용자/관리자 선택(수빈)
+
   //return (<Home></Home>) // 홈(유진)
 
   ////////// 관리자(Admin) UI
@@ -68,7 +70,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색 (수진)
 
-  //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
+  return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
 
   //return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
 
