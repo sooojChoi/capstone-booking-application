@@ -1,50 +1,87 @@
 // 상세 예약 관리(관리자) -> 수빈
+// 전화번호 표기("-" 삽입) !!!
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
-import { BookingTable } from '../Table/BookingTable';
-import { FacilityTable } from '../Table/FacilityTable';
-import { PermissionTable } from '../Table/PermissionTable';
-import { UserTable } from '../Table/UserTable';
-import { booking } from '../Category';
+import { doc, collection, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailBookingManagement({ route, navigation }) {
-  // DB Table
-  const bookingTable = new BookingTable(); // 예약 정보
+  // BookingManagement에서 받은 값
+  const bookingData = route.params.bookingData
+  const adminId = bookingData.adminId
+  const facilityId = bookingData.facilityId
+  const usingTime = bookingData.usingTime
+  const userId = bookingData.userId
 
-  const fid = route.params.facilityId;
-  const ftime = route.params.usingTime;
-  const bookingData = bookingTable.getsByFacilityId(fid);
+  // Cloud Firestore
+  const [bookingId, setBookingId] = useState()
+  const [cost, setCost] = useState()
+  const [phone, setPhone] = useState()
+  const [usedPlayer, setUsedPlayer] = useState()
+  const [name, setName] = useState()
 
-  let userId, facilityId, usingTime, bookingTime, usedPlayers, cancel, cost, phone;
+  // 예약 목록 가져오기
+  const getBookingList = () => {
+    const bookingRef = collection(db, "Booking")
+    const bookingData = query(bookingRef, where("adminId", "==", adminId), where("cancel", "==", false),
+      where("facilityId", "==", facilityId), where("usingTime", "==", usingTime))
 
-  bookingData.find((booking) => {
-    if (booking.usingTime == ftime) {
-      userId = booking.userId
-      facilityId = booking.facilityId
-      usingTime = booking.usingTime
-      bookingTime = booking.bookingTime
-      usedPlayers = booking.usedPlayers
-      cancel = booking.cancel
-      cost = booking.cost
-      phone = booking.phone
-    }
-  });
+    getDocs(bookingData)
+      .then((snapshot) => {
+        snapshot.forEach((doc) => {
+          setBookingId(doc.id)
+          setCost(doc.data().cost)
+          setPhone(doc.data().phone)
+          setUsedPlayer(doc.data().usedPlayer)
+        });
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
 
-  console.log("====================")
-  console.log(bookingTable)
+    const userRef = doc(db, "User", userId)
 
-  const deleteBooking = () => {
-    // bookingTable.remove(userId, facilityId, usingTime) // DB 삭제
-    bookingTable.modify(new booking(userId, facilityId, usingTime, bookingTime, usedPlayers, true, cost, phone)) // 예약 취소
-    console.log("====================")
-    console.log(bookingTable)
-    navigation.goBack()
+    getDoc(userRef)
+      .then((snapshot) => {
+        if (snapshot.exists) {
+          setName(snapshot.data().name)
+        }
+        else {
+          alert("No Doc Found")
+        }
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
   }
+
+  useEffect(() => {
+    getBookingList()
+  }, [])
+
+  // 예약 내역을 취소 내역으로 바꿈
+  const cancelBooking = () => {
+    const ref = doc(db, "Booking", bookingId)
+
+    const data = {
+      cancel: true
+    }
+
+    updateDoc(ref, data)
+      .then(() => {
+        navigation.goBack()
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  // 전화번호 표기("-" 삽입)
 
   // 시설 사용 시간("XXXX-XX-XXTXX:XX")
   const date = usingTime.substr(0, 10)
@@ -54,19 +91,20 @@ export default function DetailBookingManagement({ route, navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={{ alignSelf: 'flex-start', marginTop: 10, marginLeft: 22 }}>
         <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 10 }}>{facilityId}</Text>
-        <Text style={styles.detail}>예약자 : {userId}</Text>
+        <Text style={styles.detail}>ID : {userId}</Text>
+        <Text style={styles.detail}>이름 : {name}</Text>
         <Text style={styles.detail}>전화번호 : {phone}</Text>
-        <Text style={styles.detail}>인원 : {usedPlayers}명</Text>
+        <Text style={styles.detail}>인원 : {usedPlayer}명</Text>
         <Text style={styles.detail}>시간 : {date + " " + time}</Text>
         <Text style={styles.detail}>금액 : {cost}원</Text>
       </View>
       <TouchableOpacity style={styles.button} onPress={() => Alert.alert("주의", "예약을 취소하시겠습니까?",
-        [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => deleteBooking() }])}>
+        [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => cancelBooking() }])}>
         <Text style={styles.buttonText}>예약 취소</Text>
       </TouchableOpacity>
     </SafeAreaView>
-  );
-}
+  )
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -99,7 +137,6 @@ const styles = StyleSheet.create({
 
   buttonText: {
     fontSize: 28,
-    //fontWeight: 'bold',
     color: 'white',
   }
 });

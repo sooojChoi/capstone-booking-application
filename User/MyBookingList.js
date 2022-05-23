@@ -6,14 +6,14 @@ import {FacilityTable} from '../Table/FacilityTable';
 import { Dimensions } from 'react-native';
 import {BookingTable} from '../Table/BookingTable';
 import { booking } from '../Category';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 export default function App() {
   const {height,width}=Dimensions.get("window");
 
-  const facilityTable = new FacilityTable();
-  const [bookingTable, setBookingTable] = useState(new BookingTable)
+  // const facilityTable = new FacilityTable();
+  // const [bookingTable, setBookingTable] = useState(new BookingTable)
 
   //유저아이디 임의로 지정 => DB연결하면 변경해야함
   //const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancle("yjb"))
@@ -23,8 +23,8 @@ export default function App() {
   //예약내역 db에서 가져오기
   const ReadBookingList = () => {
     const ref = collection(db, "Booking")
-    let now = new Date(+new Date() + 3240 * 10000).toISOString().split("T")[0]; //현재 날짜
-    const data = query(ref, where("cancel", "==", false), where("userId", "==", "yjb123")) //where id인것만 추가해야함 //////////////////////////
+    let now = new Date(+new Date() + 3240 * 10000).toISOString() //현재 날짜
+    const data = query(ref, where("cancel", "==", false), where("userId", "==", "yjb123")) //id 가져와야함 //////////////////////////
     let result = []
 
     getDocs(data)
@@ -33,12 +33,15 @@ export default function App() {
                 snapshot.forEach((doc) => {
                     //console.log(doc.id, " => ", doc.data())
                     //현재 날짜보다 전 내역은 가져오지 않기위해
-                    if (doc.data().usingTime.split("T")[0]>=now) {
+                    if (doc.data().usingTime>=now) {
                     result.push(doc.data())
-                    setBookings(result)
+                    
+                    //console.log(result)
+                    
                     //console.log(doc.id)
                     }
                 });
+                setBookings(result)
             })
             .catch((error) => {
                 // MARK : Failure
@@ -48,7 +51,7 @@ export default function App() {
   useEffect(() => {
     ReadBookingList();
     ReadBookingListCancel();
-  },[])
+  },[bookings, bookingCancel])
   // 예약 취소하기 ///////////해야함 문서이름 랜덤인거 어케?
 //   const UpdateBookingCancel = (merge) => {
 //     // doc(db, 컬렉션 이름, 문서 ID)
@@ -112,39 +115,46 @@ export default function App() {
         .then((snapshot) => {
           snapshot.forEach((doc) => {
             setBookingId(doc.id) //반영이 안됨
+            console.log(bookingId)
             // doc(db, 컬렉션 이름, 문서 ID)
-        const docRef = doc(db, "Booking", doc.id)
-  
-        const docData = {
-          cancel: true
-        } // 문서에 담을 필드 데이터
-  
-  
+            console.log(doc.id)
+            UpdateCancel(doc.id)
+            
         // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함 => 필드가 사라질 수 있음
         // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함 => 필드가 사라지지 않음(실수 방지)
         // updateDoc(문서 위치, 데이터) == setDoc(문서 위치, 데이터, { merge: true })
   
         //setDoc(docRef, docData, { merge: merge })
-        updateDoc(docRef, docData)
-            // Handling Promises
-            .then(() => {
-                alert("취소가 완료되었습니다")
-            })
-            .catch((error) => {
-                alert(error.message)
-            })
-            console.log(bookingId)
-            console.log(doc.id)
+        
           })
+          
         })
         .catch((error) => {
           alert(error.message)
         })
         
     }
+
+    const UpdateCancel = (id) => {
+      const docRef = doc(db, "Booking", id)
+  
+            const docData = {
+               cancel: true
+            } // 문서에 담을 필드 데이터
+
+            updateDoc(docRef, docData)
+              // Handling Promises
+            .then(() => {
+                alert("취소가 완료되었습니다")
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+      
+    }
     /// 예약 취소 끝 ////
 
-  var facilitieName = itemData.item.facilityId
+    const facilitieName = itemData.item.facilityId
 
   
     //usingTime에서 T빼기위해
@@ -169,10 +179,11 @@ export default function App() {
     [                              // 버튼 배열
       {
         text: "취소",                              // 버튼 제목
-        onPress: () => console.log("아니라는데"),     //onPress 이벤트시 콘솔창에 로그를 찍는다
+        onPress: () => console.log("예약 취소하지않음"),     //onPress 이벤트시 콘솔창에 로그를 찍는다
         style: "cancel"
       },
       { text: "확인", onPress: () => { CancelBooking(true)
+
         // bookingTable.modify(new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true))
         // setBookingTable(bookingTable)
         // setBookings(bookingTable.getByUserIdNotCancle(itemData.item.userId))
@@ -197,7 +208,7 @@ export default function App() {
   //취소내역 db에서 가져오기
   const ReadBookingListCancel = () => {
     const ref = collection(db, "Booking")
-    const data = query(ref, where("cancel", "==", true)) //where id인것만 추가해야함//////////////////////////
+    const data = query(ref, where("cancel", "==", true), where("userId", "==", "yjb123")) //where id인것만 추가해야함//////////////////////////
     let result = []
 
     getDocs(data)
@@ -206,8 +217,9 @@ export default function App() {
                 snapshot.forEach((doc) => {
                     //console.log(doc.id, " => ", doc.data())
                     result.push(doc.data())
-                    setBookingCancel(result)
+                    
                 });
+                setBookingCancel(result)
             })
             .catch((error) => {
                 // MARK : Failure
