@@ -35,7 +35,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
   //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
 
-  //return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
+ // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
   //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
@@ -48,7 +48,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
   ////////// 사용자(User) UI
 
 
-  return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
+  //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
 
 
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)

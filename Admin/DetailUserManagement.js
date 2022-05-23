@@ -1,6 +1,7 @@
 // 상세 사용자 관리(관리자) -> 수진
 
-import { StyleSheet, StatusBar,SafeAreaView,Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, StatusBar,SafeAreaView,Text, View, Dimensions, ScrollView,
+   TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PermissionTable } from '../Table/PermissionTable.js';
 import { UserTable } from '../Table/UserTable.js';
@@ -9,7 +10,7 @@ import CalendarPicker from 'react-native-calendar-picker';
 import Toast, {DURATION} from 'react-native-easy-toast'
 import { permission } from '../Category';
 import { user } from '../Category';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 
@@ -25,7 +26,6 @@ export default function DetailUserManagement({ route, navigation }) {
   const [userInfo, setUserInfo] = useState({});  
   const [allowDateInfo, setAllowDateInfo] = useState("");
   const [dateForAllow, setDateForAllow] = useState();
- 
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
@@ -48,6 +48,71 @@ export default function DetailUserManagement({ route, navigation }) {
   var dateLimit = new Date(now.setDate(now.getDate() + 30));
   const maxDate = new Date(dateLimit);
   const [selectedDate,onDateChange]=useState(null);
+
+// db에서 permission 정보가 수정되면 화면정보를 갱신한다.
+  // const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId));
+  // const unsubscribe = onSnapshot(q, (snapshot) => {
+  //   snapshot.docChanges().forEach((change) => {
+  //     // if (change.type === "added") {
+  //     //     console.log("New city: ", change.doc.data());
+  //     // }
+  //     if (change.type === "modified") {
+  //         console.log("-------------------------------------")
+  //         console.log("Modified permission: ", change.doc.data());
+  //         const changeData = change.doc.data()
+  //        // const index = users.findIndex(element => element.id === changeData.userId)
+  //         var temp  = {
+  //           userId: userInfo.userId, name: userInfo.name, grade: changeData.grade,
+  //           phone: userInfo.phone, 
+  //           registerDate: userInfo.registerDate, allowDate: userInfo.allowDate
+  //         }
+  //         try{
+  //           setUserInfo(temp);
+  //         } catch(error){
+  //           alert(error)
+  //         }
+          
+  //     }
+  //     // if (change.type === "removed") {
+  //     //     console.log("Removed city: ", change.doc.data());
+  //     // }
+  //   });
+  // });
+
+  // // db에서 user 정보가 수정되면 화면정보를 갱신한다.
+  // const userQ = query(collection(db, "User"), where("id", "==", userInfo.userId));
+  // const userUnsubscribe = onSnapshot(userQ, (snapshot) => {
+  //   snapshot.docChanges().forEach((change) => {
+   
+  //     if (change.type === "modified") {
+  //         console.log("-------------------------------------")
+  //         console.log("Modified permission: ", change.doc.data());
+  //         const changeData = change.doc.data()
+  //        // const index = users.findIndex(element => element.id === changeData.userId)
+  //         var temp  = {
+  //           userId: userInfo.userId, name: changeData.name, grade: userInfo.grade,
+  //           phone: changeData.phone, 
+  //           registerDate: changeData.registerDate, allowDate: changeData.allowDate
+  //         }
+  //         try{
+  //           setUserInfo(temp);
+  //           setAllowDateInfo([..."예약 금지일: "+changeData.allowDate]);
+  //           console.log('selectedDate: '+selectedDate);
+  //           console.log('changeData: '+changeData.allowDate);
+  //           setDateForAllow(...[new Date(selectedDate)]);
+  //         } catch(error){
+  //           alert(error)
+  //         }
+          
+  //     }
+  //     // if (change.type === "removed") {
+  //     //     console.log("Removed city: ", change.doc.data());
+  //     //     이전 화면으로 이동한다.
+  //     // }
+  //   });
+  // });
+
+
 
   const setInfoAtFirst = () =>{
     //const tempArray = userTable.users
@@ -85,6 +150,9 @@ export default function DetailUserManagement({ route, navigation }) {
                     setAllowDateInfo("예약 금지일: "+allowDate);
                     setDateForAllow(new Date(allowDate));
                   }
+
+                   
+
           
                 }
               })
@@ -121,7 +189,6 @@ export default function DetailUserManagement({ route, navigation }) {
             grade: value
           }
 
-          console.log("?")
           UpdatePermission(permissionInfo)
           // // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
           // const tempArray = userInfo
@@ -133,49 +200,47 @@ export default function DetailUserManagement({ route, navigation }) {
     }
       // permission 정보 업데이트 하기
     const UpdatePermission = (docData) => {
-      console.log("??")
       // db에서 읽어온다.
       const ref = collection(db, "Permission")
       const data = query(ref, where("facilityId", "==", docData.facilityId),
       where("userId", "==", docData.userId)) 
-      console.log(docData.facilityId+", "+docData.userId)
+
+      var permissionId = ""
   
       getDocs(data)
           // Handling Promises
           .then((snapshot) => {
-            
-              snapshot.forEach((doc) => {
 
+            snapshot.forEach((doc) => {
+              permissionId = doc.id
+            });
 
-                  console.log(doc.id, " => ", doc.data())
-                  // doc(db, 컬렉션 이름, 문서 ID)
-                  
-                  const docRef = doc(db, "Permission",  doc.id)
+            const docRef = doc(db, "Permission",  permissionId)
             
-                  //setDoc(docRef, docData, { merge: merge })
-                  updateDoc(docRef, docData)
-                      // Handling Promises
-                      .then(() => {
-                          //alert("Updated Successfully!")
-                          console.log("Updated Successfully!")
-                            // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
-                          const tempArray = userInfo
-                          tempArray.grade = docData.grade
-                          setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
-                      })
-                      .catch((error) => {
-                          alert(error.message)
-                      })
-                
-              });
+            //setDoc(docRef, docData, { merge: merge })
+            updateDoc(docRef, docData)
+                // Handling Promises
+                .then(() => {
+                    //alert("Updated Successfully!")
+                    console.log("Updated Successfully!")
+                      // 현재 등급을 나타내는 텍스트를 수정하기 위해 userInfo를 수정한다.
+                    const tempArray = userInfo
+                    tempArray.grade = docData.grade
+                    setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
+                })
+                .catch((error) => {
+                    alert(error.message)
+                })
+            
+             
 
               
           })
           .catch((error) => {
             console.log("ddd")
               // MARK : Failure
-              //alert(error.message)
-              alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오. ")
+              alert(error.message)
+              //alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오. ")
           })
         
     }
@@ -191,7 +256,17 @@ export default function DetailUserManagement({ route, navigation }) {
           .then(() => {
               //alert("Updated Successfully!")
               console.log("Updated Successfully!")
-              ReadUserList();    // db에서 사용자 목록을 다시 불러옴.
+
+              var temp  = {
+                userId: userInfo.userId, name: userInfo.name, grade: userInfo.grade,
+                phone: userInfo.phone, 
+                registerDate: userInfo.registerDate, allowDate: docData.allowDate
+              }
+          
+              setUserInfo(temp);
+              setAllowDateInfo([..."예약 금지일: "+docData.allowDate]);
+              setDateForAllow(...[new Date(selectedDate)]);
+
           })
           .catch((error) => {
               alert(error.message)
@@ -217,20 +292,32 @@ export default function DetailUserManagement({ route, navigation }) {
         {text:"취소"},
         {text: "확인", onPress: () => {
           // 여기서 user table 수정
-          userTable.modify(new user(userInfo.userId, userInfo.name, 
-            userInfo.phone, userInfo.registerDate, result));
+          // userTable.modify(new user(userInfo.userId, userInfo.name, 
+          //   userInfo.phone, userInfo.registerDate, result));
 
-          console.log("######################")
-          console.log("사용자 allow date 수정됨.")
-          console.log(userTable.getsById(userInfo.userId))
+          // console.log("######################")
+          // console.log("사용자 allow date 수정됨.")
+          // console.log(userTable.getsById(userInfo.userId))
 
-          setAllowDateInfo([..."예약 금지일: "+result]);
-          setDateForAllow(...[new Date(selectedDate)]);
+          // setAllowDateInfo([..."예약 금지일: "+result]);
+          // setDateForAllow(...[new Date(selectedDate)]);
           
-           // userInfo를 수정한다.
-           const tempArray = userInfo
-           tempArray.allowDate = result
-           setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
+          //  // userInfo를 수정한다.
+          //  const tempArray = userInfo
+          //  tempArray.allowDate = result
+          //  setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
+
+          const realPhone = userInfo.phone.substring(0,3)+userInfo.phone.substring(4,8)+
+          userInfo.phone.substring(9,13);
+           const userData = {
+             id: userInfo.userId,
+             name: userInfo.name,
+             phone: realPhone, 
+             registerDate: userInfo.registerDate,
+             allowDate: result
+           }
+
+           UpdateUser(userData);
         },},
       ]);
     }
@@ -243,6 +330,7 @@ export default function DetailUserManagement({ route, navigation }) {
              style={{backgroundColor:'grey'}}
              textStyle={{color:'white'}}
           />
+          {/* <ScrollView> */}
         <View style={{ backgroundColor:'white', justifyContent:'center'}}>
             <View>
                 <Text style={{fontSize:18,marginTop:10, marginLeft:10}}>
@@ -361,6 +449,7 @@ export default function DetailUserManagement({ route, navigation }) {
               </View>
             </View>
           </View>
+          {/* </ScrollView> */}
     </SafeAreaView>
 }
 
