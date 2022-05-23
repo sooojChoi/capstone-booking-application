@@ -1,7 +1,7 @@
 // 관리자 회원가입 화면
 
 import { StyleSheet, Text, View, Dimensions,Image,
-   TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, FlatList } from 'react-native';
+   TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, FlatList, Platform } from 'react-native';
 import React, {useEffect, useState,} from "react";
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
@@ -17,7 +17,9 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 //import MultipleImagePicker from '@baronha/react-native-multiple-image-picker';
 //import { ImageBrowser } from 'expo-image-picker-multiple';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { db, storageDb } from '../Core/Config';
+import { getStorage, ref, uploadBytes, firebase,  } from "firebase/storage";
+
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -90,6 +92,7 @@ function AdminSignUp({navigation, route}) {
     const goToSearchAddress = () => {
       navigation.navigate('SearchAddress')
     }
+
     const [images, setImages] =useState([]);
     // 사진을 선택하는 함수
     const pickImage = async (sort) => {
@@ -108,33 +111,51 @@ function AdminSignUp({navigation, route}) {
         // }else if(sort===3){
         //   setImage3(result.uri);
         // }
+
+        
         const temp = [...images]
-        temp.unshift({uri: result.uri})
+        const item = {
+          id: result.uri,
+          uri: result.uri
+        }
+        temp.unshift(item)
+
         setImages(temp)
+        console.log("temp.length: "+temp.length)
+    
+
+       //const storageRef = ref(storageDb, result.name);
+       // 'file' comes from the Blob or File API
+        // uploadBytes(storageRef, file).then((snapshot) => {
+        //   console.log('Uploaded a blob or file!');
+        // });
+
+
+        // var path = null
+        
+        // if(Platform.OS === "ios"){
+        //   path = result.uri
+        //   path = "~" + path.substring(path.indexOf("/Documents"));
+        // }else{
+        //   path = result.path
+        // }
+        // const imageName = path.split("/").pop();
+    
+       
+        // let reference = firebase.getStorage().ref("images/" + imageName);
+        // let task = reference.putFile(path);
+        // task.then(()=>{
+        //   console.log("image uploaded successfully")
+        // }).catch((e)=>{
+        //   console.log(e)
+        // })
         
         
       }
 
-      // const options={
-      //   title: 'Select Image',
-      //   type: 'library',
-      //   options: {
-      //     maxHeight: 200,
-      //     maxWidth: 200,
-      //     selectionLimit: 1,
-      //     mediaType: 'photo',
-      //     includeBase64: false,
-      //     includeExtra: true
-      //   },
-      // }
-      // const options = {
-      //   selectionLimit: 0,
-      //   mediaType: 'photo',
-      //   includeBase64: false,
-      // }
-      // ImagePicker.launchImageLibrary(options, setResponse);
      
     };
+
 
     // 선택된 사진을 지우는 함수. 현재 선택된 것이 없으면 아무것도 하지 않는다.
     const deleteImage=(uri)=>{
@@ -223,10 +244,16 @@ function AdminSignUp({navigation, route}) {
     }
 
     const renderItem = ({ item }) => {
+      //console.log(item)
 
       return (
-        <TouchableOpacity onLongPress={()=> deleteImage(item.uri)}>
-         <Image source={{uri: item.uri}} style={{...styles.imageBoxStyle, marginRight:10 }}></Image>
+        <TouchableOpacity onLongPress={()=> deleteImage(item.uri)}
+        key={item.id}
+        style={{justifyContent:'center'}}>
+         <Image source={{uri: item.uri}} style={{   borderRadius:10, 
+            width: SCREEN_WIDTH*0.18, 
+            height:SCREEN_WIDTH*0.18, marginRight:10,
+             }}></Image>
          </TouchableOpacity>
       );
     };
@@ -369,10 +396,10 @@ function AdminSignUp({navigation, route}) {
                 </View>
 
                 
-            <View style={{ paddingHorizontal:SCREEN_WIDTH*0.1}}>
+            <View style={{ paddingHorizontal:SCREEN_WIDTH*0.1,alignSelf:'stretch'}}>
                 <Text style={{...styles.titleText,marginBottom:10, marginTop:20}}>시설 대표 사진</Text>
                 <Text style={{...styles.titleText,marginBottom:20, fontSize:14, color:"#646464"}}>
-                  선택된 사진은 앱 사용자들이 볼 수 있습니다. 선택된 사진을 꾹 누르면 삭제할 수 있습니다.
+                  등록된 사진은 시설 사용자들이 볼 수 있습니다. 등록된 사진을 꾹 누르면 삭제할 수 있습니다.
                 </Text>
             </View>
             {
@@ -432,7 +459,7 @@ function AdminSignUp({navigation, route}) {
             </View> */}
 
             <View style={{backgroundColor:'white',paddingHorizontal:SCREEN_WIDTH*0.1,alignSelf:'stretch',
-             flexDirection:'row', marginBottom:30, justifyContent:'flex-start',}}>
+             flexDirection:'row', marginBottom:30, justifyContent:'flex-start', height:SCREEN_WIDTH*0.22,}}>
               <TouchableOpacity 
                 style={{...styles.imageViewContainer, alignItems:'center', 
                 justifyContent:'center'}}
@@ -444,6 +471,8 @@ function AdminSignUp({navigation, route}) {
 
               {
               images.length !== 0 ? (
+                <View style={{borderWidth:1, borderColor:'grey', flex:1, borderRadius:10,
+                borderStyle:'dashed', padding:5}}>
                 <FlatList
                 style={{}}
                 data={images}
@@ -451,8 +480,12 @@ function AdminSignUp({navigation, route}) {
                 keyExtractor={(item) => item.id}
                 horizontal={true}
                  />
+                 </View>
               ) : (
-                <View></View>
+                <View style={{borderWidth:1, borderColor:'grey', flex:1, borderRadius:10,
+              borderStyle:'dashed', alignItems:'center', justifyContent:'center'}}>
+                <Text style={{fontSize:14, color:'grey'}}>등록된 사진이 없습니다.</Text>
+              </View>
               )
               }
             </View>
@@ -588,9 +621,10 @@ const styles = StyleSheet.create({
       borderColor:'#a0a0a0',
       borderWidth:1,
       borderRadius:10,
-      width: SCREEN_WIDTH*0.2,
-      height:SCREEN_WIDTH*0.2,
+      width: SCREEN_WIDTH*0.22,
+      //height:SCREEN_WIDTH*0.2,
       marginRight:10,
+      padding:5
   },
   selectSortBtnStyle:{
     width:SCREEN_WIDTH*0.7,
