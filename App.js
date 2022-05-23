@@ -47,7 +47,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   ////////// 사용자(User) UI
 
- // return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
+  //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
 
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)
   //return (<LogIn></LogIn>) // 로그인(혜림)
