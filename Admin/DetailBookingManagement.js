@@ -89,7 +89,7 @@ export default function DetailBookingManagement({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ alignSelf: 'flex-start', marginTop: 10, marginLeft: 22 }}>
+      <View style={{ flex: 1, marginTop: 10, marginLeft: 20 }}>
         <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 10 }}>{facilityId}</Text>
         <Text style={styles.detail}>ID : {userId}</Text>
         <Text style={styles.detail}>이름 : {name}</Text>
@@ -100,7 +100,7 @@ export default function DetailBookingManagement({ route, navigation }) {
       </View>
       <TouchableOpacity style={styles.button} onPress={() => Alert.alert("주의", "예약을 취소하시겠습니까?",
         [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => cancelBooking() }])}>
-        <Text style={styles.buttonText}>예약 취소</Text>
+        <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
@@ -110,15 +110,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-  },
-
-  top: {
-    width: SCREEN_WIDTH * 0.9,
-    borderColor: 'gray',
-    borderBottomWidth: 3,
-    paddingBottom: 10,
-    alignItems: 'center'
   },
 
   detail: {
@@ -127,16 +118,9 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: '#3262D4',
-    marginTop: 50,
-    borderRadius: 10,
-    padding: 10,
-    paddingLeft: 15,
-    paddingRight: 15,
+    alignItems: 'center',
+    backgroundColor: '#3262d4',
+    width: SCREEN_WIDTH,
+    padding: 20,
   },
-
-  buttonText: {
-    fontSize: 28,
-    color: 'white',
-  }
 });

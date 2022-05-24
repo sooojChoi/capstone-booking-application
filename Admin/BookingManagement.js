@@ -166,8 +166,7 @@ function BookingManagement({ navigation }) {
             <AntDesign name="checksquareo" size={24} color="black" style={{ alignSelf: 'center' }} />
           ) : (
             <AntDesign name="checksquare" size={24} color="black" style={{ alignSelf: 'center' }} />
-          )
-          }
+          )}
           <Text style={{ fontSize: 28, marginLeft: 10 }}>{itemData.item.id}</Text>
         </TouchableOpacity>
 
@@ -437,8 +436,8 @@ function BookingManagement({ navigation }) {
                 nextTitle=">"
                 todayBackgroundColor='white'
               />
-            )
-          }</View>
+            )}
+            </View>
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <TouchableOpacity style={styles.resetButton} onPress={resetDateFilter}>

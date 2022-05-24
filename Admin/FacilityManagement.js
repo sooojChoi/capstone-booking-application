@@ -29,12 +29,12 @@ export default function FacilityManagementNavigation() {
         <Stack.Screen
           name="BasicFacilityManagement"
           component={BasicFacilityManagement}
-          options={{ title: '시설 기본 정보 관리' }}
+          options={{ title: '시설 정보 관리' }}
         />
         <Stack.Screen
           name="DetailFacilityManagement"
           component={DetailFacilityManagement}
-          options={{ title: '세부 시설 관리' }}
+          options={{ title: '세부시설 관리' }}
         />
         <Stack.Screen
             name="SearchAddress"
