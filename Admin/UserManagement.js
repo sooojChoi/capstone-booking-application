@@ -3,7 +3,7 @@
 // 그 사용자의 이름과 전화번호, 등록일 등은 USER에서 가져와야됨.
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet,SafeAreaView, Text, View, Dimensions, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet,SafeAreaView, Text, View, Dimensions,Keyboard, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import React, { useEffect, useState } from "react";
 //import { PermissionTable } from '../Table/PermissionTable.js';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -11,6 +11,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import DetailUserManagement from './DetailUserManagement.js';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { Feather } from '@expo/vector-icons';
 import {onSnapshot ,doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
@@ -19,7 +21,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 
-export default function UserManagementNavigation() {
+function UserManagementNavigation() {
   return(
     <NavigationContainer>
       <Stack.Navigator initialRouteName="management">
@@ -38,7 +40,7 @@ export default function UserManagementNavigation() {
   )
 }
 
- function UserManagement({navigation}) {
+ export default function UserManagement({navigation}) {
   //const permissionTable = new PermissionTable();
   //const userTable = new UserTable();
   const myFacilityId = "AdminTestId"  // 내 facility의 id이다. (실제로는 어디 다른데서 가져올 값)
@@ -46,6 +48,8 @@ export default function UserManagementNavigation() {
   const tempUsersArray = []  // users 값을 바꾸기 위해 이용하는 전역 변수
   const [isModalVisible, setModalVisible] = useState(false);   // 사용자 정보 수정할 때 뜨는 모달 관련 변수
   const [userInfoForModal, setUserInfoForModal] = useState({});  // 수정되기 위해 모달에 띄워지는 사용자 정보 (한 명의 정보)
+  const [searchUserText, setSearchUserText] = useState("")  // 사용자 검색
+
 
     const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -119,6 +123,83 @@ export default function UserManagementNavigation() {
   const maxDate = new Date(dateLimit);
   const [selectedDate,onDateChange]=useState(null);
 
+
+  const typingSearchUser = ()=>{
+    if(searchUserText === "" || searchUserText === null){
+
+    }else{
+      // 어디서 가져오든, 깊은 복사(원본 데이터가 바뀌지 않도록)해야할 것 같음. 아직 구현 못함.
+    console.log("again--------------")
+    const permArray = []
+
+    // db에서 읽어온다.
+    const ref = collection(db, "Permission")
+    const data = query(ref, where("facilityId", "==", myFacilityId)) 
+
+    getDocs(data)
+        // Handling Promises
+        .then((snapshot) => {
+            snapshot.forEach((doc) => {
+                //console.log(doc.id, " => ", doc.data())
+                permArray.push(doc.data())
+              
+            });
+            console.log(permArray.length)
+            let userArray = []
+              var tempArray = []
+              // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+              const ref = collection(db, "User")
+              const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+
+              getDocs(data)
+                  // Handling Promises
+                  .then((snapshot) => {
+                      snapshot.forEach((doc) => {
+                          //console.log(doc.id, " => ", doc.data())
+                          userArray.push(doc.data())
+                          
+                      });
+                        //map 도중 break할 수 없을까
+                      permArray.map((obj) => {
+                        const userId = obj.userId;
+                        const grade = obj.grade;
+                        userArray.map((user)=>{
+                                if(userId===user.id){
+                                  const name = user.name
+                                  if(userId.includes(searchUserText) || name.includes(searchUserText)){
+                                    const phone = user.phone;
+                                    const registerDate = user.registerDate
+                                    const allowDate = user.allowDate
+                                      tempArray.push({
+                                          id: userId, name: name, phone:phone,
+                                          registerDate: registerDate, allowDate: allowDate, grade: grade
+                                      });
+                                  }
+                                 
+                                }
+                          })
+                      });
+                      setUsers(tempArray);
+                      
+                  })
+                  .catch((error) => {
+                      // MARK : Failure
+                    //  alert(error.message)
+                    alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오.");
+                  })
+                
+        })
+        .catch((error) => {
+            // MARK : Failure
+            //alert(error.message)
+            alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오. ")
+        })
+    }
+
+
+  }
+
+  
 
     // 처음에 DB 또는 특정 파일에서 승인 요청한 사용자 리스트를 가져오는 함수
   const getUsersFromTable = async() => {
@@ -332,8 +413,33 @@ export default function UserManagementNavigation() {
                 <Text style={{...styles.TitleText,marginStart: 5, marginBottom:0}}>사용자 정보</Text>
             </View>
               </View>*/}
-        <View>
-          <View style={{height:SCREEN_HEIGHT*0.87}}>
+        <View style={{flex:1}}>
+        <TouchableOpacity style={{...styles.smallButtonStyle, width:SCREEN_WIDTH*0.4, alignSelf:'center',
+      marginTop:10}}
+      onPress={()=>getUsersFromTable()}>
+            <Text>모든 사용자 보기</Text>
+          </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+         
+            <View style={{flexDirection:'row', alignSelf:'center', marginVertical:10, alignItems:'center'}}>
+                      <TextInput 
+                        style={styles.input}
+                        onChangeText={setSearchUserText}
+                        value={searchUserText}
+                        placeholder="사용자 이름 또는 아이디 검색"
+                        returnKeyType='search'
+                        autoCorrect={false}
+                        maxLength={30}
+                        onSubmitEditing={typingSearchUser}
+                        />
+                      <TouchableOpacity style={{marginLeft:10}}
+                      onPress={() => typingSearchUser()}>
+                        
+                        <Feather name="search" size={24} color="#828282" />
+                      </TouchableOpacity>
+                    </View>
+          </TouchableWithoutFeedback>
+          <View style={{flex:1}}>
           <FlatList keyExtracter={(item, index) => index} 
                 data={users} 
                 renderItem={renderGridItem} 
@@ -371,14 +477,20 @@ const styles = StyleSheet.create({
     },
     smallButtonStyle:{
       backgroundColor:'#c5c7c9',
-      marginStart:5,
-      marginEnd:5,
+      alignItems:'center',
       justifyContent:'center',
      // borderColor:"black",
      // borderWidth: 2,
       borderRadius:8,
       padding: 8,
-      paddingStart:20,
-      paddingEnd:20
+    },
+    input: {
+      width:SCREEN_WIDTH*0.7,
+      borderWidth: 1,
+      marginVertical:5,
+      padding: 8,
+      borderColor:'#828282',
+      borderRadius:1,
+      color:"#141414"
     },
   });

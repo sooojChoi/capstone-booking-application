@@ -1,5 +1,4 @@
 // 상세 예약 관리(관리자) -> 수빈
-// 전화번호 표기("-" 삽입) !!!
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
@@ -81,26 +80,50 @@ export default function DetailBookingManagement({ route, navigation }) {
       })
   }
 
-  // 전화번호 표기("-" 삽입)
-
   // 시설 사용 시간("XXXX-XX-XXTXX:XX")
   const date = usingTime.substr(0, 10)
   const time = usingTime.substr(11, 5)
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ alignSelf: 'flex-start', marginTop: 10, marginLeft: 22 }}>
-        <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 10 }}>{facilityId}</Text>
-        <Text style={styles.detail}>ID : {userId}</Text>
-        <Text style={styles.detail}>이름 : {name}</Text>
-        <Text style={styles.detail}>전화번호 : {phone}</Text>
-        <Text style={styles.detail}>인원 : {usedPlayer}명</Text>
-        <Text style={styles.detail}>시간 : {date + " " + time}</Text>
-        <Text style={styles.detail}>금액 : {cost}원</Text>
+      <View style={{ flex: 1, marginTop: 20 }}>
+        <View style={styles.bottomLine}>
+          <View style={{ ...styles.detailEx, marginBottom: 18 }}>
+            <Text style={{ ...styles.title, fontWeight: "bold" }}>예약시설</Text>
+            <Text style={styles.title}>{facilityId}</Text>
+          </View>
+          <View style={styles.detailEx}>
+            <Text style={styles.title}>인원</Text>
+            <Text style={styles.detail}>{usedPlayer}명</Text>
+          </View>
+          <View style={styles.detailEx}>
+            <Text style={styles.title}>시간</Text>
+            <Text style={styles.detail}>{date + " " + time}</Text>
+          </View>
+          <View style={{ ...styles.detailEx, marginBottom: 0 }}>
+            <Text style={styles.title}>금액</Text>
+            <Text style={styles.detail}>{cost}원</Text>
+          </View>
+        </View>
+        <View style={{ ...styles.bottomLine, borderBottomWidth: 0 }}>
+          <View style={{ ...styles.detailEx, marginBottom: 18 }}>
+            <Text style={{ ...styles.title, fontWeight: "bold" }}>예약자</Text>
+            <Text style={styles.title}>{userId}</Text>
+          </View>
+          <View style={styles.detailEx}>
+            <Text style={styles.title}>예약자명</Text>
+            <Text style={styles.detail}>{name}</Text>
+          </View>
+          <View style={{ ...styles.detailEx, marginBottom: 0 }}>
+            <Text style={styles.title}>전화번호</Text>
+            <Text style={styles.detail}>{phone}</Text>
+          </View>
+        </View>
+
       </View>
       <TouchableOpacity style={styles.button} onPress={() => Alert.alert("주의", "예약을 취소하시겠습니까?",
         [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => cancelBooking() }])}>
-        <Text style={styles.buttonText}>예약 취소</Text>
+        <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
@@ -110,33 +133,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
   },
 
-  top: {
-    width: SCREEN_WIDTH * 0.9,
-    borderColor: 'gray',
-    borderBottomWidth: 3,
-    paddingBottom: 10,
-    alignItems: 'center'
+  bottomLine: {
+    borderBottomColor: '#bebebe',
+    borderBottomWidth: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    marginBottom: 20,
+    width: SCREEN_WIDTH,
+  },
+
+  detailEx: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+
+  title: {
+    fontSize: 24,
+    marginRight: 15,
   },
 
   detail: {
+    color: 'gray',
     fontSize: 24,
-    marginBottom: 10,
   },
 
   button: {
-    backgroundColor: '#3262D4',
-    marginTop: 50,
-    borderRadius: 10,
-    padding: 10,
-    paddingLeft: 15,
-    paddingRight: 15,
+    alignItems: 'center',
+    backgroundColor: '#3262d4',
+    width: SCREEN_WIDTH,
+    padding: 20,
   },
-
-  buttonText: {
-    fontSize: 28,
-    color: 'white',
-  }
 });

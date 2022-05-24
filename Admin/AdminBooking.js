@@ -15,7 +15,7 @@ import { db } from '../Core/Config';
 const {height,width}=Dimensions.get("window");
 
 
-export default function App() {
+export default function AdminBooking() {
 
   const [adminId,setAdminId]=useState('AdminTestId')//현재 관리자의 id(문서이름)
   const [facility,setFacility]=useState(adminId);
