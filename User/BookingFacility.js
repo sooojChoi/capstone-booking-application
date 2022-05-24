@@ -24,56 +24,49 @@ const {height,width}=Dimensions.get("window");
 
 export default function BookingFacility() {
 
-  const [image,setImagedata]=useState();
+
+  const [adminId,setAdminId]=useState('AdminTestId')
+  const [facility,setFacility]=useState(adminId);
+
+
+
+  const [image,setImagedata]=useState([]);
   
+
   function downImage(){
-
-
-  const storageRef = ref(storageDb,'/AdminTestId');
+  const storageRef = ref(storageDb,'/'+adminId);
+  let result=[];
 
   listAll(storageRef)
   .then((res) => {
 
     res.items.forEach((itemRef) => {
-      console.log(itemRef,"-----------")
+     // console.log(itemRef,"-----------")
       // All the items under listRef.
-      itemRef.getDownloadURL()
+      getDownloadURL(itemRef)
       .then((url) => {
-           
-        // `url` is the download URL for 'images/stars.jpg'
-      console.log(itemRef,url);
-        setImagedata(image=>[...image,url])
+      console.log(url);
+      setImagedata((img)=>{return [...img,url]})
       })
       .catch((error) => {
         console.log(error)
         // Handle any errors
       });
-    });
+     })
+    
+   
+
+
   }).catch((error) => {
     // Uh-oh, an error occurred!
   });
 
 
-
-
-   
-  
-  
   
   }
  
 
 
-  const imgData=[
-    require('../assets/library1.png'),
-    require('../assets/hansung1.png'),
-    require('../assets/hansung2.png'),
-    require('../assets/hante1.png'),
-  ]
-  const [img,setImg]=useState(imgData);
-
-const [adminId,setAdminId]=useState('AdminTestId')
-const [facility,setFacility]=useState(adminId);
 
 
 // 전체시설 정보 가져오기
@@ -719,12 +712,12 @@ const getcostAndDateInfo = () => {
 {/*시설 이미지*/}
 
             <View> 
-            <Image
-        source={{
-          uri: image,
-        }}
-        style={{width:width*0.9,height:height*0.3}}
-      />
+       
+       <SliderBox images={image}
+       style={styles.FacilityImageStyle}
+        />
+
+      
     </View>
 
 
