@@ -17,7 +17,7 @@ const Stack = createStackNavigator();
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function FacilityManagementNavigation() {
+function FacilityManagementNavigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="FacilityManagement">
@@ -46,7 +46,7 @@ export default function FacilityManagementNavigation() {
   )
 }
 
-function FacilityManagement({ navigation }) {
+export default  function FacilityManagement({ navigation }) {
   // Cloud Firestore
   const [facilityList, setFacilityList] = useState([])
 
