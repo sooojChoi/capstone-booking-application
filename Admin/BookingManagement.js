@@ -18,7 +18,7 @@ const Stack = createStackNavigator();
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function BookingManagementNavigation() {
+function BookingManagementNavigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="BookingManagement">
@@ -37,7 +37,7 @@ export default function BookingManagementNavigation() {
   )
 };
 
-function BookingManagement({ navigation }) {
+export default function BookingManagement({ navigation }) {
   // Cloud Firestore
   const [bookingList, setBookingList] = useState([]) // 필터링 된 예약 목록(FlatList 출력)
 

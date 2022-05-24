@@ -30,7 +30,7 @@ const permissionTable = new PermissionTable();  //function안에 두면 안됨.
 const userTable = new UserTable();
 const Stack = createStackNavigator();
 
-export default function UserPermissionNavigation() {
+function UserPermissionNavigation() {
   return(
     <NavigationContainer>
       <Stack.Navigator initialRouteName="permission"
@@ -51,7 +51,7 @@ export default function UserPermissionNavigation() {
 }
 
 
-function UserPermission({navigation, route}) {
+export default function UserPermission({navigation, route}) {
  // const userTable = new UserTable();
   //const permissionTable = new PermissionTable();   
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
@@ -775,9 +775,9 @@ function UserPermission({navigation, route}) {
           </Text>
         </View>
       ) : (
-        <View style={{}}>
+        <View style={{flex:1}}>
           { checkMode === true ? (
-           <View style={{}}>
+           <View style={{flex:1}}>
            <FlatList keyExtracter={(item) => item.id} 
                data={userCheck} 
                renderItem={renderGridItem} 
@@ -785,7 +785,7 @@ function UserPermission({navigation, route}) {
                numColumns={1}/>
            </View>
           ) : (
-            <View style={{}}>
+            <View style={{flex:1}}>
             <FlatList keyExtracter={(item) => item.id} 
                 data={userCheck} 
                 renderItem={renderGridItem} 

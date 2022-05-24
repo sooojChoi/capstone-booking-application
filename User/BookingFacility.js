@@ -31,6 +31,7 @@ export default function BookingFacility() {
 
 const [adminId,setAdminId]=useState('AdminTestId')
 const [facility,setFacility]=useState(adminId);
+
 // 전체시설 정보 가져오기
 const ReadEntireFacility = () => {
   // doc(db, 컬렉션 이름, 문서 ID)
