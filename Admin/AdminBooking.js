@@ -34,13 +34,37 @@ export default function App() {
 const [userSelected,setUserSelected]=useState();
 
 
+//  queryPermission해서 관리자 id같은거 다 가져오기
+
+
+const QueryPermissionToSetUser = () => {
+  result=[];
+  const ref = collection(db, "Permission");
+  const data = query(
+      ref,
+      where("facilityId","==",adminId)
+  );
+
+  getDocs(data)
+      // Handling Promises
+      .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            //userid 만 배열로 생성
+              result.push(doc.data().userId)
+          });
+          ReadUserList(result)
+      })
+      .catch((error) => {
+          alert(error.message);
+      });
+};
 
 
 
 /*userList를 읽어온다. */
 //어느 facility의 user인지는어떻게 아는지=>
 //permissiontable에서 이  관리자의 id와 같은걸 다 가져와야한다. 거기서 있는 userid만 가져오기
-  const ReadUserList = () => {
+  const ReadUserList = (userArray) => {
     const ref = collection(db, "User")
     const data = query(ref) 
     let result = [] // 가져온 User 목록을 저장할 변수
@@ -49,10 +73,12 @@ const [userSelected,setUserSelected]=useState();
         // Handling Promises
         .then((snapshot) => {
             snapshot.forEach((doc) => {
-                //console.log(doc.id, " => ", doc.data())
-                result.push(doc.data())
+              //array 있는 user들만 ReadUserList에서 결과로 만들어준다.
+                if(userArray.includes(doc.data().id)){
+                  result.push(doc.data())
+                }
+                
             });
-
             makeUserIdArray(result).then(function(resolvedData){//user정보가 담긴 객체배열을 생성한다.
               SearchKeyword(resolvedData).then(function(resolvedData){//그리고 키워드가 담겨있는 객체만 배열로 만듦
                 setSearch(resolvedData);//set한다.
@@ -76,9 +102,9 @@ const [userSelected,setUserSelected]=useState();
 let facilityArray=[];
 useEffect(()=>{
  // ReadEntireFacility();
-  ReadUserList();/*맨 처음 userList를 가져온다. dropdown picker 리스트띄우기 위해*/
+ // ReadUserList();/*맨 처음 userList를 가져온다. dropdown picker 리스트띄우기 위해*/
   ReadFacilityList();//세부시설 정보 가져오기
-
+  QueryPermissionToSetUser()//해당 시설 user만 Set하기위한 query
 },[]);
 
 
@@ -141,8 +167,8 @@ const startDate = selectedStartDate ? selectedStartDate.toString() : '';
      const ReadFacilityList = () => {
          // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
          const ref = collection(db, "Facility",facility,"Detail")
-         const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
-         let result = [] // 가져온 User 목록을 저장할 변수
+         const data = query(ref) 
+         let result = [] 
  
          getDocs(data)
              // Handling Promises
@@ -563,14 +589,7 @@ if (data){
   });
   if (SelectedTimeObject){
     let temparr=[];
-   SelectedTimeObject.map(elem=>{
-     if(elem){
-      temparr.push(elem.cost)
-     }else{
-
-     }
-     
-    })//가격만 뽑아서 배열로 반환
+   SelectedTimeObject.map(elem=>{if(elem){temparr.push(elem.cost)}})//가격만 뽑아서 배열로 반환
    totalCost=temparr.reduce((sum,cv)=>{return sum+cv},0);//배열의 합을 계산
   }
 }
