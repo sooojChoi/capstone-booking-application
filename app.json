@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "This app uses the camera to scan barcodes on event tickets."
+        "LSApplicationQueriesSchemes": ["tel", "telprompt"]
       }
     },
     "android": {

@@ -18,7 +18,7 @@ const Stack = createStackNavigator();
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function BookingManagementNavigation() {
+function BookingManagementNavigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="BookingManagement">
@@ -37,7 +37,7 @@ export default function BookingManagementNavigation() {
   )
 };
 
-function BookingManagement({ navigation }) {
+export default function BookingManagement({ navigation }) {
   // Cloud Firestore
   const [bookingList, setBookingList] = useState([]) // 필터링 된 예약 목록(FlatList 출력)
 
@@ -166,8 +166,7 @@ function BookingManagement({ navigation }) {
             <AntDesign name="checksquareo" size={24} color="black" style={{ alignSelf: 'center' }} />
           ) : (
             <AntDesign name="checksquare" size={24} color="black" style={{ alignSelf: 'center' }} />
-          )
-          }
+          )}
           <Text style={{ fontSize: 28, marginLeft: 10 }}>{itemData.item.id}</Text>
         </TouchableOpacity>
 
@@ -367,16 +366,28 @@ function BookingManagement({ navigation }) {
       return (
         <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { bookingData: bookingData })}>
           <Text style={{ ...styles.booking, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
-          <Text style={styles.booking}>인원 : {itemData.item.usedPlayer}명</Text>
-          <Text style={styles.booking}>시간 : {date + " " + time}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.booking}>인원</Text>
+            <Text style={{ ...styles.booking, marginLeft: 10, color: 'gray' }}>{itemData.item.usedPlayer}명</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.booking}>시간</Text>
+            <Text style={{ ...styles.booking, marginLeft: 10, color: 'gray' }}>{date + " " + time}</Text>
+          </View>
         </TouchableOpacity>
       )
     } else {
       return (
         <TouchableOpacity style={styles.name} onPress={() => navigation.navigate('DetailBookingManagement', { bookingData: bookingData })}>
           <Text style={{ ...styles.booking, fontWeight: "bold" }}>{itemData.item.facilityId}</Text>
-          <Text style={styles.booking}>인원 : {itemData.item.usedPlayer}명</Text>
-          <Text style={styles.booking}>시간 : {time}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.booking}>인원</Text>
+            <Text style={{ ...styles.booking, marginLeft: 10, color: 'gray' }}>{itemData.item.usedPlayer}명</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.booking}>시간</Text>
+            <Text style={{ ...styles.booking, marginLeft: 10, color: 'gray' }}>{time}</Text>
+          </View>
         </TouchableOpacity>
       )
     }
@@ -437,8 +448,8 @@ function BookingManagement({ navigation }) {
                 nextTitle=">"
                 todayBackgroundColor='white'
               />
-            )
-          }</View>
+            )}
+          </View>
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <TouchableOpacity style={styles.resetButton} onPress={resetDateFilter}>
@@ -522,7 +533,8 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    fontSize: 24,
+    color: '#3262d4',
+    fontSize: 22,
     padding: 3,
     paddingLeft: 30,
     paddingRight: 30,
@@ -535,14 +547,15 @@ const styles = StyleSheet.create({
   },
 
   selectedButton: {
-    fontSize: 24,
+    color: 'white',
+    fontSize: 22,
     padding: 3,
     paddingLeft: 30,
     paddingRight: 30,
     marginTop: 10,
     overflow: 'hidden',
-    borderColor: '#EDF1F6',
-    backgroundColor: '#EDF1F6',
+    borderColor: '#3262d4',
+    backgroundColor: '#3262d4',
     borderWidth: 2,
     borderRadius: 10,
     marginLeft: 30,
