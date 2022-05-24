@@ -1,5 +1,5 @@
 // 시설 관리(관리자) -> 수빈
-// 전체 시설 관리 추가!!! -> 세부 시설 개수에 따라 UI 화면이 달라져야 하지 않을까?
+// 로그아웃 추가
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
@@ -81,7 +81,7 @@ function FacilityManagement({ navigation }) {
   // 시설 목록 출력
   const renderItem = (itemData) => {
     return (
-      <TouchableOpacity style={styles.name}
+      <TouchableOpacity style={styles.detail}
         onPress={() => navigation.navigate('DetailFacilityManagement', { adminId: adminId, facilityId: itemData.item.name })}>
         <Text style={{ fontSize: 28 }}>{itemData.item.name}</Text>
       </TouchableOpacity>
@@ -90,7 +90,7 @@ function FacilityManagement({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.name}
+      <TouchableOpacity style={styles.detail}
         onPress={() => navigation.navigate('BasicFacilityManagement', { adminId: adminId })}>
         <Text style={{ fontSize: 28 }}>기본 시설 정보(UI 수정 예정)</Text>
       </TouchableOpacity>
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  name: {
+  detail: {
     width: SCREEN_WIDTH * 0.9,
     height: SCREEN_HEIGHT * 0.1,
     marginTop: SCREEN_WIDTH * 0.05,
