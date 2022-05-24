@@ -19,7 +19,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
-
+// allowDate 정해줘야함, 시설 DB에서 가져와야함, 시설/비밀번호 저장?
 /*모바일 윈도우의 크기를 가져와 사진의 크기를 지정한다. */
 const {height,width}=Dimensions.get("window");
 const Stack = createStackNavigator();
@@ -42,6 +42,7 @@ export default function SignUpNavigation() {
     </NavigationContainer>
   )
 }
+
 
 
 function SignIn({navigation, route}) {
@@ -120,11 +121,13 @@ const notValid = useCallback(() => {
 const complete=()=>{  
   
   //checkId()
+  CreateUser()
 
 
   if(InputPW===checkPW){//입력된 PW, 재입력된 PW가 동일하면
-    const now = new Date();//오늘날짜 생성해서 넣음~
-    const newUser=new user(InputId,InputName,phone,now,null)
+    const now = new Date(+new Date() + 3240 * 10000).toISOString() // 오늘날짜
+    const register = now.split("T")[0]
+    const newUser=new user(InputId,InputName,phone,register,null)
     userTable.add(newUser)
     console.log(userTable);
     }else{//틀리면 toast메시지
@@ -208,6 +211,32 @@ const CheckUserId = () => {
 
   }
 
+  //DB 유저 생성
+const CreateUser = () => {
+  const now = new Date(+new Date() + 3240 * 10000).toISOString() // 오늘날짜
+  const register = now.split("T")[0]
+  const docData = {
+      id: InputId,
+      name: InputName,
+      phone: phone,
+      registerDate: register,
+      allowDate: register //임시로
+  } // 문서에 담을 필드 데이터
+
+  // doc(db, 컬렉션 이름, 문서 Custom ID) -> 문서 위치 지정
+  const docRef = doc(db, "User", docData.id)
+
+  // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함
+  // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함(실수 방지)
+  setDoc(docRef, docData)
+      // Handling Promises
+      .then(() => {
+          alert("User Document Created!")
+      })
+      .catch((error) => {
+          alert(error.message)
+      })
+}
 
   return (
     <View style={{...styles.container,}}>

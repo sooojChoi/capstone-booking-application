@@ -1,7 +1,7 @@
 // 관리자 회원가입 화면
 
 import { StyleSheet, Text, View, Dimensions,Image,
-   TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
+   TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, FlatList, Platform } from 'react-native';
 import React, {useEffect, useState,} from "react";
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
@@ -13,9 +13,13 @@ import DetailAdminSignUp from './DetailAdminSignUp';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 //import { launchImageLibrary} from 'react-native-image-picker';
+//import * as ImagePicker from 'react-native-image-picker';
 //import MultipleImagePicker from '@baronha/react-native-multiple-image-picker';
+//import { ImageBrowser } from 'expo-image-picker-multiple';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { db, storageDb } from '../Core/Config';
+import { getStorage, ref, uploadBytes, firebase,  } from "firebase/storage";
+
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -89,53 +93,101 @@ function AdminSignUp({navigation, route}) {
       navigation.navigate('SearchAddress')
     }
 
+    const [images, setImages] =useState([]);
     // 사진을 선택하는 함수
     const pickImage = async (sort) => {
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [640, 480],
         quality: 1,
       });
   
       if (!result.cancelled) {
-        if(sort===1){
-          setImage1(result.uri);
-        }else if(sort===2){
-          setImage2(result.uri);
-        }else if(sort===3){
-          setImage3(result.uri);
+        // if(sort===1){
+        //   setImage1(result.uri);
+        // }else if(sort===2){
+        //   setImage2(result.uri);
+        // }else if(sort===3){
+        //   setImage3(result.uri);
+        // }
+
+        
+        const temp = [...images]
+        const item = {
+          id: result.uri,
+          uri: result.uri
         }
+        temp.unshift(item)
+
+        setImages(temp)
+        console.log("temp.length: "+temp.length)
+    
+
+       //const storageRef = ref(storageDb, result.name);
+       // 'file' comes from the Blob or File API
+        // uploadBytes(storageRef, file).then((snapshot) => {
+        //   console.log('Uploaded a blob or file!');
+        // });
+
+
+        // var path = null
+        
+        // if(Platform.OS === "ios"){
+        //   path = result.uri
+        //   path = "~" + path.substring(path.indexOf("/Documents"));
+        // }else{
+        //   path = result.path
+        // }
+        // const imageName = path.split("/").pop();
+    
        
+        // let reference = firebase.getStorage().ref("images/" + imageName);
+        // let task = reference.putFile(path);
+        // task.then(()=>{
+        //   console.log("image uploaded successfully")
+        // }).catch((e)=>{
+        //   console.log(e)
+        // })
+        
+        
       }
+
+     
     };
 
+
     // 선택된 사진을 지우는 함수. 현재 선택된 것이 없으면 아무것도 하지 않는다.
-    const deleteImage=(sort)=>{
-      if(sort===1){
-        if(image1 === null){
-          return;
-        }
-      }else if(sort === 2){
-        if(image2 === null){
-          return;
-        }
-      }
-      else if(sort === 3){
-        if(image3 === null){
-          return;
-        }
-      }
+    const deleteImage=(uri)=>{
+      // if(sort===1){
+      //   if(image1 === null){
+      //     return;
+      //   }
+      // }else if(sort === 2){
+      //   if(image2 === null){
+      //     return;
+      //   }
+      // }
+      // else if(sort === 3){
+      //   if(image3 === null){
+      //     return;
+      //   }
+      // }
       Alert.alert("삭제하시겠습니까?","" ,[
         {text:"취소"},
         {text: "삭제", onPress: () => {
-            if(sort === 1){
-              setImage1(null)
-            }else if(sort===2){
-              setImage2(null)
-            }else if(sort===3){
-              setImage3(null)
-            }
+            // if(sort === 1){
+            //   setImage1(null)
+            // }else if(sort===2){
+            //   setImage2(null)
+            // }else if(sort===3){
+            //   setImage3(null)
+            // }
+            const temp = images.filter((value)=>
+              (value.uri) !== (uri)
+            )
+            setImages(temp)
+            console.log('temp.length: '+temp.length)
         },},
       ]);
     }
@@ -190,6 +242,21 @@ function AdminSignUp({navigation, route}) {
       setAdminId(value)
 
     }
+
+    const renderItem = ({ item }) => {
+      //console.log(item)
+
+      return (
+        <TouchableOpacity onLongPress={()=> deleteImage(item.uri)}
+        key={item.id}
+        style={{justifyContent:'center'}}>
+         <Image source={{uri: item.uri}} style={{   borderRadius:10, 
+            width: SCREEN_WIDTH*0.18, 
+            height:SCREEN_WIDTH*0.18, marginRight:10,
+             }}></Image>
+         </TouchableOpacity>
+      );
+    };
 
 
       // 시설 상세 입력하고 돌아오면 호출됨.
@@ -329,10 +396,10 @@ function AdminSignUp({navigation, route}) {
                 </View>
 
                 
-            <View style={{ paddingHorizontal:SCREEN_WIDTH*0.1}}>
+            <View style={{ paddingHorizontal:SCREEN_WIDTH*0.1,alignSelf:'stretch'}}>
                 <Text style={{...styles.titleText,marginBottom:10, marginTop:20}}>시설 대표 사진</Text>
                 <Text style={{...styles.titleText,marginBottom:20, fontSize:14, color:"#646464"}}>
-                  선택된 사진은 앱 사용자들이 볼 수 있습니다. 선택된 사진을 꾹 누르면 삭제할 수 있습니다.
+                  등록된 사진은 시설 사용자들이 볼 수 있습니다. 등록된 사진을 꾹 누르면 삭제할 수 있습니다.
                 </Text>
             </View>
             {
@@ -343,7 +410,7 @@ function AdminSignUp({navigation, route}) {
             // </TouchableOpacity>
             }
             
-            <View style={{flexDirection:'row',alignSelf:'center',marginTop:10, marginBottom:30,
+            {/* <View style={{flexDirection:'row',alignSelf:'center',marginTop:10, marginBottom:30,
              alignSelf:'stretch', justifyContent:'space-evenly'}}>
                 {// 아마 flatList로 바뀔 듯. 선택한 사진 수 만큼 띄워지도록.. 최대 선택할 수 있는 사진 개수 제한 걸기.
                 // 각 사진마다 우측 상단에 x 표시가 있어서, 클릭하면 해당 사진을 flatList에서 제거하고 db에서도 제거하도록.
@@ -353,6 +420,7 @@ function AdminSignUp({navigation, route}) {
                 justifyContent:'center'}}
                 onPress={() => pickImage(1)}
                 onLongPress={() => deleteImage(1)}>
+                  
                 {
                   image1 !== undefined && image1 !== null?(
                     <Image source={{ uri: image1 }} style={{...styles.imageBoxStyle }} />
@@ -388,7 +456,40 @@ function AdminSignUp({navigation, route}) {
                   )
                 }
                 </TouchableOpacity>
+            </View> */}
+
+            <View style={{backgroundColor:'white',paddingHorizontal:SCREEN_WIDTH*0.1,alignSelf:'stretch',
+             flexDirection:'row', marginBottom:30, justifyContent:'flex-start', height:SCREEN_WIDTH*0.22,}}>
+              <TouchableOpacity 
+                style={{...styles.imageViewContainer, alignItems:'center', 
+                justifyContent:'center'}}
+                onPress={() => pickImage()}
+                >
+                     <AntDesign name="pluscircleo" size={28} color="grey" 
+                     style={{color:'#787878'}}/>
+              </TouchableOpacity>
+
+              {
+              images.length !== 0 ? (
+                <View style={{borderWidth:1, borderColor:'grey', flex:1, borderRadius:10,
+                borderStyle:'dashed', padding:5}}>
+                <FlatList
+                style={{}}
+                data={images}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                horizontal={true}
+                 />
+                 </View>
+              ) : (
+                <View style={{borderWidth:1, borderColor:'grey', flex:1, borderRadius:10,
+              borderStyle:'dashed', alignItems:'center', justifyContent:'center'}}>
+                <Text style={{fontSize:14, color:'grey'}}>등록된 사진이 없습니다.</Text>
+              </View>
+              )
+              }
             </View>
+            
 
             <View style={{paddingHorizontal:SCREEN_WIDTH*0.1, marginBottom:50}}>
                         <Text style={{...styles.titleText,}}>시설 소개 및 설명</Text>
@@ -520,9 +621,10 @@ const styles = StyleSheet.create({
       borderColor:'#a0a0a0',
       borderWidth:1,
       borderRadius:10,
-      width: SCREEN_WIDTH*0.2,
-      height:SCREEN_WIDTH*0.2,
+      width: SCREEN_WIDTH*0.22,
+      //height:SCREEN_WIDTH*0.2,
       marginRight:10,
+      padding:5
   },
   selectSortBtnStyle:{
     width:SCREEN_WIDTH*0.7,
@@ -545,3 +647,6 @@ const styles = StyleSheet.create({
     
   }
   });
+
+
+    

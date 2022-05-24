@@ -6,18 +6,26 @@ import { UserTable } from '../Table/UserTable';
 import Toast from 'react-native-easy-toast'
 import { user } from '../Category';
 import { PermissionTable } from '../Table/PermissionTable';
-
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const {height,width}=Dimensions.get("window");
 
 export default function MyInfoManagement(){
 
+
  
  const userTable=new UserTable();
  const permissionTable = new PermissionTable();
 
-  const currentUserId="hrr";//현재 user의 id(임시)
-  const currentUser=userTable.getsById(currentUserId); //현재 user의 정보 가져옴
+  const currentUserId="hrn135";//현재 user의 id(임시)
+
+  const [currentUser,setCurrentUser]=useState('');
+
+
+  const [InputName,setInputName]=useState(currentUser.name);//입력된 이름
+  const [phone,setPhone]=useState();//입력된 번호
+  //let currentUser=''
   //console.log(currentUser);
 
   const [InputOldPW,setOldPW]=useState();//입력된 변경전 PW
@@ -27,13 +35,38 @@ export default function MyInfoManagement(){
   const [userGrade, setUserGrade] = useState();   // 사용자 등급
   const currentUserPW="1234"//현재 User의 임시 PW
   const [pwMode, setPwMode] = useState(false);  // 비밀번호까지 변경하는지 아닌지 (true면 변경하는 것)
-    //console.log(InputOldPW)
-  //console.log("변경할 pw:" +InputNewPW)
-  //console.log("재입력된 pw:" + checkNewPW)
+  
+
+  const ReadUser = () => {
+    // doc(db, 컬렉션 이름, 문서 ID)
+    const docRef = doc(db, "User", currentUserId)
+    let result // 가져온 User 1명 정보를 저장할 변수
+
+    getDoc(docRef)
+        // Handling Promises
+        .then((snapshot) => {
+            // MARK : Success
+            if (snapshot.exists) {
+                //console.log(snapshot.data())
+                result = snapshot.data()
+        
+            }
+            else {
+                alert("No Doc Found")
+            }
+            setCurrentUser(result)
+        })
+        .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+        })
+}
+
+
 
 
   //변경 할 비밀번호와 재입력된 비밀번호가 맞는지 확인
-  //마찬가지로 개인정보 문제가..
+
   const checkingNewPW=(value)=>{
     console.log(value)
     CheckingInputNewPW(value)
@@ -44,8 +77,7 @@ export default function MyInfoManagement(){
   }
 
 
-  const [InputName,setInputName]=useState(currentUser[0].name);//입력된 이름
-  const [phone,setPhone]=useState(currentUser[0].phone);//입력된 번호
+
 
 //토스트 메시지 출력
   const toastRef = useRef(); // toast ref 생성
@@ -110,12 +142,11 @@ const getUserGrade = () =>{
   })
 
 }
-
 // 처음에 유저의 정보를 가져옴 (등급 정보 가져오려고 추가함)
 useEffect(()=>{
   getUserGrade();
+  ReadUser();//
 },[])
-
 
 return(   
 <SafeAreaView style={styles.container}>
@@ -157,7 +188,7 @@ return(
        }
         <TextInput 
           style={{...styles.input, color:'grey'}}
-          value={currentUser[0].id}
+          value={currentUser.id}
           editable={false}
         />
         <View style={{flexDirection:'row'}}>
