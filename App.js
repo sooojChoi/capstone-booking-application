@@ -44,7 +44,6 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<AdminLogIn></AdminLogIn>) // 관리자 로그인(수빈)
 
-
   //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
   //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
@@ -65,7 +64,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
 
-  //return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색 (수진)
+  //return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색(수진)
 
   //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
 

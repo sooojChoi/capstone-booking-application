@@ -106,7 +106,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
     let fullAddress
     if (detailAddress !== null)
-      fullAddress = address + detailAddress
+      fullAddress = address + " " +detailAddress
     else
       fullAddress = address
 

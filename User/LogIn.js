@@ -4,17 +4,40 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, Dimensions, SafeAreaView } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import React, { useState } from "react";
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function LogIn() {
-  const [id, setId] = useState("");
-  const [pw, setPw] = useState("");
+  const [id, setId] = useState("")
+  const [pw, setPw] = useState("")
 
-  // 로그인 버튼 클릭 시 호출되는 함수 -> 메인 화면으로 이동???
-  const loginBtnOnPress = () => {
+  // 로그인 함수 -> 메인 화면으로 이동???
+  const loginUser = () => {
+    const email = id + "@user.com"
 
+    signInWithEmailAndPassword(auth, email, pw)
+      .then(userCredential => {
+        const user = userCredential.user
+        console.log('Logged in with : ', user.email)
+        console.log(auth.currentUser.email)
+      })
+      .catch(error => {
+        alert(error.message)
+      })
+  }
+
+  // 로그아웃 함수
+  const logout = () => {
+    auth.signOut()
+      .then(() => {
+        console.log("Logout")
+      })
+      .catch(error => {
+        alert(error.message)
+      })
   }
 
   return (
@@ -42,14 +65,17 @@ export default function LogIn() {
               <Text style={{ ...styles.text, color: "white" }}>로그인</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.loginBtn} disabled={false} onPress={() => loginBtnOnPress()}>
+            <TouchableOpacity style={styles.loginBtn} disabled={false} onPress={loginUser}>
               <Text style={{ ...styles.text, color: "white" }}>로그인</Text>
             </TouchableOpacity>
           )
         }
         <View style={styles.signUpBtn}>
-          <TouchableOpacity >
+          <TouchableOpacity>
             <Text style={styles.text}>회원가입</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={logout}>
+            <Text style={styles.text}>로그아웃(Test)</Text>
           </TouchableOpacity>
         </View>
       </View>

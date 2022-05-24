@@ -4,17 +4,28 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, Dimensions, SafeAreaView } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import React, { useState } from "react";
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function AdminLogIn() {
-  const [id, setId] = useState("");
-  const [pw, setPw] = useState("");
+  const [id, setId] = useState("")
+  const [pw, setPw] = useState("")
 
   // 로그인 버튼 클릭 시 호출되는 함수 -> 메인 화면으로 이동???
-  const loginBtnOnPress = () => {
+  const loginAdmin = () => {
+    const email = id + "@admin.com"
 
+    signInWithEmailAndPassword(auth, email, pw)
+      .then(userCredential => {
+        const user = userCredential.user
+        console.log('Logged in with : ', user.email)
+      })
+      .catch(error => {
+        alert(error.message)
+      })
   }
 
   return (
@@ -43,7 +54,7 @@ export default function AdminLogIn() {
               <Text style={{ ...styles.text, color: "white" }}>로그인</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.loginBtn} disabled={false} onPress={() => loginBtnOnPress()}>
+            <TouchableOpacity style={styles.loginBtn} disabled={false} onPress={() => loginAdmin()}>
               <Text style={{ ...styles.text, color: "white" }}>로그인</Text>
             </TouchableOpacity>
           )
