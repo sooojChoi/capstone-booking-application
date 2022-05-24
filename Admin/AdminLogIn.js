@@ -1,4 +1,4 @@
-// 로그인(사용자) -> 수빈, 혜림
+// 로그인(관리자) -> 수빈
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, Dimensions, SafeAreaView } from 'react-native';
@@ -8,7 +8,7 @@ import React, { useState } from "react";
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function LogIn() {
+export default function AdminLogIn() {
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
 
@@ -24,6 +24,7 @@ export default function LogIn() {
         <SafeAreaView>
           <View style={{ ...styles.circleStyle, alignSelf: 'center', marginTop: SCREEN_HEIGHT * 0.15 }}>
             <Text style={{ color: "white", fontSize: 25 }}>BBooking</Text>
+            <Text style={{ color: "white", fontSize: 25, marginTop: 10 }}>[ 관리자 ]</Text>
           </View>
           <View style={styles.loginForm}>
             <View style={styles.loginInput}>
@@ -55,7 +56,7 @@ export default function LogIn() {
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

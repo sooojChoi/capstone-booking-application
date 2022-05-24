@@ -168,7 +168,7 @@ export class BookingTable {
         return result
     }
 
-    // 취소 내역 불러오기
+    // 예약 내역 불러오기
     getsAllWithNotCancel(todayDate) {
         var result = []
         for (var existing of this.bookings) {

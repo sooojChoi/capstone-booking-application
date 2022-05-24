@@ -52,3 +52,7 @@ User 파일에 사용자와 관련된 화면들이 있고, Admin 파일에 관�
     npm install @actbase/react-daum-postcode
 
     npm install react-native-webview
+
+- Image Slider
+
+    npm i react-native-image-slider-box
