@@ -8,34 +8,10 @@ import { db } from '../Core/Config';
 import Modal from "react-native-modal";
 import CalendarPicker from 'react-native-calendar-picker';
 import { AntDesign } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import DetailBookingManagement from './DetailBookingManagement';
 import { useIsFocused } from '@react-navigation/native';
-
-const Stack = createStackNavigator();
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-
-// function BookingManagementNavigation() {
-//   return (
-//     <NavigationContainer>
-//       <Stack.Navigator initialRouteName="BookingManagement">
-//         <Stack.Screen
-//           name="BookingManagement"
-//           component={BookingManagement}
-//           options={{ title: '예약 내역' }}
-//         />
-//         <Stack.Screen
-//           name="DetailBookingManagement"
-//           component={DetailBookingManagement}
-//           options={{ title: '예약 세부 내역' }}
-//         />
-//       </Stack.Navigator>
-//     </NavigationContainer>
-//   )
-// };
 
 export default function BookingManagement({ navigation }) {
   // Cloud Firestore

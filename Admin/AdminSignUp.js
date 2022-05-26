@@ -26,7 +26,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const Stack = createStackNavigator();
 
-export default function AdminSignUptNavigation() {
+function AdminSignUptNavigation() {
     return(
       <NavigationContainer>
         <Stack.Navigator initialRouteName="signUp">
@@ -60,7 +60,7 @@ export default function AdminSignUptNavigation() {
     )
   }
   
-function AdminSignUp({navigation, route}) {
+  export default function AdminSignUp({navigation, route}) {
     const [facName, onChangeNameText] = useState("");
     const [facNumber, onChangeNumberText] = useState("");
     const [facAddress, onChangeAddressText] = useState("");

@@ -1,15 +1,15 @@
 // 예약 내역(사용자) -> 유진
 
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, FlatList, SafeAreaView } from 'react-native';
-import {FacilityTable} from '../Table/FacilityTable';
+import { FacilityTable } from '../Table/FacilityTable';
 import { Dimensions } from 'react-native';
-import {BookingTable} from '../Table/BookingTable';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { BookingTable } from '../Table/BookingTable';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 export default function App() {
-  const {height,width}=Dimensions.get("window");
+  const { height, width } = Dimensions.get("window");
 
   const facilityTable = new FacilityTable();
   const [bookingTable, setBookingTable] = useState(new BookingTable)
@@ -18,33 +18,33 @@ export default function App() {
   // const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancleLast("yjb"))
   const [bookings, setBookings] = useState([])
 
-    //지난 이용예 내역 db에서 가져오기
-    const ReadLastBookingList = () => {
-      const ref = collection(db, "Booking")
-      let now = new Date(+new Date() + 3240 * 10000).toISOString() //현재 날짜
-      const data = query(ref, where("cancel", "==", false)) //where id인것만 추가해야함 //////////////////////////
-      let result = []
-  
-      getDocs(data)
+  //지난 이용예 내역 db에서 가져오기
+  const ReadLastBookingList = () => {
+    const ref = collection(db, "Booking")
+    let now = new Date(+new Date() + 3240 * 10000).toISOString() //현재 날짜
+    const data = query(ref, where("cancel", "==", false)) //where id인것만 추가해야함 //////////////////////////
+    let result = []
+
+    getDocs(data)
       // Handling Promises
-              .then((snapshot) => {
-                  snapshot.forEach((doc) => {
-                      //console.log(doc.id, " => ", doc.data())
-                      //현재 날짜보다 전 내역만 가져오기 위해
-                      if (doc.data().usingTime<now) {
-                      result.push(doc.data())
-                      }
-                  });
-                  setBookings(result)
-              })
-              .catch((error) => {
-                  // MARK : Failure
-                  alert(error.message)
-              })
-    }
-    useEffect(() => {
-      ReadLastBookingList();
-    },[bookings])
+      .then((snapshot) => {
+        snapshot.forEach((doc) => {
+          //console.log(doc.id, " => ", doc.data())
+          //현재 날짜보다 전 내역만 가져오기 위해
+          if (doc.data().usingTime < now) {
+            result.push(doc.data())
+          }
+        });
+        setBookings(result)
+      })
+      .catch((error) => {
+        // MARK : Failure
+        alert(error.message)
+      })
+  }
+  useEffect(() => {
+    ReadLastBookingList();
+  }, [bookings])
 
 
   //예약내역
@@ -54,16 +54,16 @@ export default function App() {
     //usingTime에서 T빼기위해
     const usingTimearr = itemData.item.usingTime.split("T")
 
-    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.89, height: 75,}}>
-    <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
+    return <View style={{ borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width * 0.89, height: 75, }}>
+      <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
 
-    <View style={{flexDirection:'row',}}>
-      <Text style={styles.text3}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
-    <Text style={{fontSize:14, color:'white'}}>예약취소</Text>
-      
+      <View style={{ flexDirection: 'row', }}>
+        <Text style={styles.text3}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
+        <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
+
+      </View>
     </View>
-  </View>
-  
+
   }
 
 
@@ -72,21 +72,21 @@ export default function App() {
   return (
 
     // 예약내역
-    <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
-    <View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+      <View>
 
-      <View style={{padding: 10, margin: 8}}>
-      
-      <Text style={styles.text2}>지난 이용 내역</Text>
-        <View style={{height: height*0.8}}>
-        <FlatList
-        data={bookings}
-        renderItem={yItem}
-        />
+        <View style={{ padding: 10, margin: 8 }}>
+
+          <Text style={styles.text2}>지난 이용 내역</Text>
+          <View style={{ height: height * 0.8 }}>
+            <FlatList
+              data={bookings}
+              renderItem={yItem}
+            />
+          </View>
         </View>
-      </View>
 
-    </View>
+      </View>
     </SafeAreaView>
   );
 }
