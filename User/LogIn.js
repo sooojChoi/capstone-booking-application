@@ -10,19 +10,18 @@ import { auth } from '../Core/Config';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function LogIn() {
+export default function LogIn({ navigation }) {
   const [id, setId] = useState("")
   const [pw, setPw] = useState("")
 
-  // 로그인 함수 -> 메인 화면으로 이동???
+  // 로그인 함수
   const loginUser = () => {
     const email = id + "@user.com"
 
     signInWithEmailAndPassword(auth, email, pw)
       .then(userCredential => {
         const user = userCredential.user
-        console.log('Logged in with : ', user.email)
-        console.log(auth.currentUser.email)
+        navigation.navigate('Home')
       })
       .catch(error => {
         alert(error.message)
@@ -71,11 +70,8 @@ export default function LogIn() {
           )
         }
         <View style={styles.signUpBtn}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
             <Text style={styles.text}>회원가입</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={logout}>
-            <Text style={styles.text}>로그아웃(Test)</Text>
           </TouchableOpacity>
         </View>
       </View>
