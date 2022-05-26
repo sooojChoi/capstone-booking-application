@@ -15,10 +15,8 @@
     "@react-native-community/checkbox": "^0.5.12",
     "@react-native-community/datetimepicker": "^4.0.1",
     "@react-native-community/masked-view": "^0.1.11",
-
     "@react-native-firebase/storage": "^14.9.4",
     "@react-navigation/bottom-tabs": "^6.3.1",
-
     "@react-navigation/native": "^6.0.10",
     "@react-navigation/stack": "^6.2.1",
     "expo": "~44.0.0",
