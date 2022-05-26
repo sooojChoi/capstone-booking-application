@@ -16,7 +16,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 //import * as ImagePicker from 'react-native-image-picker';
 //import MultipleImagePicker from '@baronha/react-native-multiple-image-picker';
 //import { ImageBrowser } from 'expo-image-picker-multiple';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where, Firestore } from 'firebase/firestore';
 import { db, storageDb } from '../Core/Config';
 import { getStorage, ref, uploadBytes, firebase,  } from "firebase/storage";
 
@@ -75,6 +75,8 @@ function AdminSignUp({navigation, route}) {
     const [image2, setImage2] = useState();
     const [image3, setImage3] = useState();
 
+    const [imageUri, setImageUri] = useState([]);
+
     const [explain, setExplain] = useState("");  // 시설에 대한 설명
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(true);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     
@@ -85,7 +87,7 @@ function AdminSignUp({navigation, route}) {
          image1: image1, image2: image2, image3: image3, explain: explain,
         id: adminId, password: adminPw
       }
-        navigation.navigate('AdminSignUpAndAddFacility', {facilityBasicInfo:facilityBasicInfo})
+        navigation.navigate('AdminSignUpAndAddFacility', {facilityBasicInfo:facilityBasicInfo, imageUriArray: imageUri})
     }
     
     // 도로명 검색하는 화면으로 이동
@@ -114,42 +116,40 @@ function AdminSignUp({navigation, route}) {
 
         
         const temp = [...images]
-        const item = {
-          id: result.uri,
-          uri: result.uri
+        const selectedName = result.uri
+        console.log('image uri: ' +selectedName)
+
+        const findImage = temp.find((element)=>{
+          if(element.id === selectedName){
+            return true;
+          }
+        })
+
+        if(findImage === undefined){
+          console.log("can't find image")
+          const item = {
+            id: result.uri,
+            uri: result.uri
+          }
+          temp.unshift(item)
+          setImages(temp)
+
+          const uriArray = [...imageUri];
+          uriArray.push(result.uri)
+          setImageUri(uriArray);
+
+      
+        }else{
+          console.log("there is same image")
         }
-        temp.unshift(item)
 
-        setImages(temp)
-        console.log("temp.length: "+temp.length)
-    
+          // const r = ref(storageDb, 'AdminTestId/image1.jpg');  
 
-       //const storageRef = ref(storageDb, result.name);
-       // 'file' comes from the Blob or File API
-        // uploadBytes(storageRef, file).then((snapshot) => {
-        //   console.log('Uploaded a blob or file!');
-        // });
+          // const img = await fetch(result.uri);
+          // const bytes = await img.blob();
 
-
-        // var path = null
-        
-        // if(Platform.OS === "ios"){
-        //   path = result.uri
-        //   path = "~" + path.substring(path.indexOf("/Documents"));
-        // }else{
-        //   path = result.path
-        // }
-        // const imageName = path.split("/").pop();
-    
-       
-        // let reference = firebase.getStorage().ref("images/" + imageName);
-        // let task = reference.putFile(path);
-        // task.then(()=>{
-        //   console.log("image uploaded successfully")
-        // }).catch((e)=>{
-        //   console.log(e)
-        // })
-        
+          // await uploadBytes(r, bytes);
+  
         
       }
 
@@ -542,10 +542,11 @@ function AdminSignUp({navigation, route}) {
 
 
 function SelectFacilitySort({navigation, route}) {
-  const { facilityName, facilityNumber, facilityAddress, image1, image2, image3, explain,  id, password } = route.params; 
-  const facilityBasicInfo = { facilityBasicName: facilityName, facilityNumber:facilityNumber,
-    facilityAddress:facilityAddress, image1:image1, image2:image2, image3:image3, explain:explain,
-    id: id, password: password}
+ // const { facilityName, facilityNumber, facilityAddress, image1, image2, image3, explain,  id, password } = route.params; 
+ const {facilityBasicInfo} = route.params; 
+//  const facilityBasicInfo = { facilityBasicName: facilityName, facilityNumber:facilityNumber,
+//     facilityAddress:facilityAddress, image1:image1, image2:image2, image3:image3, explain:explain,
+//     id: id, password: password}
     console.log(facilityBasicInfo)  
   const goToDetailScene = () =>{
       navigation.navigate('DetailAdminSignUp', {sort: 'final', facility: facilityBasicInfo})

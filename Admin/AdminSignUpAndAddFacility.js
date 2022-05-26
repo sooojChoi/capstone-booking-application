@@ -5,7 +5,8 @@ import React, {useEffect, useState,} from "react";
 import { FlatList } from 'react-native-gesture-handler';
 import { AntDesign } from '@expo/vector-icons';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { db, storageDb } from '../Core/Config';
+import { getStorage, ref, uploadBytes, firebase,  } from "firebase/storage";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -14,6 +15,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
     const [facInfo, setFacInfo] = useState([]); // 등록할 시설 정보를 담는 오브젝트
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(false);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     const [facilityBasicInfo, setFacilityBasicInfo] = useState();
+    const [imageUri, setImageUri] = useState([]);
 
     // '시설 추가'버튼을 누르면 동작함
     const goToDetailScene = () =>{
@@ -46,6 +48,23 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             CreateFacility(basicInfo, detailInfo)
         })
 
+        var num = 1;
+        imageUri.map((value)=>{
+            uploadImages(value, num);
+            num++;
+        })
+
+    
+    }
+
+    // firebase에 사진 한 장을 업로드 하는 함수
+    const uploadImages = async(value, name)=>{
+        const r = ref(storageDb, facilityBasicInfo.id+'/image'+name+'.jpg');  
+
+        const img = await fetch(value);
+        const bytes = await img.blob();
+
+        await uploadBytes(r, bytes);
 
     }
 
@@ -64,11 +83,11 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
                         //alert("User Document Created!")
                     })
                     .catch((error) => {
-                        alert(error.message)
+                        alert('시설 추가가 불가능합니다. 개발자에게 문의하십시오.')
                     })
             })
             .catch((error) => {
-                alert(error.message)
+                alert('시설 추가가 불가능합니다. 개발자에게 문의하십시오.')
             })
 
     }
@@ -89,6 +108,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
         const params = route.params
         const name = params?.facility
         const basicInfo = params?.facilityBasicInfo
+        const uris = params?.imageUriArray
         console.log(name)
 
         if(facInfo.length !==0){
@@ -101,6 +121,15 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             setFacilityBasicInfo(basicInfo);
         }else{
             console.log("기본 정보 없음.")
+        }
+
+
+        if(uris !== undefined && uris !== null){
+            console.log("----------------시설 기본 정보--------------")
+            console.log(uris);
+            setImageUri(uris);
+        }else{
+            console.log("등록된 사진 정보 없음.")
         }
     
         if(name === undefined || name === "" || name === null){
