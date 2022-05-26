@@ -52,58 +52,12 @@ export default function App() {
     ReadBookingList();
     ReadBookingListCancel();
   },[bookings, bookingCancel])
-  // 예약 취소하기 ///////////해야함 문서이름 랜덤인거 어케?
-//   const UpdateBookingCancel = (merge) => {
-//     // doc(db, 컬렉션 이름, 문서 ID)
-//     const docRef = doc(db, "Booking",)
-
-//     const docData = {
-//         cancel: true
-//     } // 문서에 담을 필드 데이터
-
-
-//     // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함 => 필드가 사라질 수 있음
-//     // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함 => 필드가 사라지지 않음(실수 방지)
-//     // updateDoc(문서 위치, 데이터) == setDoc(문서 위치, 데이터, { merge: true })
-
-//     //setDoc(docRef, docData, { merge: merge })
-//     updateDoc(docRef, docData)
-//         // Handling Promises
-//         .then(() => {
-//             alert("Updated Successfully!")
-//         })
-//         .catch((error) => {
-//             alert(error.message)
-//         })
-// }
 
 
 
   //예약내역
   const yItem = (itemData) => {
 
-    //const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
-    
-    //db에서 facilitiyName 가져오기 -> 지금은 booking 테이블의 ㄹacilityId로 가져왔음
-  //   const docRef = doc(db, "Facility", itemData.item.adminId, "Detail", itemData.item.facilityId) 
-  //   let result //facility 1개를 저장할 변수
-    
-  //   getDoc(docRef)
-  //   // Handling Promises
-  //   .then(function(snapshot) {
-  //     // MARK : Success
-  //     if (snapshot.exists) {
-  //         //console.log(snapshot.data())
-  //         result = snapshot.data()
-  //     }
-  //     else {
-  //         alert("No Doc Found")
-  //     }
-  // })
-  // .catch((error) => {
-  //     // MARK : Failure
-  //     alert(error.message)
-  // })
 
       // 예약 취소하기 시작 //
       const CancelBooking = (merge) => {
@@ -173,7 +127,7 @@ export default function App() {
     paddingLeft:10,
     paddingRight:10,
     marginBottom:5,
-    marginLeft:width*0.36}} onPress={() => Alert.alert(                    //Alert를 띄운다
+    marginLeft:width*0.35}} onPress={() => Alert.alert(                    //Alert를 띄운다
     "주의",                    // 첫번째 text: 타이틀 제목
     "예약을 취소하시겠습니까?",                         // 두번째 text: 그 밑에 작은 제목
     [                              // 버튼 배열
