@@ -147,7 +147,7 @@ export default function App() {
     </TouchableOpacity>
       {/* <IconButton type={Images.delete} /> */}
     </View>
-
+</View>
   }
 
 

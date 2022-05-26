@@ -26,7 +26,7 @@ import LogIn from './User/LogIn';
 import MyBookingList from './User/MyBookingList';
 import MyInfoManagement from './User/MyInfoManagement';
 import MyLastBookingList from './User/MyLastBookingList';
-import SearchFacility from './User/SearchFacility';
+import SearchFacility from './User/searchFacility';
 import SignIn from './User/SignIn';
 import CloudFirestore from './CloudFirestore';
 import AdminHomeNavigation from './Admin/AdminHome';
@@ -79,13 +79,13 @@ export default function App() {
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
-  //return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
+  return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
 
   // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
   //return (<AdminLogIn></AdminLogIn>) // 관리자 로그인(수빈)
 
-  return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
+  //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
   //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
   //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
