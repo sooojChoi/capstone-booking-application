@@ -14,6 +14,8 @@ import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import {Linking, Platform} from 'react-native'
 import { AntDesign } from '@expo/vector-icons';
+import { storageDb } from '../Core/Config';
+import { getStorage, ref,getDownloadURL,listAll } from "firebase/storage"
 //import call from 'react-native-phone-call'
 
 
@@ -21,16 +23,51 @@ import { AntDesign } from '@expo/vector-icons';
 const {height,width}=Dimensions.get("window");
 
 export default function BookingFacility() {
-  const imgData=[
-    require('../assets/library1.png'),
-    require('../assets/hansung1.png'),
-    require('../assets/hansung2.png'),
-    require('../assets/hante1.png'),
-  ]
-  const [img,setImg]=useState(imgData);
 
-const [adminId,setAdminId]=useState('AdminTestId')
-const [facility,setFacility]=useState(adminId);
+
+  const [adminId,setAdminId]=useState('AdminTestId')
+  const [facility,setFacility]=useState(adminId);
+
+
+
+  const [image,setImagedata]=useState([]);
+  
+
+  function downImage(){
+  const storageRef = ref(storageDb,'/'+adminId);
+  let result=[];
+
+  listAll(storageRef)
+  .then((res) => {
+
+    res.items.forEach((itemRef) => {
+     // console.log(itemRef,"-----------")
+      // All the items under listRef.
+      getDownloadURL(itemRef)
+      .then((url) => {
+      console.log(url);
+      setImagedata((img)=>{return [...img,url]})
+      })
+      .catch((error) => {
+        console.log(error)
+        // Handle any errors
+      });
+     })
+    
+   
+
+
+  }).catch((error) => {
+    // Uh-oh, an error occurred!
+  });
+
+
+  
+  }
+ 
+
+
+
 
 // 전체시설 정보 가져오기
 const ReadEntireFacility = () => {
@@ -122,10 +159,12 @@ const [allowDate,setAllowDate]=useState();
   /*facilityTable의 정보를 받아옴*/ 
   let facilityArray=[];
   useEffect(()=>{
+    downImage();
     ReadEntireFacility();
     QueryPermission(currentUserId);
      ReadFacilityList();
      ReadUser(currentUserId);//user의정보를 받아와서 출력함
+     
   },[]);
 
  
@@ -289,11 +328,15 @@ const [dcList,setDclist]=useState();
 }
 
 
+
   if (value){
  // id로 세부시설의 정보를 가져오기
     ReadFacility(value)
   }
 
+  useEffect(()=>{
+    setSelectedId([]);//가격을 선택한채로 시설을 바꾸면 모든선택 해제시키기
+  },[value])
 
 function setInfo(){
   if (selectedDetailedFacility){
@@ -488,7 +531,8 @@ if (data){
 
  
   if (SelectedTimeObject){
-   const temparr=SelectedTimeObject.map(elem=>{return elem.cost})//가격만 뽑아서 배열로 반환
+    let temparr=[];
+   SelectedTimeObject.map(elem=>{if(elem){temparr.push(elem.cost)}})//가격만 뽑아서 배열로 반환
    totalCost=temparr.reduce((sum,cv)=>{return sum+cv},0);//배열의 합을 계산
    //console.log(totalCost);
 
@@ -666,11 +710,17 @@ const getcostAndDateInfo = () => {
       <SafeAreaView style={{flex:1}}>
     <ScrollView bounces={false}>
 {/*시설 이미지*/}
-      <View> 
-        <SliderBox images={img}
-        style={styles.FacilityImageStyle}
-         />
-      </View>
+
+            <View> 
+       
+       <SliderBox images={image}
+       style={styles.FacilityImageStyle}
+        />
+
+      
+    </View>
+
+
 
 {/*페이지 제목을 예약 시설 이름으로 변경*/}
       <View style={{marginTop:8, marginBottom:15}}>
@@ -956,5 +1006,6 @@ const styles = StyleSheet.create({
   },
 
 });
+
 
 

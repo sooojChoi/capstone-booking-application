@@ -7,14 +7,16 @@ import { allocation } from '../Category';
 import {AllocationTable} from '../Table/AllocationTable';
 import {FacilityTable} from '../Table/FacilityTable';
 import Modal from "react-native-modal";
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
 const {height,width}=Dimensions.get("window");
 //그 시설의 allocation만 보여준다.
 
-const Item = ({ item, onPress}) => (
+const Item = ({item, onPress}) => (
   <TouchableOpacity onPress={onPress}>
      <View style={{marginVertical:5}}>
-    <Text style={[styles.title]}>{item.title}</Text>
+    <Text style={[styles.title]}>{item.name}</Text>
     </View>
   </TouchableOpacity>
 );
@@ -40,22 +42,54 @@ export default function GenerateAllocation(){
 
   const [selectedId, setSelectedId] = useState(null);
   const [selectedTime,setSelectedTime]=useState(null);
-  const [alloArray,setAlloArray]=useState(setBeforeTime);
+  const [facility, setFacility]=useState([]);
+  const [alloArray,setAlloArray]=useState([]);
+
+
+
   //const [data,setData]=useState([]);
+
+// DB facility 가져오기
+const ReadfacilityList = () => {
+  // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+  const ref = collection(db, "Facility", "AdminTestId", "Detail") //관리자 ID 추가해야함
+  const data = query(ref) 
+  let result = [] // 가져온 facility 목록을 저장할 변수
+
+  getDocs(data)
+      // Handling Promises
+      .then((snapshot) => {
+          snapshot.forEach((doc) => {
+              //console.log(doc.id, " => ", doc.data())
+              result.push(doc.data())
+            
+          });
+          //console.log("--------------Facility 목록 가져오기----------------")
+          //console.log(result)
+          //setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
+          setFacility(result)
+          setAlloArray(setBeforeTime(result))
+
+      })
+      .catch((error) => {
+          // MARK : Failure
+          alert(error.message)
+      })
+}
 
   /*facilityTable의 정보를 받아옴*/ 
   let i=0;
-  const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,title:elem.id}});
-//console.log(facilityArray)
-  //console.log(facilityTable.facilitys)
   let openTime,closeTime,unitTime;
 
-function setBeforeTime(){//여기서는 available이 모두 true인 allocation생성만 하고
+function setBeforeTime(Array){//여기서는 available이 모두 true인 allocation생성만 하고
   let timeArray=[];
-  timeArray=facilityTable.facilitys.map((elem)=>{
-     openTime=elem.openTime
-     closeTime=elem.closeTime
-     unitTime=elem.unitTime
+  //ReadfacilityList()
+  //console.log("facility",Array)
+
+  timeArray=Array.map((elem)=>{
+     openTime=elem.openTime/60
+     closeTime=elem.closeTime/60
+     unitTime=elem.unitTime/60
       let j=0;
       const t=[];
       
@@ -65,22 +99,45 @@ function setBeforeTime(){//여기서는 available이 모두 true인 allocation�
       t.push({"time":ThatDay+"T"+(openTime+j*unitTime)+":00","available":true})
           j++;
       }
-      return ({id:elem.id,time:t});//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
+      //console.log("2", elem.name)
+      return ({id:elem.name,time:t});//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
   });
+  //console.log("타임",timeArray)
   return timeArray
 }
 
-  
+     //여기 뭔가 이상한데 어떻게하는지 몰라서 일단 이렇게 해놓음
+   //선택된 시간이 바뀔때마다 data에 다시 계산된 데이터를 집어넣게 함
+   useEffect(()=>{
+
+    ReadfacilityList()
+    console.log("alloarray", alloArray)
+    allo()
+    },[selectedTime])
+
+    function allo() {
+      data.length=0
+    alloArray.map((e)=>{
+      if((e.id===selectedId)){
+        e.time.map((t)=>{
+          if(t.available==true){
+         data.push({id:t.time,available:t.available,facilityId:e.name})
+          }
+       })
+      
+      }
+    })
+    }
 
   
 //time의 available이 true인거만 화면에 표시할 data에 담음
 
 let data=[]
 alloArray.map((e)=>{
-  if((e.id===selectedId)){
+  if((e.name===selectedId)){
     e.time.map((t)=>{
       if(t.available==true){
-     data.push({id:t.time,available:t.available,facilityId:e.id})
+     data.push({id:t.time,available:t.available,facilityId:e.name})
       }
    })
   
@@ -90,22 +147,7 @@ alloArray.map((e)=>{
   //console.log("data---------------------",data)
 
 
- //여기 뭔가 이상한데 어떻게하는지 몰라서 일단 이렇게 해놓음
-   //선택된 시간이 바뀔때마다 data에 다시 계산된 데이터를 집어넣게 함
-   useEffect(()=>{
-    //console.log("============alloArray changed!========")
-    data.length=0
-    alloArray.map((e)=>{
-      if((e.id===selectedId)){
-        e.time.map((t)=>{
-          if(t.available==true){
-         data.push({id:t.time,available:t.available,facilityId:e.id})
-          }
-       })
-      
-      }
-    })
-    },[selectedTime])
+
 
   function setAfterTime(item,array){//선택된 item을 array에서 false로 바꾼다.
       array.map((e)=>{//alloArray에서 찾아서
@@ -163,8 +205,9 @@ alloArray.map((e)=>{
         <Item
           item={item}
           onPress={()=>{
-            setSelectedId(item.id)
+            setSelectedId(item.name)
             toggleModal();
+            
           }
           }
        
@@ -185,7 +228,14 @@ alloArray.map((e)=>{
         />
       );
     };
-  
+
+    
+    
+
+
+    // useEffect(()=>{
+
+    // },[facility])
 
 
 
@@ -196,9 +246,9 @@ alloArray.map((e)=>{
      
      <Text style={{fontSize:30,marginVertical:height*0.02}}>{ThatDay+"\n"}시설별로 예약 생성</Text>
       <FlatList
-      data={facilityArray}
+      data={facility}
       renderItem={renderItem}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.name}
       extraData={selectedId}
     />
 

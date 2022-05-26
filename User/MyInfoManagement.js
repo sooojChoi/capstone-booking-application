@@ -6,27 +6,21 @@ import { UserTable } from '../Table/UserTable';
 import Toast from 'react-native-easy-toast'
 import { user } from '../Category';
 import { PermissionTable } from '../Table/PermissionTable';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc,where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 const {height,width}=Dimensions.get("window");
 
 export default function MyInfoManagement(){
 
-
- 
- const userTable=new UserTable();
- const permissionTable = new PermissionTable();
-
   const currentUserId="hrn135";//현재 user의 id(임시)
+  const facId = "AdminTestId"  // 임시로 시설 지정해둠.
 
   const [currentUser,setCurrentUser]=useState('');
 
 
-  const [InputName,setInputName]=useState(currentUser.name);//입력된 이름
+  const [InputName,setInputName]=useState();//입력된 이름
   const [phone,setPhone]=useState();//입력된 번호
-  //let currentUser=''
-  //console.log(currentUser);
 
   const [InputOldPW,setOldPW]=useState();//입력된 변경전 PW
   const [InputNewPW,setNewPW]=useState();//입력된 변경 할 PW
@@ -36,6 +30,11 @@ export default function MyInfoManagement(){
   const currentUserPW="1234"//현재 User의 임시 PW
   const [pwMode, setPwMode] = useState(false);  // 비밀번호까지 변경하는지 아닌지 (true면 변경하는 것)
   
+useEffect(()=>{
+  setInputName(currentUser.name)
+  setPhone(currentUser.phone);
+},[currentUser])
+
 
   const ReadUser = () => {
     // doc(db, 컬렉션 이름, 문서 ID)
@@ -54,7 +53,9 @@ export default function MyInfoManagement(){
             else {
                 alert("No Doc Found")
             }
+
             setCurrentUser(result)
+          //  console.log(result,"result")
         })
         .catch((error) => {
             // MARK : Failure
@@ -105,7 +106,23 @@ const cancelChangePw = () =>{
 const deleteAccountBtn = () =>{
 
 }
-
+// 회원정보 바꾸기
+const modifyMyInfo = () => {
+  //id를 같이 저장해서 수정하기
+  const docRef = doc(db, "User",currentUserId)
+ 
+  const docData = {
+    phone:phone,
+    name:InputName,
+  } // 문서에 담을 필드 데이터
+  updateDoc(docRef, docData)
+      .then(() => {
+          alert("Updated Successfully!")
+      })
+      .catch((error) => {
+          alert(error.message)
+      })
+}
 
 //수정 완료버튼 눌렸을때
 //일단 이름이랑 전화번호만 바뀌게 해봄
@@ -114,12 +131,9 @@ const complete=()=>{
 //입력된 비밀번호가 맞는지 확인
   if (InputOldPW===currentUserPW){//맞으면 수정
     if(InputNewPW === checkNewPW){  // 새 비밀번호와 재입력 비밀번호가 동일하다면 수정
-        //수정된 정보로 user객체 생성
+
     
-      const modifiedUser=new user(currentUserId,InputName,phone,20220308,null,);
-      //console.log(modifiedUser)
-      userTable.modify(modifiedUser)
-      console.log("변경된 전체테이블--------------------------",userTable)
+      modifyMyInfo();
     }else{
       showToastForNewPw()
     }
@@ -130,21 +144,55 @@ const complete=()=>{
    
 }
 
-const getUserGrade = () =>{
-  const permInfo = permissionTable.getsByUserId(currentUserId);
-  const facId = "hante3"  // 임시로 시설 지정해둠.
-  console.log(permInfo)
-  permInfo.map((value)=>{
-    if(value.facilityId === facId){
-      const grade = value.grade
-      setUserGrade(grade.toString())
-    }
-  })
+/*permissionTable의 정보를 가져옴 */
+  
+ 
 
-}
+let thisUserPermission;
+function  QueryPermission(){
+  const ref = collection(db, "Permission");
+  const data = query(
+      ref,
+      where("facilityId","==",facId),//전체시설 id
+      where("userId","==",currentUserId)
+  );
+
+  getDocs(data)
+      // Handling Promises
+      .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+              // doc.data() is never undefined for query doc snapshots
+             //console.log("doc data~~~~~~~~~~~~~~~~~",doc.data())
+             thisUserPermission=doc.data()
+             setUserGrade((thisUserPermission.grade).toString());
+            // console.log("this userpermsision.grade::::",userGrade)
+          });
+         
+      })
+      .catch((error) => {
+          alert(error.message);
+      });
+};
+
+
+
+
+
+// const getUserGrade = () =>{
+//   const permInfo = permissionTable.getsByUserId(currentUserId);
+
+//   console.log(permInfo)
+//   permInfo.map((value)=>{
+//     if(value.facilityId === facId){
+//       const grade = value.grade
+//       setUserGrade(grade.toString())
+//     }
+//   })
+
+// }
 // 처음에 유저의 정보를 가져옴 (등급 정보 가져오려고 추가함)
 useEffect(()=>{
-  getUserGrade();
+  QueryPermission();
   ReadUser();//
 },[])
 

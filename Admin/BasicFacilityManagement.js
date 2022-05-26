@@ -1,12 +1,14 @@
 // 시설 기본 정보 관리(관리자) -> 수빈
-// 회원 정보 수정 -> 비밀번호 변경 !!!
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
-import React, { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert, FlatList } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import Toast from 'react-native-easy-toast';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db, storageDb } from '../Core/Config';
+import { ref, uploadBytes } from 'firebase/storage';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -29,7 +31,6 @@ export default function BasicFacilityManagement({ route, navigation }) {
   const [equalPw, setEqualPw] = useState(false) // 입력한 새 비밀번호와 재입력된 비밀번호 일치 여부
 
   // 시설 정보 가져오기(초기값)
-  // 사진, 설명에 대한 DB 관리는 어떻게 할 것인가?(Firebase 연동 시 고려하기)
   const getFacInfo = () => {
     const ref = doc(db, "Facility", adminId)
 
@@ -55,19 +56,18 @@ export default function BasicFacilityManagement({ route, navigation }) {
     getFacInfo()
   }, [])
 
-  // 비밀번호 변경/취소에 대한 함수
-  const changePw = (value) => {
-    if (value === 'ok') {
-      setPwMode(false)
-      console.log("변경해쏭")
-    }
-    else if (value === 'cancel') {
-      setPwMode(false)
-      console.log("취소했옹")
-    }
-  }
+  //토스트 메시지 출력
+  const toastRef = useRef() // toast ref 생성
 
-  // 비밀번호 변경 취소 함수
+  const showToast = useCallback(() => {
+    toastRef.current.show('현재 비밀번호가 일치하지 않습니다')
+  }, []);
+
+  const showToastForNewPw = useCallback(() => {
+    toastRef.current.show('새로운 비밀번호와 재입력된 비밀번호가 일치하지 않습니다')
+  }, []);
+
+  // 비밀번호 변경 취소
   const cancelChangePw = () => {
     setPwMode(false)
     setInputOldPw("")
@@ -75,22 +75,85 @@ export default function BasicFacilityManagement({ route, navigation }) {
     setCheckNewPw("")
   }
 
+  // 새 비밀번호와 재입력 비밀번호가 일치하는지 확인
+  const checkEqualPw = (value) => {
+    setCheckNewPw(value)
+    if (inputNewPw === value) {
+      setEqualPw(true)
+    } else {
+      setEqualPw(false)
+    }
+  }
+
   // 시설 사진 변경
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([])
+
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [640, 480],
       quality: 1,
     });
 
-    //console.log(result);
-
     if (!result.cancelled) {
-      setImage(result.uri);
+      const temp = [...images]
+      const item = {
+        id: "FacImg" + (temp.length + 1),
+        uri: result.uri
+      }
+      temp.unshift(item)
+
+      // temp.forEach((img) => {
+      //   console.log(getBlobFromUri(img.uri))
+      // })
+
+      setImages(temp)
     }
+  }
+
+  const getBlobFromUri = async (uri) => {
+    const blob = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.onload = function () {
+        resolve(xhr.response)
+      }
+      xhr.onerror = function (e) {
+        reject(new TypeError("Network request failed"))
+      }
+      xhr.responseType = "blob"
+      xhr.open("GET", uri, true)
+      xhr.send(null)
+    })
+
+    return blob
+  }
+
+  // 선택된 사진을 지우는 함수
+  const deleteImage = (uri) => {
+    Alert.alert("삭제하시겠습니까?", "", [{ text: "취소" },
+    {
+      text: "삭제", onPress: () => {
+        const temp = images.filter((value) => (value.uri) !== (uri))
+        setImages(temp)
+        console.log('temp.length: ' + temp.length)
+      }
+    }
+    ])
+  }
+
+  const renderItem = ({ item }) => {
+    return (
+      <TouchableOpacity onLongPress={() => deleteImage(item.uri)}
+        key={item.id}
+        style={{ justifyContent: 'center' }}>
+        <Image source={{ uri: item.uri }} style={{
+          borderRadius: 10,
+          width: SCREEN_WIDTH * 0.18,
+          height: SCREEN_WIDTH * 0.18, marginRight: 10,
+        }}></Image>
+      </TouchableOpacity>
+    );
   };
 
   // 시설 상세 입력하고 돌아오면 호출됨
@@ -100,18 +163,24 @@ export default function BasicFacilityManagement({ route, navigation }) {
   }, [route.params?.address])
 
 
-  // 수정 버튼 선택
-  const modifyInfo = () => {
+  // 시설 정보 수정
+  const modifyFacInfo = () => {
     const docRef = doc(db, "Facility", adminId)
 
     let fullAddress
     if (detailAddress !== null)
-      fullAddress = address + " " +detailAddress
+      fullAddress = address + " " + detailAddress
     else
       fullAddress = address
 
+    let password
+    if (pwMode === true)
+      password = inputNewPw
+    else
+      password = pw
+
     const docData = {
-      password: pw,
+      password: password,
       name: name,
       tel: tel,
       address: fullAddress,
@@ -120,12 +189,44 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
     updateDoc(docRef, docData)
       .then(() => {
-        navigation.goBack()
+        //navigation.goBack()
+        alert("hi")
       })
       .catch((error) => {
         alert(error.message)
       })
+
+    // 사진 업로드
+
+
+    images.forEach((img) => {
+      const url = adminId + '/' + img.id
+      const storageRef = ref(storageDb, url)
+
+      uploadBytes(storageRef, img.uri).then(() => {
+        // navigation.goBack()
+        console.log(img.id)
+        console.log(img.uri)
+      })
+        .catch((error) => {
+          alert(error.message)
+        })
+    })
   }
+
+  // 수정 버튼 선택
+  const submit = () => {
+    if (inputOldPw === pw) { // 현재 비밀번호 일치
+      if (inputNewPw === checkNewPw) { // 새 비밀번호와 재입력 비밀번호 일치
+        modifyFacInfo()
+      } else { // 새 비밀번호와 재입력 비밀번호 불일치
+        showToastForNewPw()
+      }
+    } else { // 현재 비밀번호 불일치
+      showToast()
+    }
+  }
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -143,13 +244,26 @@ export default function BasicFacilityManagement({ route, navigation }) {
               </TouchableOpacity>
               <Text style={styles.titleText}>현재 비밀번호</Text>
               <TextInput style={styles.textInput} placeholder='현재 비밀번호'
-                secureTextEntry={true} onChangeText={setInputOldPw}>{inputOldPw}</TextInput>
+                secureTextEntry={true} textContentType="oneTimeCode" onChangeText={setInputOldPw}>{inputOldPw}</TextInput>
               <Text style={styles.titleText}>새 비밀번호</Text>
               <TextInput style={styles.textInput} placeholder='새 비밀번호'
-                secureTextEntry={true} onChangeText={setInputNewPw}>{inputNewPw}</TextInput>
-              <Text style={styles.titleText}>새 비밀번호 확인</Text>
-              <TextInput style={styles.textInput} placeholder='새 비밀번호 확인'
-                secureTextEntry={true} onChangeText={setCheckNewPw}>{checkNewPw}</TextInput>
+                secureTextEntry={true} textContentType="oneTimeCode" onChangeText={setInputNewPw}>{inputNewPw}</TextInput>
+              {equalPw === true || checkNewPw === "" ? (
+                <View>
+                  <Text style={styles.titleText}>새 비밀번호 확인</Text>
+                  <TextInput style={styles.textInput} placeholder='새 비밀번호 확인'
+                    secureTextEntry={true} textContentType="oneTimeCode" onChangeText={(value) => checkEqualPw(value)}>{checkNewPw}</TextInput>
+                </View>
+              ) : (
+                <View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={styles.titleText}>새 비밀번호 확인</Text>
+                    <Text style={{ ...styles.text, color: 'red', marginLeft: 15 }}>* 일치하지 않습니다.</Text>
+                  </View>
+                  <TextInput style={styles.textInput} placeholder='새 비밀번호 확인'
+                    secureTextEntry={true} textContentType="oneTimeCode" onChangeText={(value) => checkEqualPw(value)}>{checkNewPw}</TextInput>
+                </View>
+              )}
             </View>
           )}
           <Text style={styles.titleText}>시설 이름</Text>
@@ -164,27 +278,62 @@ export default function BasicFacilityManagement({ route, navigation }) {
             placeholder='주소 찾기를 클릭하세요' onChangeText={setAddress}>{address}</TextInput>
           <TextInput style={styles.textInput} placeholder='상세 주소' onChangeText={setDetailAddress}>{detailAddress}</TextInput>
           <Text style={styles.titleText}>시설 사진</Text>
-          <View style={{ flexDirection: 'row' }}>
-            {image && <Image source={{ uri: image }} style={styles.photo} />}
-            <TouchableOpacity style={{ ...styles.photo, borderColor: 'lightgray', borderWidth: 1 }} onPress={pickImage}>
-              <Text style={{ fontSize: 32, alignSelf: 'center', paddingTop: 5 }}>+</Text>
-            </TouchableOpacity>
+
+
+          <View style={{ flexDirection: 'row', marginBottom: 10, height: SCREEN_WIDTH * 0.22 }}>
+            <TouchableOpacity style={styles.imageViewContainer} onPress={pickImage}>
+              <AntDesign name="pluscircleo" size={28} color="grey" style={{ color: '#787878' }} />
+            </TouchableOpacity>{
+              images.length !== 0 ? (
+                <View style={styles.imageBox}>
+                  <FlatList
+                    data={images}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id}
+                    horizontal={true}
+                  />
+                </View>
+              ) : (
+                <View style={{ ...styles.imageBox, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: 'grey' }}>등록된 사진이 없습니다.</Text>
+                </View>
+              )}
           </View>
+
+
+
           <Text style={styles.titleText}>시설 설명</Text>
           <TextInput style={styles.explain} multiline={true} placeholder='시설 설명' onChangeText={setExplain}>{explain}</TextInput>
         </View>
       </ScrollView>
-      {(name !== "" && tel !== "") ? (
-        <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#3262d4' }}
-          onPress={() => Alert.alert("확인", "기본 정보를 수정하시겠습니까?",
-            [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => modifyInfo() }])}>
-          <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#a0a0a0' }} disabled={true}>
-          <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
-        </TouchableOpacity>
-      )}
+      {
+        pwMode === false ? (
+          name && tel && address ? (
+            <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#3262d4' }}
+              onPress={() => Alert.alert("확인", "기본 정보를 수정하시겠습니까?",
+                [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => modifyFacInfo() }])}>
+              <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#a0a0a0' }} disabled={true}>
+              <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
+            </TouchableOpacity>
+          )
+        ) : (
+          name && tel && address && inputOldPw && inputNewPw && checkNewPw ? (
+            <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#3262d4' }}
+              onPress={() => Alert.alert("확인", "기본 정보를 수정하시겠습니까?",
+                [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => submit() }])}>
+              <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#a0a0a0' }} disabled={true}>
+              <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
+            </TouchableOpacity>
+          )
+        )
+      }
+      <Toast ref={toastRef} position={'center'} fadeInDuration={200} fadeOutDuration={1000} />
     </SafeAreaView >
   );
 };
@@ -211,10 +360,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  photo: {
-    width: 60,
-    height: 60,
-    marginBottom: 10,
+  imageViewContainer: {
+    borderColor: '#a0a0a0',
+    borderWidth: 1,
+    borderRadius: 10,
+    width: SCREEN_WIDTH * 0.22,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  imageBox: {
+    borderWidth: 1,
+    borderColor: 'grey',
+    flex: 1,
+    borderRadius: 10,
+    padding: 5,
+    borderStyle: 'dashed',
   },
 
   explain: {

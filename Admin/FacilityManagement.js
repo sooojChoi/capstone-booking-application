@@ -37,16 +37,16 @@ function FacilityManagementNavigation() {
           options={{ title: '세부시설 관리' }}
         />
         <Stack.Screen
-            name="SearchAddress"
-            component={SearchAddress}
-            options={{title: '도로명 주소 검색'}}
-          />
+          name="SearchAddress"
+          component={SearchAddress}
+          options={{ title: '도로명 주소 검색' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   )
 }
 
-export default  function FacilityManagement({ navigation }) {
+export default function FacilityManagement({ navigation }) {
   // Cloud Firestore
   const [facilityList, setFacilityList] = useState([])
 
@@ -96,7 +96,8 @@ export default  function FacilityManagement({ navigation }) {
       </TouchableOpacity>
       <FlatList
         data={facilityList}
-        renderItem={renderItem} />
+        renderItem={renderItem}
+        keyExtracter={(item) => item.id} />
     </SafeAreaView>
   );
 }

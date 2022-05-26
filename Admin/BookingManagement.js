@@ -18,24 +18,24 @@ const Stack = createStackNavigator();
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-function BookingManagementNavigation() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="BookingManagement">
-        <Stack.Screen
-          name="BookingManagement"
-          component={BookingManagement}
-          options={{ title: '예약 내역' }}
-        />
-        <Stack.Screen
-          name="DetailBookingManagement"
-          component={DetailBookingManagement}
-          options={{ title: '예약 세부 내역' }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
-  )
-};
+// function BookingManagementNavigation() {
+//   return (
+//     <NavigationContainer>
+//       <Stack.Navigator initialRouteName="BookingManagement">
+//         <Stack.Screen
+//           name="BookingManagement"
+//           component={BookingManagement}
+//           options={{ title: '예약 내역' }}
+//         />
+//         <Stack.Screen
+//           name="DetailBookingManagement"
+//           component={DetailBookingManagement}
+//           options={{ title: '예약 세부 내역' }}
+//         />
+//       </Stack.Navigator>
+//     </NavigationContainer>
+//   )
+// };
 
 export default function BookingManagement({ navigation }) {
   // Cloud Firestore
