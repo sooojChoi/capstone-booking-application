@@ -74,7 +74,7 @@ export default function App() {
   ////////// 관리자(Admin) UI
 
 
-  //return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
+   //return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
 
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
@@ -85,7 +85,7 @@ export default function App() {
 
   //return (<AdminLogIn></AdminLogIn>) // 관리자 로그인(수빈)
 
-  //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
+  return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
   //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
   //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
@@ -111,7 +111,7 @@ export default function App() {
 
   //return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
 
-  return (<View></View>) // 에러 방지 View
+  //return (<View></View>) // 에러 방지 View
 }
 
 const styles = StyleSheet.create({

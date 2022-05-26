@@ -7,6 +7,8 @@ import DetailUserManagement from './DetailUserManagement';
 import DetailFacilityManagement from './DetailFacilityManagement';
 import BasicFacilityManagement from './BasicFacilityManagement';
 import SearchAddress from './SearchAddress';
+import FacilityManagement from './FacilityManagement';
+import GenerateAllocation from './generateAllocation';
 
 const Stack = createStackNavigator();
 
@@ -44,6 +46,18 @@ export default function AdminWholeStack() {
           component={SearchAddress}
           options={{ title: '도로명 주소 검색' }}
         />
+        <Stack.Screen
+        name="FacilityManagement"
+        component={FacilityManagement}
+        options={{title: '시설 관리', headerBackTitle:"관리"}}
+        />
+
+        <Stack.Screen
+        name="GenerateAllocation"
+        component={GenerateAllocation}
+        options={{title:"예약일 생성", headerBackTitle:"관리"}}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   )

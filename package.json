@@ -15,6 +15,8 @@
     "@react-native-community/checkbox": "^0.5.12",
     "@react-native-community/datetimepicker": "^4.0.1",
     "@react-native-community/masked-view": "^0.1.11",
+    "@react-native-firebase/app": "^14.10.0",
+    "@react-native-firebase/messaging": "^14.10.0",
     "@react-native-firebase/storage": "^14.9.4",
     "@react-navigation/bottom-tabs": "^6.3.1",
     "@react-navigation/native": "^6.0.10",
@@ -47,7 +49,8 @@
     "react-native-simple-radio-button": "^2.7.4",
     "react-native-web": "0.17.1",
     "react-native-webview": "^11.18.2",
-    "rn-checkbox-list": "^1.1.0"
+    "rn-checkbox-list": "^1.1.0",
+    "expo-notifications": "~0.14.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

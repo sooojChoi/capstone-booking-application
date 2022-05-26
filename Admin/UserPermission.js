@@ -17,7 +17,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import DetailUserDeny from './DetailUserDeny';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { db,  } from '../Core/Config';
+//import { getToken } from 'firebase/messaging';
+//import messaging from '@react-native-firebase/messaging'
+
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -70,7 +73,6 @@ export default function UserPermission({navigation, route}) {
   ]
 
   const [fresh, setFresh] = useState(true);
-
 
   const toastRef = useRef(); // toast ref 생성
 
@@ -144,7 +146,7 @@ export default function UserPermission({navigation, route}) {
       setRadioGrade(grade.length-1)  
       // 선택된 사용자가 있다면, 사용자 등급을 수정하는 모달을 띄운다.
       const index = grade.length-1
-      const array = {id:0, name: "선택된 사용자들", gradeIndex: index}
+      const array = { id:0, name: "선택된 사용자들", gradeIndex: index}
       setGradeInfo(array);
   
       toggleModalUsers();
@@ -635,6 +637,25 @@ export default function UserPermission({navigation, route}) {
   useEffect(()=>{
     //getAllUsers();
     ReadUserList();
+
+  },[])
+
+  useEffect(()=>{
+  //   getToken(messaging, { vapidKey: 'BK0I6AoRkVUYjpWAfIayUsL1AiFOYCLZVK2GhMvpiYujrJYqIWkpCottwfhBI-Q_dycj17HwBS6Xa_Ar4BcQNDg' }).then((currentToken) => {
+  //   if (currentToken) {
+  //     // Send the token to your server and update the UI if necessary
+  //     Alert(currentToken)
+  //   } else {
+  //     // Show permission request UI
+  //     console.log('No registration token available. Request permission to generate one.');
+  //     // ...
+  //     Alert('No registration token available. Request permission to generate one.')
+  //   }
+  // }).catch((err) => {
+  //   console.log('An error occurred while retrieving token. ', err);
+  //   // ...
+  // });
+  
   },[])
 
    // 거절 사유를 입력하는 화면으로 갔다가 돌아오면 불린다.

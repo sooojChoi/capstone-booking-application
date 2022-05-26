@@ -9,12 +9,12 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import BookingManagementNavigation from './BookingManagement';
 import BookingManagement from './BookingManagement';
 import AdminBooking from './AdminBooking';
 import UserManagement from './UserManagement';
 import UserPermission from './UserPermission';
 import FacilityManagement from './FacilityManagement';
+import AdminMyPage from './AdminMyPage';
 
 
 //const Stack = createStackNavigator();
@@ -52,12 +52,12 @@ export default function AdminHomeNavigation() {
             ) : (<FontAwesome5 name="user-plus" size={22} color="grey" />),
             headerShown:true, headerTitle: "승인 요청 목록"}}/>
 
-            <Tab.Screen name="FacilityManagement" component={FacilityManagement} 
-            options={{ tabBarLabel: "시설 관리",
+            <Tab.Screen name="AdminMyPage" component={AdminMyPage} 
+            options={{ tabBarLabel: "관리",
             tabBarIcon: ({focused}) => focused ? (
                 <AntDesign name="setting" size={22} color="#3262d4" />
             ) : (<AntDesign name="setting" size={22} color="grey" />),
-            headerShown:true, headerTitle: "시설 관리"}}/>
+            headerShown:true, headerTitle: "관리"}}/>
 
 
         </Tab.Navigator>
