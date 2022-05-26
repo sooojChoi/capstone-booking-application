@@ -35,11 +35,13 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   ////////// 관리자(Admin) UI
 
+
   //return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
+
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
-  return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
+//  return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
 
   //return (<BookingManagementNavigation></BookingManagementNavigation>) // 예약 관리(수빈)
   //return (<FacilityManagementNavigation></FacilityManagementNavigation>) // 시설 관리(수빈)
@@ -48,7 +50,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   //return (<AdminLogIn></AdminLogIn>) // 관리자 로그인(수빈)
 
-  return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
+  //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
   //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
   //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
   //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
