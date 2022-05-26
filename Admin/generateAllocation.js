@@ -64,17 +64,22 @@ const ReadfacilityList = () => {
               result.push(doc.data())
             
           });
-          //console.log("--------------Facility 목록 가져오기----------------")
-          //console.log(result)
-          //setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
-          setFacility(result)
-          setAlloArray(setBeforeTime(result))
+          setFacility(result) //반영안됨
+          //console.log("facility",facility) //반영안됨
+          //setAlloArray(setBeforeTime(result))
+          //setAlloArray(()=> {return setBeforeTime(result)})
+          //console.log("setbefore",setBeforeTime(result)) //setBeforeTime(result) == facility
+          setallo(setBeforeTime(result)) //반영안됨
 
       })
       .catch((error) => {
           // MARK : Failure
           alert(error.message)
       })
+}
+
+const setallo = (result) => {
+  setAlloArray(result)
 }
 
   /*facilityTable의 정보를 받아옴*/ 
@@ -111,11 +116,19 @@ function setBeforeTime(Array){//여기서는 available이 모두 true인 allocat
    useEffect(()=>{
 
     ReadfacilityList()
-    console.log("alloarray", alloArray)
-    allo()
+    //console.log("alloarray", alloArray)
+    //allo(alloArray)
     },[selectedTime])
 
-    function allo() {
+    //alloArray가 변할때마다 data에 넣어줌
+    useEffect(()=>{
+      console.log("alloarray", alloArray)
+      allo(alloArray)
+      console.log("data", data)
+      },[alloArray])
+
+      //함수정의
+    function allo(alloArray) {
       data.length=0
     alloArray.map((e)=>{
       if((e.id===selectedId)){
@@ -129,10 +142,33 @@ function setBeforeTime(Array){//여기서는 available이 모두 true인 allocat
     })
     }
 
+    
+
+    useEffect(()=>{
+      //let data=[]
+      console.log(selectedId)
+      //console.log("어로어레이는 잘나오나",alloArray) //잘나옴  ----이쪽에서 하다가 말았음
+      console.log("데이터",data)
+      alloArray.map((e)=>{
+        if((e.name===selectedId)){
+          e.time.map((t)=>{
+            if(t.available==true){
+           data.push({id:t.time,available:t.available,facilityId:e.name})
+            }
+         })
+        }
+        console.log("데이터",data)
+        setData(data)
+      })
+      },[selectedId])
+
+      useEffect(()=>{
+        console.log("데이터",data)
+        },[data])
   
 //time의 available이 true인거만 화면에 표시할 data에 담음
-
-let data=[]
+const [data, setData] = useState([])
+//let data=[]
 alloArray.map((e)=>{
   if((e.name===selectedId)){
     e.time.map((t)=>{
