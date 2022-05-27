@@ -18,9 +18,21 @@ import { createStackNavigator } from '@react-navigation/stack';
 import DetailUserDeny from './DetailUserDeny';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { db,  } from '../Core/Config';
+import * as Notifications from 'expo-notifications'
+import * as Permissions from 'expo-permissions'
+import * as Device from 'expo-device'
+import { async } from '@firebase/util';
 //import { getToken } from 'firebase/messaging';
 //import messaging from '@react-native-firebase/messaging'
 
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -72,6 +84,12 @@ export default function UserPermission({navigation, route}) {
     {label: grade[2], value: 2},
   ]
 
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
+
   const [fresh, setFresh] = useState(true);
 
   const toastRef = useRef(); // toast ref 생성
@@ -92,6 +110,31 @@ export default function UserPermission({navigation, route}) {
   const toggleModalUsers = () => {
     setModalVisibleForUsers(!modalVisibleForUsers);
   }
+
+
+  useEffect(() => {
+    //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
+    // 알림이 도착했을 때
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+      console.log(notification)
+    });
+
+    // 알림에 반응했을 때
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    Notifications.removeNotificationSubscription(notificationListener.current);
+    Notifications.removeNotificationSubscription(responseListener.current);
+
+    // return () => {
+    //   console.log("??")
+    //   Notifications.removeNotificationSubscription(notificationListener.current);
+    //   Notifications.removeNotificationSubscription(responseListener.current);
+    // };
+  }, []);
 
 
   // 등급을 선택하고 '확인'버튼을 눌렀을 때 호출되는 함수 (한명의 경우)
@@ -641,22 +684,49 @@ export default function UserPermission({navigation, route}) {
   },[])
 
   useEffect(()=>{
-  //   getToken(messaging, { vapidKey: 'BK0I6AoRkVUYjpWAfIayUsL1AiFOYCLZVK2GhMvpiYujrJYqIWkpCottwfhBI-Q_dycj17HwBS6Xa_Ar4BcQNDg' }).then((currentToken) => {
-  //   if (currentToken) {
-  //     // Send the token to your server and update the UI if necessary
-  //     Alert(currentToken)
-  //   } else {
-  //     // Show permission request UI
-  //     console.log('No registration token available. Request permission to generate one.');
-  //     // ...
-  //     Alert('No registration token available. Request permission to generate one.')
-  //   }
-  // }).catch((err) => {
-  //   console.log('An error occurred while retrieving token. ', err);
-  //   // ...
-  // });
-  
+  const docRef = doc(db, "User", "pushnotificationuser")
+
+  getDoc(docRef)
+      // Handling Promises
+      .then((snapshot) => {
+          // MARK : Success
+          if (snapshot.exists) {
+              const result = snapshot.data().token
+              setExpoPushToken(result)
+              console.log(result)
+          }
+          else {
+              alert("No Doc Found")
+          }
+      })
+      .catch((error) => {
+          // MARK : Failure
+          alert(error.message)
+      })
+
   },[])
+
+
+  const sendNotification = async(token) =>{
+    const message = {
+      to: token,
+      sound: 'default',
+      title: '시설에 가입이 완료되었습니다. ',
+      body: '이제부터 시설 예약이 가능합니다.',
+      data: {data: 'goes here'},
+    };
+
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message)
+    })
+
+  }
 
    // 거절 사유를 입력하는 화면으로 갔다가 돌아오면 불린다.
    useEffect(()=>{
@@ -818,6 +888,12 @@ export default function UserPermission({navigation, route}) {
         </View>
       )
       }
+      <View style={{alignSelf:'center', marginBottom:50,}}>
+        <TouchableOpacity style={{backgroundColor:'grey', padding:20}}
+        onPress={() => sendNotification(expoPushToken)}>
+          <Text style={{color:'white', fontSize:16}}>푸시 알림 보내기</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -880,3 +956,46 @@ AndroidSafeArea: {
 }
 });
 
+
+async function schedulePushNotification() {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "You've got mail! ",
+      body: 'Here is the notification body',
+      data: { data: 'goes here' },
+    },
+    trigger: { seconds: 2 },
+  });
+}
+
+// async function registerForPushNotificationsAsync() {
+//   let token;
+//   if (Device.isDevice) {
+//     const { status: existingStatus } = await Notifications.getPermissionsAsync();
+//     let finalStatus = existingStatus;
+//     if (existingStatus !== 'granted') {
+//       const { status } = await Notifications.requestPermissionsAsync();
+//       finalStatus = status;
+//     }
+//     if (finalStatus !== 'granted') {
+//       alert('Failed to get push token for push notification!');
+//       return;
+//     }
+//    // token = (await Notifications.getExpoPushTokenAsync()).data;
+//     token = (await Notifications.getDevicePushTokenAsync()).data;
+//     console.log(token);
+//   } else {
+//     alert('Must use physical device for Push Notifications');
+//   }
+
+//   if (Platform.OS === 'android') {
+//     Notifications.setNotificationChannelAsync('default', {
+//       name: 'default',
+//       importance: Notifications.AndroidImportance.MAX,
+//       vibrationPattern: [0, 250, 250, 250],
+//       lightColor: '#FF231F7C',
+//     });
+//   }
+
+//   return token;
+// }
