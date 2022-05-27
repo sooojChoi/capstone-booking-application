@@ -2,41 +2,11 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import LogIn from './LogIn';
-import AdminLogIn from '../Admin/AdminLogIn';
-
-const Stack = createStackNavigator();
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function ChooseModeNavigation() {
-    return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName="ChooseMode">
-                <Stack.Screen
-                    name="ChooseMode"
-                    component={ChooseMode}
-                    options={{ title: '모드 선택', headerShown: false }}
-                />
-                <Stack.Screen
-                    name="LogIn"
-                    component={LogIn}
-                    options={{ title: '로그인', headerShown: false }}
-                />
-                <Stack.Screen
-                    name="AdminLogIn"
-                    component={AdminLogIn}
-                    options={{ title: '로그인', headerShown: false }}
-                />
-            </Stack.Navigator>
-        </NavigationContainer>
-    )
-}
-
-function ChooseMode({ navigation }) {
+export default function ChooseMode({ navigation }) {
     return (
         <View style={styles.container}>
             <SafeAreaView>

@@ -42,52 +42,59 @@ export default function GenerateAllocation(){
 
   const [selectedId, setSelectedId] = useState(null);
   const [selectedTime,setSelectedTime]=useState(null);
-  const [alloArray,setAlloArray]=useState(setBeforeTime);
   const [facility, setFacility]=useState([]);
+  const [alloArray,setAlloArray]=useState([]);
+
+
+
   //const [data,setData]=useState([]);
 
-//   /*facilityTable의 정보를 받아옴*/ 
-//   let i=0;
-//   const facilityArray=facilityTable.facilitys.map((elem)=>{return {id:elem.id,title:elem.id}});
-//   //const facilityArray=facility.map((elem)=>{return {id:elem.name,title:elem.name}});
-// //console.log(facilityArray)
-//   //console.log(facilityTable.facilitys)
-//   let openTime,closeTime,unitTime;
+// DB facility 가져오기
+const ReadfacilityList = () => {
+  // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
+  const ref = collection(db, "Facility", "AdminTestId", "Detail") //관리자 ID 추가해야함
+  const data = query(ref) 
+  let result = [] // 가져온 facility 목록을 저장할 변수
 
-// function setBeforeTime(){//여기서는 available이 모두 true인 allocation생성만 하고
-//   let timeArray=[];
-//   timeArray=facilityTable.facilitys.map((elem)=>{
-//      openTime=elem.openTime
-//      closeTime=elem.closeTime
-//      unitTime=elem.unitTime
-//       let j=0;
-//       const t=[];
-      
-//       let k=0;
-//       while(openTime+j*unitTime<closeTime){
-//        openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
-//       t.push({"time":ThatDay+"T"+(openTime+j*unitTime)+":00","available":true})
-//           j++;
-//       }
-//       return ({id:elem.id,time:t});//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
-//   });
-//   return timeArray
-// }
+  getDocs(data)
+      // Handling Promises
+      .then((snapshot) => {
+          snapshot.forEach((doc) => {
+              //console.log(doc.id, " => ", doc.data())
+              result.push(doc.data())
+            
+          });
+          setFacility(result) //반영안됨
+          //console.log("facility",facility) //반영안됨
+          //setAlloArray(setBeforeTime(result))
+          //setAlloArray(()=> {return setBeforeTime(result)})
+          //console.log("setbefore",setBeforeTime(result)) //setBeforeTime(result) == facility
+          setallo(setBeforeTime(result)) //반영안됨
+
+      })
+      .catch((error) => {
+          // MARK : Failure
+          alert(error.message)
+      })
+}
+
+const setallo = (result) => {
+  setAlloArray(result)
+}
 
   /*facilityTable의 정보를 받아옴*/ 
   let i=0;
-  const facilityArray=facility.map((elem)=>{return {id:elem.name,title:elem.name}});
-  //const facilityArray=facility.map((elem)=>{return {id:elem.name,title:elem.name}});
-//console.log(facilityArray)
-  //console.log(facilityTable.facilitys)
   let openTime,closeTime,unitTime;
 
-function setBeforeTime(){//여기서는 available이 모두 true인 allocation생성만 하고
+function setBeforeTime(Array){//여기서는 available이 모두 true인 allocation생성만 하고
   let timeArray=[];
-  timeArray=facilityTable.facilitys.map((elem)=>{
-     openTime=elem.openTime
-     closeTime=elem.closeTime
-     unitTime=elem.unitTime
+  //ReadfacilityList()
+  //console.log("facility",Array)
+
+  timeArray=Array.map((elem)=>{
+     openTime=elem.openTime/60
+     closeTime=elem.closeTime/60
+     unitTime=elem.unitTime/60
       let j=0;
       const t=[];
       
@@ -97,17 +104,71 @@ function setBeforeTime(){//여기서는 available이 모두 true인 allocation�
       t.push({"time":ThatDay+"T"+(openTime+j*unitTime)+":00","available":true})
           j++;
       }
+      //console.log("2", elem.name)
       return ({id:elem.name,time:t});//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
   });
+  //console.log("타임",timeArray)
   return timeArray
 }
 
-  
+     //여기 뭔가 이상한데 어떻게하는지 몰라서 일단 이렇게 해놓음
+   //선택된 시간이 바뀔때마다 data에 다시 계산된 데이터를 집어넣게 함
+   useEffect(()=>{
 
+    ReadfacilityList()
+    //console.log("alloarray", alloArray)
+    //allo(alloArray)
+    },[selectedTime])
+
+    //alloArray가 변할때마다 data에 넣어줌
+    useEffect(()=>{
+      console.log("alloarray", alloArray)
+      allo(alloArray)
+      console.log("data", data)
+      },[alloArray])
+
+      //함수정의
+    function allo(alloArray) {
+      data.length=0
+    alloArray.map((e)=>{
+      if((e.id===selectedId)){
+        e.time.map((t)=>{
+          if(t.available==true){
+         data.push({id:t.time,available:t.available,facilityId:e.name})
+          }
+       })
+      
+      }
+    })
+    }
+
+    
+
+    useEffect(()=>{
+      //let data=[]
+      console.log(selectedId)
+      //console.log("어로어레이는 잘나오나",alloArray) //잘나옴  ----이쪽에서 하다가 말았음
+      console.log("데이터",data)
+      alloArray.map((e)=>{
+        if((e.name===selectedId)){
+          e.time.map((t)=>{
+            if(t.available==true){
+           data.push({id:t.time,available:t.available,facilityId:e.name})
+            }
+         })
+        }
+        console.log("데이터",data)
+        setData(data)
+      })
+      },[selectedId])
+
+      useEffect(()=>{
+        console.log("데이터",data)
+        },[data])
   
 //time의 available이 true인거만 화면에 표시할 data에 담음
-
-let data=[]
+const [data, setData] = useState([])
+//let data=[]
 alloArray.map((e)=>{
   if((e.name===selectedId)){
     e.time.map((t)=>{
@@ -205,50 +266,12 @@ alloArray.map((e)=>{
     };
 
     
-    // DB facility 가져오기
-    const ReadfacilityList = () => {
-      // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
-      const ref = collection(db, "Facility", "AdminTestId", "Detail") //관리자 ID 추가해야함
-      const data = query(ref) 
-      let result = [] // 가져온 facility 목록을 저장할 변수
+    
 
-      getDocs(data)
-          // Handling Promises
-          .then((snapshot) => {
-              snapshot.forEach((doc) => {
-                  //console.log(doc.id, " => ", doc.data())
-                  result.push(doc.data())
-                
-              });
-              //console.log("--------------Facility 목록 가져오기----------------")
-              //console.log(result)
-              //setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
-              setFacility(result)
-              
-          })
-          .catch((error) => {
-              // MARK : Failure
-              alert(error.message)
-          })
-  }
 
-   //여기 뭔가 이상한데 어떻게하는지 몰라서 일단 이렇게 해놓음
-   //선택된 시간이 바뀔때마다 data에 다시 계산된 데이터를 집어넣게 함
-   useEffect(()=>{
-    //console.log("============alloArray changed!========")
-    ReadfacilityList()
-    data.length=0
-    alloArray.map((e)=>{
-      if((e.id===selectedId)){
-        e.time.map((t)=>{
-          if(t.available==true){
-         data.push({id:t.time,available:t.available,facilityId:e.id})
-          }
-       })
-      
-      }
-    })
-    },[selectedTime])
+    // useEffect(()=>{
+
+    // },[facility])
 
 
 
