@@ -6,47 +6,11 @@ import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOp
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../Core/Config';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import BasicFacilityManagement from './BasicFacilityManagement';
-import DetailFacilityManagement from './DetailFacilityManagement';
-import SearchAddress from './SearchAddress';
-
-const Stack = createStackNavigator();
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-function FacilityManagementNavigation() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="FacilityManagement">
-        <Stack.Screen
-          name="FacilityManagement"
-          component={FacilityManagement}
-          options={{ title: '시설 관리' }}
-        />
-        <Stack.Screen
-          name="BasicFacilityManagement"
-          component={BasicFacilityManagement}
-          options={{ title: '시설 정보 관리' }}
-        />
-        <Stack.Screen
-          name="DetailFacilityManagement"
-          component={DetailFacilityManagement}
-          options={{ title: '세부시설 관리' }}
-        />
-        <Stack.Screen
-            name="SearchAddress"
-            component={SearchAddress}
-            options={{title: '도로명 주소 검색'}}
-          />
-      </Stack.Navigator>
-    </NavigationContainer>
-  )
-}
-
-export default  function FacilityManagement({ navigation }) {
+export default function FacilityManagement({ navigation }) {
   // Cloud Firestore
   const [facilityList, setFacilityList] = useState([])
 
@@ -96,7 +60,8 @@ export default  function FacilityManagement({ navigation }) {
       </TouchableOpacity>
       <FlatList
         data={facilityList}
-        renderItem={renderItem} />
+        renderItem={renderItem}
+        keyExtracter={(item) => item.id} />
     </SafeAreaView>
   );
 }

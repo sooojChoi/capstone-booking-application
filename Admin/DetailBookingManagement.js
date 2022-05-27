@@ -19,6 +19,7 @@ export default function DetailBookingManagement({ route, navigation }) {
 
   // Cloud Firestore
   const [bookingId, setBookingId] = useState()
+  const [allocationId, setAllocationId] = useState()
   const [cost, setCost] = useState()
   const [phone, setPhone] = useState()
   const [usedPlayer, setUsedPlayer] = useState()
@@ -57,6 +58,20 @@ export default function DetailBookingManagement({ route, navigation }) {
       .catch((error) => {
         alert(error.message)
       })
+
+    const allocationRef = collection(db, "Allocation")
+    const allocationData = query(allocationRef, where("adminId", "==", adminId),
+      where("facilityId", "==", facilityId), where("usingTime", "==", usingTime))
+
+    getDocs(allocationData)
+      .then((snapshot) => {
+        snapshot.forEach((doc) => {
+          setAllocationId(doc.id)
+        });
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
   }
 
   useEffect(() => {
@@ -65,15 +80,28 @@ export default function DetailBookingManagement({ route, navigation }) {
 
   // 예약 내역을 취소 내역으로 바꿈
   const cancelBooking = () => {
-    const ref = doc(db, "Booking", bookingId)
+    const bookingRef = doc(db, "Booking", bookingId)
 
-    const data = {
+    const bookingData = {
       cancel: true
     }
 
-    updateDoc(ref, data)
+    const allocationRef = doc(db, "Allocation", allocationId)
+
+    const allocationData = {
+      available: false
+    }
+
+
+    updateDoc(bookingRef, bookingData)
       .then(() => {
-        navigation.goBack()
+        updateDoc(allocationRef, allocationData)
+          .then(() => {
+            navigation.navigate('TabNavi')
+          })
+          .catch((error) => {
+            alert(error.message)
+          })
       })
       .catch((error) => {
         alert(error.message)

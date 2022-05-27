@@ -10,18 +10,18 @@ import { auth } from '../Core/Config';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export default function AdminLogIn() {
+export default function AdminLogIn({ navigation }) {
   const [id, setId] = useState("")
   const [pw, setPw] = useState("")
 
-  // 로그인 버튼 클릭 시 호출되는 함수 -> 메인 화면으로 이동???
+  // 로그인 버튼 클릭 시 호출되는 함수 -> 메인 화면으로 이동
   const loginAdmin = () => {
     const email = id + "@admin.com"
 
     signInWithEmailAndPassword(auth, email, pw)
       .then(userCredential => {
         const user = userCredential.user
-        console.log('Logged in with : ', user.email)
+        navigation.navigate('TabNavi')
       })
       .catch(error => {
         alert(error.message)
@@ -60,7 +60,7 @@ export default function AdminLogIn() {
           )
         }
         <View style={styles.signUpBtn}>
-          <TouchableOpacity >
+          <TouchableOpacity onPress={() => navigation.navigate('AdminSignUp')}>
             <Text style={styles.text}>회원가입</Text>
           </TouchableOpacity>
         </View>

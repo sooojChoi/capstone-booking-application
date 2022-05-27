@@ -9,6 +9,10 @@ User 파일에 사용자와 관련된 화면들이 있고, Admin 파일에 관�
 
     npm install firebase@9.6.10
 
+- Firebase Storage
+
+    npm add @react-native-firebase/storage
+
 - Date&Time Picker
 
     npm i react-native-modal-datetime-picker @react-native-community/datetimepicker
