@@ -323,10 +323,10 @@ const SItem = ({ item, onPress}) => (
 
   useEffect(()=>{
     //user가 바뀔때마다 grade를 저장해줘야한다.
-    console.log(userSelected,"userselected 반영되는지 확인r")
+    //console.log(userSelected,"userselected 반영되는지 확인r")
     //여기서  thisUserPermission이 null이다.
     
-   console.log(thisUserPermission, "Userselected가 변경될 시점의 thisuserpermission?")
+   //console.log(thisUserPermission, "Userselected가 변경될 때 thisuserpermission?")
    if(thisUserPermission){
     setGrade(thisUserPermission.grade);
    }
@@ -349,7 +349,7 @@ const SItem = ({ item, onPress}) => (
   const [cost3,setCost3]=useState();
 
   let selectedDetailedFacility=null;
-  let limit,gradeCost;
+  let gradeCost;
   let openTime,unitTime,closeTime,booking1,booking2,booking3=null;
  const  ReadFacility = (v) => {
   // doc(db, 컬렉션 이름, 문서 ID)
@@ -414,14 +414,14 @@ const SItem = ({ item, onPress}) => (
 
 function setCostAndLimit(){
   // //이 사용자의 등급은 전체시설에 적용되는 등급이다. 세부시설마다 다르지 않다.
-  //등급제도를 이용하지 않는 경우 등급에 상관없이 가격과 limit은 동일하다.
-  console.log("setCost and Limit",cost1,cost2,cost3)
-  limit=booking3;
+
+  console.log("setCost",cost1,cost2,cost3)
+ 
   gradeCost=cost3;
   console.log("gade in setinfo",grade)//날짜선택시 이게 undefinded가된다.
-  if(grade===0){gradeCost=cost1;  limit=booking1;}
-  else if (grade===1){gradeCost=cost2;  limit=booking2;}
-  else if (grade===2){gradeCost=cost3;  limit=booking3;}
+  if(grade===0){gradeCost=cost1; }
+  else if (grade===1){gradeCost=cost2; }
+  else if (grade===2){gradeCost=cost3; }
 console.log(gradeCost)
   
 }
@@ -431,13 +431,6 @@ let totalCost=0;
 
 //달력에서 예약 가능기간 설정
 const minDate = new Date(); // Today
-
-//최대 limit일 뒤에 예약 가능
-var now = new Date();
-var bookinglimit = new Date(now.setDate(now.getDate() +limit));
-const maxDate = new Date(bookinglimit);
-
-
 
 
 
@@ -795,11 +788,11 @@ const toggleSearchModal=()=>{
                 onDateChange={onDateChange}
                 weekdays={['일', '월', '화', '수', '목', '금', '토']}
                 minDate={minDate}
-                maxDate={maxDate}
                 previousTitle="<"
                 nextTitle=">"
-                disabledDates={[minDate,new Date(2022, 3, 15)]}
+                disabledDates={[minDate,new Date(2022, 5, 1)]}
               />
+              {/*disableDates는 쉬는날 설정하는거~*/}
             {/* <Text>SELECTED DATE:{ startDate }</Text> */}
     
     
