@@ -77,6 +77,7 @@ export default function App() {
    //return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
 
 
+
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
   return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)

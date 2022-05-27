@@ -8,7 +8,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
 import Modal from "react-native-modal";
 import { Feather } from '@expo/vector-icons';
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where,onSnapshot } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
 
@@ -44,7 +44,7 @@ const QueryPermissionToSetUser = () => {
       ref,
       where("facilityId","==",adminId)
   );
-
+ 
   getDocs(data)
       // Handling Promises
       .then((querySnapshot) => {
@@ -222,30 +222,32 @@ const [items, setItems] = useState(facilityArray);
           where("facilityId","==",value)
       );
     
-      getDocs(data)
-          // Handling Promises
-          .then((querySnapshot) => {
-              querySnapshot.forEach((doc) => {
-                 dc.push(doc.data());
-                
-              });
-              dc.map((e)=>{
-                if(Number.isInteger(e.time/60)){//3시인 경우
-                  time=(e.time/60)+":00"
-                }else{//3시 45분, 3시 30분 등인경우
-                  time=((e.time/60)-parseInt(e.time/60))*60
-                }
-                tempDclist.push({rate:1-(e.rate*0.01),time:time})
-              
-              })
-              console.log(dc)
-              setDclist(tempDclist)
-              console.log(dcList)
+      onSnapshot(data, (querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          dc.push(doc.data());
   
-          })
-          .catch((error) => {
-              alert(error.message);
-          });
+        });
+  
+        dc.map((e) => {
+          if (Number.isInteger(e.time / 60)) {//3시인 경우
+            time = (e.time / 60) + ":00"
+          } else {//3시 45분, 3시 30분 등인경우
+            time = ((e.time / 60) - parseInt(e.time / 60)) * 60
+          }
+          tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
+  
+        })
+        console.log(dc)
+        setDclist(tempDclist)
+        console.log(dcList)
+  
+  
+      }
+  
+  
+      ), (error) => {
+        alert(error.message);
+      }
     };
   
 //시간선택
@@ -299,32 +301,23 @@ const SItem = ({ item, onPress}) => (
         where("facilityId","==",facility),//전체시설 id
         where("userId","==",currentUserId)
     );
+  onSnapshot(data,(querySnapshot)=>{ querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
   
-    getDocs(data)
-        // Handling Promises
-        .then((querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-                // doc.data() is never undefined for query doc snapshots
-              
-               
-               result=doc.data()
-               console.log("doc data~~~~~~~~~~~~~~~~~",result)
-              
-               setThisUserPermission(result);
-            });
+   
+   result=doc.data()
+   console.log("doc data~~~~~~~~~~~~~~~~~",result)
+  
+   setThisUserPermission(result);
+});
+   // console.log(thisUserPermission.grade,"thisuserpermission grade")
+   setCostAndLimit();
 
-           // console.log(thisUserPermission.grade,"thisuserpermission grade")
-              setCostAndLimit();
-
-          //현재 함수 안에서 thisuserpermission이 set된 후 userSelected가 set되어 useEffect에서 userSelected가 바뀔때
-          //thisuserpermisssion이 null이 아니어야 한다.
-          setUserSelected(currentUserId);
-     
-
-        })
-        .catch((error) => {
-            alert(error.message);
-        });
+   //현재 함수 안에서 thisuserpermission이 set된 후 userSelected가 set되어 useEffect에서 userSelected가 바뀔때
+   //thisuserpermisssion이 null이 아니어야 한다.
+   setUserSelected(currentUserId);
+})
+   
   };
 
 
@@ -349,6 +342,7 @@ const SItem = ({ item, onPress}) => (
  //dropdownpicker로 선택된 시설 정보 가져오는 부분
   // 세부시설의 1개 정보 가져오기
   const [titleName,setTitleName]=useState();
+  const [minPlayers,setMinPlayer]=useState();
   const [maxPlayers,setMaxPlayer]=useState();
   const [cost1,setCost1]=useState();
   const [cost2,setCost2]=useState();
@@ -370,9 +364,10 @@ const SItem = ({ item, onPress}) => (
               //console.log(snapshot.data())
               result = snapshot.data()
               selectedDetailedFacility=result;
-              setInfo().then(function(){
-                setCostAndLimit()
-              })
+              setInfo();
+              // setInfo().then(function(){
+              //  // setCostAndLimit()
+              // })
            
           }
           else {
@@ -386,19 +381,12 @@ const SItem = ({ item, onPress}) => (
 }
 
 
- useEffect(()=>{  
-   if(value){
-     console.log("다시 readfacility 한다. 가격을 set해야한다.")
-    ReadFacility(value)
-    setSelectedId([]);
-   }
-  },[value]);
  function setInfo(){
-   return new Promise(function(){
+   //return new Promise(function(){
 
     if (selectedDetailedFacility){
       console.log("-------------------세부시설 정보",selectedDetailedFacility);
-      //실제로 cost 123 제대로 적용되는지 확인, maxplayer도...
+
     openTime=selectedDetailedFacility.openTime
     unitTime=selectedDetailedFacility.unitTime
     setCost1(selectedDetailedFacility.cost1)
@@ -406,6 +394,7 @@ const SItem = ({ item, onPress}) => (
     setCost3(selectedDetailedFacility.cost3)
     closeTime=selectedDetailedFacility.closeTime
     setMaxPlayer(selectedDetailedFacility.maxPlayer)
+    setMinPlayer(selectedDetailedFacility.minPlayer)
     booking1=selectedDetailedFacility.booking1
     booking2=selectedDetailedFacility.booking2
     booking3=selectedDetailedFacility.booking3
@@ -414,7 +403,7 @@ const SItem = ({ item, onPress}) => (
     }
     
     
-   });
+   //});
  
   
  
@@ -433,7 +422,7 @@ function setCostAndLimit(){
   if(grade===0){gradeCost=cost1;  limit=booking1;}
   else if (grade===1){gradeCost=cost2;  limit=booking2;}
   else if (grade===2){gradeCost=cost3;  limit=booking3;}
-
+console.log(gradeCost)
   
 }
 
@@ -458,6 +447,7 @@ const Item = ({ item, onPress, backgroundColor, textColor }) => (
      <View><Text style>{item.time.split('T')[1]}</Text></View>
      <View style={{width: width*0.9, height: height*0.06,flexDirection:'row'}}>
      <Text style={[styles.title, textColor,{fontSize:16}]}>{item.cost}</Text>
+     <Text style={{...styles.title,fontSize:16, marginLeft:20}}>최소 인원:{minPlayers}</Text>
     <Text style={{...styles.title,fontSize:16, marginLeft:20}}>최대 인원:{maxPlayers}</Text>
     </View>
   </TouchableOpacity>
@@ -495,51 +485,71 @@ const renderItem = ({ item }) => {
 
 //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
 const [data,setData]=useState();
-let todayAvail=[]
+
 let d=new Date(selectedStartDate)
 
 
  /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
 
- let selectedAllo=[];
  function  QueryAllocation(){
+
+ let selectedAllo=[];
   const ref = collection(db, "Allocation");
   const data = query(
       ref,
       where("facilityId","==",value)
   );
 
-  getDocs(data)
-      // Handling Promises
-      .then((querySnapshot) => {
-         // alert("query Successfully!");
-        //  console.log("query-----------------------");
-          querySnapshot.forEach((doc) => {
-              // doc.data() is never undefined for query doc snapshots
-              selectedAllo.push(doc.data());
-             
-          });
-         
-          makeAllocationTime(selectedAllo);
-       
-        //  setData(dataPush())
-      })
-      .catch((error) => {
-          alert(error.message);
-      });
+  onSnapshot(data, (querySnapshot) => {
+    // alert("query Successfully!");
+    //  console.log("query-----------------------");
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+      selectedAllo.push(doc.data());
+
+    });
+
+    makeAllocationTime(selectedAllo);
+    selectedAllo.length = 0;//중간에 db에서 데이터가 변경되면, 변경된 데이터가 이 배열에 쌓이는게 아니라 교체되도록
+    //  setData(dataPush())
+  }, (error) => { alert(error.message); });
 };
-//날짜와 시설이 바뀔때마다 QueryAllo,QueryDiscountRate
+
+
+useEffect(()=>{  
+  if(value){
+    console.log("다시 readfacility 한다. 가격을 set해야한다.")
+   ReadFacility(value)//이게 set된다음에
+   setSelectedId([]);
+  }
+ },[value]);//세부시설이 바뀌면 정보를 다시 읽어오고 set한다.
+
+
+//날짜와 시설이 바뀔때마다 allocation을 바꾸고 할인된 가격을 바꾼다.QueryAllo,QueryDiscountRate
 useEffect(()=>{
   QueryAllocation();
   QueryDiscountRate();
-},[selectedStartDate,value])
+  setCostAndLimit();//이게 불려야 한다. 날짜가 선택된채로 시설이 바뀌면 set이 setcostandlimit이 먼저불림.
+  console.log("------------------------------queryallo,discount,setcostandilmit")
 
-useEffect(()=>{
-  console.log("등급 달라짐")
-  setCostAndLimit();
-},[selectedStartDate]);
+},[value,selectedStartDate])
+
+
+
+// //날짜와 시설이 바뀔때마다 allocation을 바꾸고 할인된 가격을 바꾼다.QueryAllo,QueryDiscountRate
+// useEffect(()=>{
+ 
+//   QueryAllocation();
+//   QueryDiscountRate();
+//   setCostAndLimit();//이게 불려야 한다.
+//   console.log("------------------------------queryallo,discount,setcostandilmit")
+//   //가격이 set이 먼저 된후에 setCostAndlimit이 불려야 한다.
+// },[selectedStartDate,value])
+
+
 //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
 function makeAllocationTime(array){
+  let todayAvail=[]
   let tempData=[];
   if(array){
     //console.log("selectedAllo:",array)
@@ -550,22 +560,22 @@ function makeAllocationTime(array){
       }
     });
   }
-  console.log("thisis gradeCost",gradeCost)
-  const originalCost=gradeCost
+//  console.log("thisis gradeCost",gradeCost)
+  let calcCost;
   todayAvail.map((elem)=>{
     if (elem.available===true){//선택된 날짜에 개설된 시간들중에 available이 true인거
     
 
      dcList.map((e)=>{
        if (e.time==elem.usingTime.split('T')[1]){//할인되는 시간
-        gradeCost=gradeCost*e.rate;
+        calcCost=gradeCost*e.rate;
         }
         else{//할인 안되는 시간
-        gradeCost=originalCost;
+          calcCost=gradeCost;
         }
       })
     
-      tempData.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:gradeCost})
+      tempData.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:calcCost})
       //---------------------------id를 usingTime 전체다 넣어줌
     }
       
@@ -593,9 +603,9 @@ if (data){
    totalCost=temparr.reduce((sum,cv)=>{return sum+cv},0);//배열의 합을 계산
   }
 }
-
+useEffect(()=>{setCount(minPlayers)},[minPlayers])
   //인원 선택
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(minPlayers);
 
   //전화번호 입력
   const [number, onChangePhoneNumber] = useState(phone);
@@ -822,9 +832,9 @@ const toggleSearchModal=()=>{
 
       <View style={{flexDirection:'row'}}>
       <Text style={styles.text3}>예약 인원:</Text>
-      <Button title='-' onPress={() => {if(count > 0) setCount(count - 1)}}></Button>
+      <Button title='-' onPress={() => {if(count > minPlayers) setCount(count - 1)}}></Button>
       <Text style={styles.text3}>{count}</Text>
-      <Button title='+' onPress={() => setCount(count + 1)}></Button>
+      <Button title='+' onPress={() =>{if(count < maxPlayers) setCount(count + 1)}}></Button>
       </View>
 
       <Text style={styles.text3}>공간사용료</Text>
