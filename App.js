@@ -35,7 +35,7 @@ export default function App() { // 확인할 UI의 retrun 문 주석만 제거 �
 
   ////////// 관리자(Admin) UI
 
-   //return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
+  //return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
