@@ -16,10 +16,19 @@ import { AntDesign } from '@expo/vector-icons';
 import { storageDb } from '../Core/Config';
 import { getStorage, ref, getDownloadURL, listAll } from "firebase/storage"
 //import call from 'react-native-phone-call'
+import * as Notifications from 'expo-notifications'
 
 
 /*모바일 윈도우의 크기를 가져온다*/
 const { height, width } = Dimensions.get("window");
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function BookingFacility() {
 
@@ -603,11 +612,54 @@ export default function BookingFacility() {
       .then(() => {
         // MARK : Success
         alert("Document Created!")
+
+        // 관리자에게 예약되었다는 푸시 알림을 보낸다.
+        const docRef = doc(db, "Facility", adminId)
+
+        getDoc(docRef)
+            // Handling Promises
+            .then((snapshot) => {
+                // MARK : Success
+                if (snapshot.exists) {
+                    const result = snapshot.data().token
+                    sendNotification(result)
+                    console.log(result)
+                }
+                else {
+                    alert("No Doc Found")
+                }
+            })
+            .catch((error) => {
+                // MARK : Failure
+                alert(error.message)
+            })
+
       })
       .catch((error) => {
         // MARK : Failure
         alert(error.message)
       })
+  }
+
+  const sendNotification = async(token) =>{
+    const message = {
+      to: token,
+      sound: 'default',
+      title: '시설이 예약되었습니다. ',
+      body: '예약 내역을 확인해주십시오. ',
+      data: {data: 'goes here'},
+    };
+
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message)
+    })
+
   }
 
   let reserveds = []//예약된 allocation들
@@ -667,10 +719,20 @@ export default function BookingFacility() {
 
     // 두 번째 방법
     if (Platform.OS !== 'android') {
-      Linking.openURL(`telprompt:${tel}`)
+      const url = 'telprompt:'+tel
+      Linking.openURL(url)
+      .then((supported) => {
+        if(!supported) {
+          console.log("Can not handle url: "+url)
+        }else{
+          return Linking.openURL(url)
+          .then((data) => console.error("then", data))
+          .catch((err)=> { console.log(err)})
+        }
+      })
     }
     else {
-      Linking.openURL(`tel:${tel}`)
+      Linking.openURL('tel:'+tel)
     }
 
     // 첫 번째 두 번째 방법 모두 android에서만 동작함. ios는 뭔가 더 추가해야하는데 아직 구현 못함..

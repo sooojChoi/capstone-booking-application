@@ -74,7 +74,7 @@ export default function App() {
   ////////// 관리자(Admin) UI
 
 
-   return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
+  // return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
 
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
@@ -95,7 +95,7 @@ export default function App() {
 
   ////////// 사용자(User) UI
 
-  //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
+  return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
 
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)
   //return (<LogIn></LogIn>) // 로그인(수빈, 혜림)
