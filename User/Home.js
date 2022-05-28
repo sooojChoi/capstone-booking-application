@@ -31,7 +31,7 @@ export default function Home({ navigation, route }) {
   const responseListener = useRef();
 
   
- // 유저 정보 업데이트 하기
+ // 혹시 다른 기기로 다시 로그인했을 수도 있기 때문에, home화면에 
  const UpdateUser = (token) => {
 
   const docRef = doc(db, "User", myId)
@@ -71,15 +71,6 @@ export default function Home({ navigation, route }) {
           alert(error.message)
       })
 
-
-
-
-  // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함 => 필드가 사라질 수 있음
-  // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함 => 필드가 사라지지 않음(실수 방지)
-  // updateDoc(문서 위치, 데이터) == setDoc(문서 위치, 데이터, { merge: true })
-
-  //setDoc(docRef, docData, { merge: merge })
-
 }
 
 
@@ -87,7 +78,7 @@ export default function Home({ navigation, route }) {
     registerForPushNotificationsAsync().then(token => {
       setExpoPushToken(token)
       UpdateUser(token)
-  });
+    });
 
     // 알림이 도착했을 때
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
@@ -104,11 +95,6 @@ export default function Home({ navigation, route }) {
     Notifications.removeNotificationSubscription(notificationListener.current);
     Notifications.removeNotificationSubscription(responseListener.current);
     
-    return () => {
-      console.log("??")
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
   }, []);
 
 

@@ -12,6 +12,16 @@ import { permission } from '../Category';
 import { user } from '../Category';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../Core/Config';
+import * as Notifications from 'expo-notifications'
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -227,15 +237,34 @@ export default function DetailUserManagement({ route, navigation }) {
                     const tempArray = userInfo
                     tempArray.grade = docData.grade
                     setUserInfo({...tempArray}); // '...'를 해주어야 화면에 바로 변경한 값이 갱신된다.
+
+
+                    const userDoc = doc(db, "User",  docData.userId)
+                    // 사용자의 토큰을 얻어서 사용자에게 푸시 알림을 보냄.
+                    getDoc(userDoc)
+                    // Handling Promises
+                    .then((snapshot) => {
+                        // MARK : Success
+                        if (snapshot.exists) {
+                            const result = snapshot.data().token
+                            sendNotificationWithGrade(result)
+                            console.log(result)
+                        }
+                        else {
+                            alert("No Doc Found")
+                        }
+                    })
+                    .catch((error) => {
+                        // MARK : Failure
+                        alert(error.message)
+                    })
                 })
                 .catch((error) => {
                     alert(error.message)
                 })
             
-             
-
-              
           })
+
           .catch((error) => {
             console.log("ddd")
               // MARK : Failure
@@ -243,6 +272,48 @@ export default function DetailUserManagement({ route, navigation }) {
               //alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오. ")
           })
         
+    }
+
+    const sendNotificationWithGrade = async(token) =>{
+      const message = {
+        to: token,
+        sound: 'default',
+        title: '사용자 정보가 수정되었습니다. ',
+        body: '등급이 변경되었습니다. ',
+        data: {data: 'goes here'},
+      };
+  
+      await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message)
+      })
+  
+    }
+
+    const sendNotificationWithAllowDate = async(token) =>{
+      const message = {
+        to: token,
+        sound: 'default',
+        title: '사용자 정보가 수정되었습니다. ',
+        body: '예약 금지일이 부여되었습니다. ',
+        data: {data: 'goes here'},
+      };
+  
+      await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message)
+      })
+  
     }
 
      // 유저 정보 업데이트 하기
@@ -266,6 +337,25 @@ export default function DetailUserManagement({ route, navigation }) {
               setUserInfo(temp);
               setAllowDateInfo([..."예약 금지일: "+docData.allowDate]);
               setDateForAllow(...[new Date(selectedDate)]);
+
+              // 사용자의 토큰을 얻어서 사용자에게 푸시 알림을 보냄.
+              getDoc(docRef)
+                    // Handling Promises
+                    .then((snapshot) => {
+                        // MARK : Success
+                        if (snapshot.exists) {
+                            const result = snapshot.data().token
+                            sendNotificationWithAllowDate(result)
+                            console.log(result)
+                        }
+                        else {
+                            alert("No Doc Found")
+                        }
+                    })
+                    .catch((error) => {
+                        // MARK : Failure
+                        alert(error.message)
+                    })
 
           })
           .catch((error) => {
@@ -314,13 +404,15 @@ export default function DetailUserManagement({ route, navigation }) {
              name: userInfo.name,
              phone: realPhone, 
              registerDate: userInfo.registerDate,
-             allowDate: result
+             allowDate: result,
+             adminId: myFacilityId
            }
 
            UpdateUser(userData);
         },},
       ]);
     }
+
 
     return <SafeAreaView style={styles.container}>
         <Toast ref={toastRef}

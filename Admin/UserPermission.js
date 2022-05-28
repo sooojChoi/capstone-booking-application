@@ -40,7 +40,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급","C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 //const flexNotChecked = 5.5
 const flexChecked = 5
-const thisFacilityId = "testtt"
+const thisFacilityId = "AdminTestId"
 const permissionTable = new PermissionTable();  //function안에 두면 안됨.
 const userTable = new UserTable();
 const Stack = createStackNavigator();
@@ -112,29 +112,29 @@ export default function UserPermission({navigation, route}) {
   }
 
 
-  useEffect(() => {
-    //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+  // useEffect(() => {
+  //   //registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 
-    // 알림이 도착했을 때
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-      console.log(notification)
-    });
+  //   // 알림이 도착했을 때
+  //   notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+  //     setNotification(notification);
+  //     console.log(notification)
+  //   });
 
-    // 알림에 반응했을 때
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
-    });
+  //   // 알림에 반응했을 때
+  //   responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+  //     console.log(response);
+  //   });
 
-    Notifications.removeNotificationSubscription(notificationListener.current);
-    Notifications.removeNotificationSubscription(responseListener.current);
+  //   Notifications.removeNotificationSubscription(notificationListener.current);
+  //   Notifications.removeNotificationSubscription(responseListener.current);
 
-    // return () => {
-    //   console.log("??")
-    //   Notifications.removeNotificationSubscription(notificationListener.current);
-    //   Notifications.removeNotificationSubscription(responseListener.current);
-    // };
-  }, []);
+  //   // return () => {
+  //   //   console.log("??")
+  //   //   Notifications.removeNotificationSubscription(notificationListener.current);
+  //   //   Notifications.removeNotificationSubscription(responseListener.current);
+  //   // };
+  // }, []);
 
 
   // 등급을 선택하고 '확인'버튼을 눌렀을 때 호출되는 함수 (한명의 경우)
@@ -239,7 +239,7 @@ export default function UserPermission({navigation, route}) {
     const ref = collection(db, "User")
     
    
-    const data = query(ref, where("allowDate", "==", null)) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+    const data = query(ref, where("allowDate", "==", null), where("adminId","==", thisFacilityId)) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
     let result = [] // 가져온 User 목록을 저장할 변수
 
     getDocs(data)
@@ -305,7 +305,27 @@ export default function UserPermission({navigation, route}) {
             .then(() => {
                 //alert("Updated Successfully!")
                 console.log("Updated Successfully!")
-                ReadUserList();    // db에서 사용자 목록을 다시 불러옴.
+                // 사용자에게 승인되었다는 푸시 알림을 보낸다.
+
+                getDoc(docRef)
+                    // Handling Promises
+                    .then((snapshot) => {
+                        // MARK : Success
+                        if (snapshot.exists) {
+                            const result = snapshot.data().token
+                            sendNotification(result)
+                            console.log(result)
+                        }
+                        else {
+                            alert("No Doc Found")
+                        }
+                        ReadUserList();    // db에서 사용자 목록을 다시 불러옴.
+                    })
+                    .catch((error) => {
+                        // MARK : Failure
+                        alert(error.message)
+                    })
+               
             })
             .catch((error) => {
                 alert(error.message)
@@ -347,7 +367,8 @@ export default function UserPermission({navigation, route}) {
               name: userFind.name,
               phone: userFind.phone,
               registerDate: userFind.registerDate,
-              allowDate: "permission"
+              allowDate: "permission",
+              adminId: thisFacilityId
             } // 문서에 담을 필드 데이터
             UpdateUser(userData)
 
@@ -418,7 +439,8 @@ export default function UserPermission({navigation, route}) {
               name: userFind.name,
               phone: userFind.phone,
               registerDate: userFind.registerDate,
-              allowDate: "permission"
+              allowDate: "permission",
+              adminId:thisFacilityId
             } // 문서에 담을 필드 데이터
             UpdateUser(userData)
           }
@@ -888,12 +910,12 @@ export default function UserPermission({navigation, route}) {
         </View>
       )
       }
-      <View style={{alignSelf:'center', marginBottom:50,}}>
+      {/* <View style={{alignSelf:'center', marginBottom:50,}}>
         <TouchableOpacity style={{backgroundColor:'grey', padding:20}}
         onPress={() => sendNotification(expoPushToken)}>
           <Text style={{color:'white', fontSize:16}}>푸시 알림 보내기</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 }
@@ -957,16 +979,16 @@ AndroidSafeArea: {
 });
 
 
-async function schedulePushNotification() {
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "You've got mail! ",
-      body: 'Here is the notification body',
-      data: { data: 'goes here' },
-    },
-    trigger: { seconds: 2 },
-  });
-}
+// async function schedulePushNotification() {
+//   await Notifications.scheduleNotificationAsync({
+//     content: {
+//       title: "You've got mail! ",
+//       body: 'Here is the notification body',
+//       data: { data: 'goes here' },
+//     },
+//     trigger: { seconds: 2 },
+//   });
+// }
 
 // async function registerForPushNotificationsAsync() {
 //   let token;

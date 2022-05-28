@@ -33,7 +33,8 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             name: facilityBasicInfo.name,
             address: facilityBasicInfo.facilityAddress,
             tel: facilityBasicInfo.tel,
-            explain: facilityBasicInfo.explain
+            explain: facilityBasicInfo.explain,
+            token: ""
         }
         facInfo.map((value)=>{
             const detailInfo = {
