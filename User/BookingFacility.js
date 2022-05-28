@@ -1,13 +1,19 @@
+//onsnapshot
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput, Alert } from 'react-native';
+import {
+  StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput, Button, Alert
+} from 'react-native';
 import React, { useState, useEffect } from "react";
 import { Dimensions } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
 import Modal from "react-native-modal";
 import { SliderBox } from "react-native-image-slider-box";
-import { doc, collection, addDoc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import {
+  doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt,
+  onSnapshot, updateDoc, where
+} from 'firebase/firestore';
 import { db } from '../Core/Config';
 import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +28,7 @@ import * as Notifications from 'expo-notifications'
 /*모바일 윈도우의 크기를 가져온다*/
 const { height, width } = Dimensions.get("window");
 
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -30,7 +37,8 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default function BookingFacility() {
+export default function BookingFacility({navigation}) {
+
 
 
   const [adminId, setAdminId] = useState('AdminTestId')
@@ -53,7 +61,7 @@ export default function BookingFacility() {
           // All the items under listRef.
           getDownloadURL(itemRef)
             .then((url) => {
-              console.log(url);
+              //console.log(url);
               setImagedata((img) => { return [...img, url] })
             })
             .catch((error) => {
@@ -62,19 +70,11 @@ export default function BookingFacility() {
             });
         })
 
-
-
-
       }).catch((error) => {
         // Uh-oh, an error occurred!
       });
 
-
-
   }
-
-
-
 
 
   // 전체시설 정보 가져오기
@@ -82,37 +82,30 @@ export default function BookingFacility() {
     // doc(db, 컬렉션 이름, 문서 ID)
     const docRef = doc(db, "Facility", facility)
     let result
+    onSnapshot(
+      docRef,
+      (snapshot) => {
 
-    getDoc(docRef)
-      // Handling Promises
-      .then((snapshot) => {
-        // MARK : Success
-        if (snapshot.exists) {
-          //console.log(snapshot.data())
-          result = snapshot.data()
-          setExplain(result.explain)
-          if (result.explain.length > 150) {
-            // 시설 설명이 150자를 넘어가면 다 보여주지 않는다.
-            setShowingExplain(result.explain.substring(0, 150) + '...');
-            setExplainTooLong(true);
-            setExplainShowing(false);
-          } else {
-            setShowingExplain(result.explain);
-          }
-          setTel(result.tel);
-          setAddress(result.address)
-          setTitleName(result.name)
-          console.log(result)
-
+        //console.log(snapshot.data())
+        result = snapshot.data()
+        setExplain(result.explain)
+        if (result.explain.length > 150) {
+          // 시설 설명이 150자를 넘어가면 다 보여주지 않는다.
+          setShowingExplain(result.explain.substring(0, 150) + '...');
+          setExplainTooLong(true);
+          setExplainShowing(false);
+        } else {
+          setShowingExplain(result.explain);
         }
-        else {
-          alert("No Doc Found")
-        }
-      })
-      .catch((error) => {
-        // MARK : Failure
-        alert(error.message)
-      })
+        setTel(result.tel);
+        setAddress(result.address)
+        setTitleName(result.name)
+        console.log(result)
+      },
+      (error) => {
+        alert("No Doc Found")
+      }
+    )
   }
 
 
@@ -124,22 +117,18 @@ export default function BookingFacility() {
     const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
     let result = [] // 가져온 User 목록을 저장할 변수
 
-    getDocs(data)
-      // Handling Promises
-      .then((snapshot) => {
+    onSnapshot(data,
+      (snapshot) => {
         snapshot.forEach((doc) => {
-          result.push({ id: doc.id, detail: doc.data() })
-        });
+          result.push({ id: doc.id, detail: doc.data() });
+        })
         facilitys = makeFacilityArray(result)
         //dropdown list에 들어갈 시설 리스트
         facilitys.map((elem) => { facilityArray.push({ label: elem.label, value: elem.value }) });
-
-      })
-      .catch((error) => {
-        // MARK : Failure
-        alert(error.message)
-      })
-
+      },
+      (error) => {
+        alert(error.message);
+      });
   }
 
 
@@ -156,8 +145,10 @@ export default function BookingFacility() {
     return newFacility;
   }
   //const currentUserId="sjc1234";//현재 user의 id(임시) grade:1
-  const currentUserId = "psb123";//현재 user의 id(임시) grade:2
-  //const currentUserId="leemz22";//현재 user의 id(임시) grade :0
+  //const currentUserId="psb123";//현재 user의 id(임시) grade:2
+  //const currentUserId = "hrn135";//현재 user의 id(임시) grade :0
+  const currentUserId = "yjb123";//현재 user의 id(임시) grade :0
+
 
   /*userTable의 정보를 가져옴*/
   let phone = null;
@@ -198,30 +189,32 @@ export default function BookingFacility() {
       where("facilityId", "==", value)
     );
 
-    getDocs(data)
-      // Handling Promises
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          dc.push(doc.data());
+    onSnapshot(data, (querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        dc.push(doc.data());
 
-        });
-        dc.map((e) => {
-          if (Number.isInteger(e.time / 60)) {//3시인 경우
-            time = (e.time / 60) + ":00"
-          } else {//3시 45분, 3시 30분 등인경우
-            time = ((e.time / 60) - parseInt(e.time / 60)) * 60
-          }
-          tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
+      });
 
-        })
-        console.log(dc)
-        setDclist(tempDclist)
-        console.log(dcList)
+      dc.map((e) => {
+        if (Number.isInteger(e.time / 60)) {//3시인 경우
+          time = (e.time / 60) + ":00"
+        } else {//3시 45분, 3시 30분 등인경우
+          time = ((e.time / 60) - parseInt(e.time / 60)) * 60
+        }
+        tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
 
       })
-      .catch((error) => {
-        alert(error.message);
-      });
+      console.log(dc)
+      setDclist(tempDclist)
+      console.log(dcList)
+
+
+    }
+
+
+    ), (error) => {
+      alert(error.message);
+    }
   };
 
 
@@ -230,29 +223,18 @@ export default function BookingFacility() {
     // doc(db, 컬렉션 이름, 문서 ID)
     const docRef = doc(db, "User", id)
     let result // 가져온 User 1명 정보를 저장할 변수
-
-    getDoc(docRef)
-      // Handling Promises
-      .then((snapshot) => {
-        // MARK : Success
-        if (snapshot.exists) {
-          //console.log(snapshot.data())
-          result = snapshot.data()
-          onChangePhoneNumber(result.phone);
-          setName(result.name)
-          setAllowDate(result.allowDate)
-
-        }
-        else {
-          alert("No Doc Found")
-        }
-      })
-      .catch((error) => {
+    onSnapshot(docRef,
+      (snapshot) => {
+        result = snapshot.data()
+        onChangePhoneNumber(result.phone);
+        setName(result.name)
+        setAllowDate(result.allowDate)
+      }, (error) => {
         // MARK : Failure
         alert(error.message)
       })
-  }
 
+  }
 
   /*permissionTable의 정보를 가져옴 */
 
@@ -266,22 +248,19 @@ export default function BookingFacility() {
       where("facilityId", "==", facility),//전체시설 id
       where("userId", "==", currentUserId)
     );
-
-    getDocs(data)
-      // Handling Promises
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          // doc.data() is never undefined for query doc snapshots
-          //console.log("doc data~~~~~~~~~~~~~~~~~",doc.data())
-          thisUserPermission = doc.data()
-          setGrade(thisUserPermission.grade);
-          console.log("this userpermsision.grade::::", grade)
-        });
-
-      })
-      .catch((error) => {
-        alert(error.message);
+    onSnapshot(data, (querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        //console.log("doc data~~~~~~~~~~~~~~~~~",doc.data())
+        thisUserPermission = doc.data()
+        setGrade(thisUserPermission.grade);
+        console.log("this userpermsision.grade::::", grade)
       });
+
+    }, (error) => {
+      alert(error.message);
+    })
+
   };
 
 
@@ -300,39 +279,34 @@ export default function BookingFacility() {
   const [address, setAddress] = useState("");
   const [tel, setTel] = useState(null);
 
+  const [minPlayers, setMinPlayer] = useState();
   const [maxPlayers, setMaxPlayer] = useState();
   const [cost1, setCost1] = useState();
   const [cost2, setCost2] = useState();
   const [cost3, setCost3] = useState();
+  const [limit,setLimit]=useState();
 
   let selectedDetailedFacility = null;
-  let limit, gradeCost;
+  
+  let gradeCost = 0;
   let openTime, unitTime, closeTime, booking1, booking2, booking3 = null;
+  //let limit=0;
   const ReadFacility = (v) => {
     // doc(db, 컬렉션 이름, 문서 ID)
-    const docRef = doc(db, "Facility", "AdminTestId", "Detail", v)
-    let result // 가져온 User 1명 정보를 저장할 변수
+    const docRef = doc(db, "Facility", adminId, "Detail", v)
+    let result // 
 
-    getDoc(docRef)
-      // Handling Promises
-      .then((snapshot) => {
-        // MARK : Success
-        if (snapshot.exists) {
-          //console.log(snapshot.data())
-          result = snapshot.data()
-          selectedDetailedFacility = result;
-          setInfo();
-          // console.log("thisis Readfacilitydata result",selectedDetailedFacility)
-          // return result;
-        }
-        else {
-          alert("No Doc Found")
-        }
-      })
-      .catch((error) => {
-        // MARK : Failure
-        alert(error.message)
-      })
+    onSnapshot(docRef, (snapshot) => {
+      //console.log(snapshot.data())
+      result = snapshot.data()
+      selectedDetailedFacility = result;
+      setInfo();
+
+      // return result;
+
+    }, (error) => { alert(error.message) });
+
+
   }
 
 
@@ -344,22 +318,14 @@ export default function BookingFacility() {
 
   useEffect(() => {
     setSelectedId([]);//가격을 선택한채로 시설을 바꾸면 모든선택 해제시키기
+
   }, [value])
 
   function setInfo() {
     if (selectedDetailedFacility) {
       //console.log("-------------------세부시설 정보",selectedDetailedFacility);
-      //실제로 cost 123 제대로 적용되는지 확인, maxplayer도...
-      openTime = selectedDetailedFacility.openTime
-      unitTime = selectedDetailedFacility.unitTime
-      setCost1(selectedDetailedFacility.cost1)
-      setCost2(selectedDetailedFacility.cost2)
-      setCost3(selectedDetailedFacility.cost3)
-      closeTime = selectedDetailedFacility.closeTime
       setMaxPlayer(selectedDetailedFacility.maxPlayer)
-      booking1 = selectedDetailedFacility.booking1
-      booking2 = selectedDetailedFacility.booking2
-      booking3 = selectedDetailedFacility.booking3
+      setMinPlayer(selectedDetailedFacility.minPlayer)
       setExplain(selectedDetailedFacility.explain)
       if (selectedDetailedFacility.explain.length > 150) {
         console.log("true: " + selectedDetailedFacility.explain.length)
@@ -374,12 +340,12 @@ export default function BookingFacility() {
     }
     // //이 사용자의 등급은 전체시설에 적용되는 등급이다. 세부시설마다 다르지 않다.
     //등급제도를 이용하지 않는 경우 등급에 상관없이 가격과 limit은 동일하다.
-    limit = booking3;
+    //setLimit(selectedDetailedFacility.booking3)
     gradeCost = cost3;
-    //console.log("gade in setinfo",grade)
-    if (grade === 0) { gradeCost = cost1; limit = booking1; }
-    else if (grade === 1) { gradeCost = cost2; limit = booking2; }
-    else if (grade === 2) { gradeCost = cost3; limit = booking3; }
+    console.log("limit in setinfo",selectedDetailedFacility.booking3)
+    if (grade === 0) { gradeCost = selectedDetailedFacility.cost1; setLimit(selectedDetailedFacility.booking1)}
+    else if (grade === 1) { gradeCost = selectedDetailedFacility.cost2; setLimit(selectedDetailedFacility.booking2) }
+    else if (grade === 2) { gradeCost = selectedDetailedFacility.cost3; setLimit(selectedDetailedFacility.booking3)}
 
   }
 
@@ -393,7 +359,7 @@ export default function BookingFacility() {
   var bookinglimit = new Date(now.setDate(now.getDate() + limit));
   const maxDate = new Date(bookinglimit);
 
-  //console.log(bookinglimit)
+  console.log(bookinglimit,"thisis bookinglimit")
 
 
   //날짜 선택했는지 안했는지 확인하는 부분
@@ -409,39 +375,38 @@ export default function BookingFacility() {
 
   const [data, setData] = useState();
   //const data=[]
-  let todayAvail = []
+  // let todayAvail = []//이게 push되기 전에 null이어야한다. 데이타가 바뀌면 전에거에 계속 추가가 됨. 교체되어야 하는데
   let d = new Date(selectedStartDate)
 
 
-  let selectedAllo = [];
+
   /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
   //value가 facilityId와 같은거만 가져와야 한다.
   function QueryAllocation() {
+    let selectedAllo = [];
     const ref = collection(db, "Allocation");
     const data = query(
       ref,
       where("facilityId", "==", value)
     );
+    onSnapshot(data, (querySnapshot) => {
+      // alert("query Successfully!");
+      //  console.log("query-----------------------");
+      querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        selectedAllo.push(doc.data());
 
-    getDocs(data)
-      // Handling Promises
-      .then((querySnapshot) => {
-        // alert("query Successfully!");
-        //  console.log("query-----------------------");
-        querySnapshot.forEach((doc) => {
-          // doc.data() is never undefined for query doc snapshots
-          selectedAllo.push(doc.data());
-
-        });
-
-        makeAllocationTime(selectedAllo);
-
-        //  setData(dataPush())
-      })
-      .catch((error) => {
-        alert(error.message);
       });
+
+      makeAllocationTime(selectedAllo);
+      selectedAllo.length = 0;//중간에 db에서 데이터가 변경되면, 변경된 데이터가 이 배열에 쌓이는게 아니라 교체되도록
+      //  setData(dataPush())
+    }, (error) => { alert(error.message); });
+
   };
+
+
+
   //날짜와 시설이 바뀔때마다 QueryAllo,QueryDiscountRate
   useEffect(() => {
     QueryAllocation();
@@ -458,6 +423,7 @@ export default function BookingFacility() {
         <View><Text style>{item.time.split('T')[1]}</Text></View>
         <View style={{ width: width, flexDirection: 'row' }}>
           <Text style={[styles.title, textColor, { fontSize: 15 }]}>{item.cost}원</Text>
+          <Text style={{ ...styles.title, fontSize: 15 }}>최소 인원: {minPlayers}</Text>
           <Text style={{ ...styles.title, fontSize: 15 }}>최대 인원: {maxPlayers}</Text>
         </View>
       </View>
@@ -491,8 +457,9 @@ export default function BookingFacility() {
   //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
   function makeAllocationTime(array) {
     let tempData = [];
+    let todayAvail = [];
     if (array) {
-      //console.log("selectedAllo:",array)
+      //console.log("selectedAllo:", array)
       array.map((elem) => {//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
         // console.log(elem.usingTime,"-----------")
         if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + 0 + (d.getMonth() + 1) + "-" + d.getDate()) {
@@ -500,27 +467,34 @@ export default function BookingFacility() {
         }
       });
     }
-    const originalCost = gradeCost
+    //const originalCost = gradeCost
+    let calcCost;
     todayAvail.map((elem) => {
+
       if (elem.available === true) {//선택된 날짜에 개설된 시간들중에 available이 true인거
 
 
         dcList.map((e) => {
           if (e.time == elem.usingTime.split('T')[1]) {//할인되는 시간
-            gradeCost = gradeCost * e.rate;
+            calcCost = gradeCost * e.rate;
           }
           else {//할인 안되는 시간
-            gradeCost = originalCost;
+            calcCost = gradeCost;
           }
         })
 
-        tempData.push({ id: elem.usingTime, title: " ", time: elem.usingTime, cost: gradeCost })
+
+
+        tempData.push({ id: elem.usingTime, title: " ", time: elem.usingTime, cost: calcCost })
+        console.log(elem.usingTime)
         //---------------------------id를 usingTime 전체다 넣어줌
       }
 
     })
-    //console.log(tempData)
-    setData(tempData)
+    
+    console.log(tempData.sort((a,b)=>new Date(a.time)-new Date(b.time)),"[-----------------]")
+    setData(tempData);//data오름차순 정렬
+
   }
 
 
@@ -547,10 +521,10 @@ export default function BookingFacility() {
     }
   }
 
-
+  useEffect(() => { setCount(minPlayers) }, [minPlayers])
 
   //인원 선택
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(minPlayers);
 
   //전화번호 입력
 
@@ -561,11 +535,10 @@ export default function BookingFacility() {
       "예약이 완료되었습니다.",
       "결제는 오셔서 하시면 됩니다.",
       [
-        {
-          text: "예약내역 보러가기",
-          onPress: () => console.log("goto MyBookingList"),
-        },
-        { text: "첫 화면으로", onPress: () => console.log("goto main") }
+        { text: "예약 확인", onPress: () =>{ 
+          navigation.replace('MyBookingList')
+          console.log("goto main")
+        } }
       ]
     );
 
@@ -585,7 +558,7 @@ export default function BookingFacility() {
     } // 문서에 담을 필드 데이터
     updateDoc(docRef, docData)
       .then(() => {
-        alert("Updated Successfully!")
+        // alert("Updated Successfully!")
       })
       .catch((error) => {
         alert(error.message)
@@ -611,6 +584,7 @@ export default function BookingFacility() {
     addDoc(ref, docData)
       .then(() => {
         // MARK : Success
+
         alert("Document Created!")
 
         // 관리자에게 예약되었다는 푸시 알림을 보낸다.
@@ -634,12 +608,14 @@ export default function BookingFacility() {
                 alert(error.message)
             })
 
+
       })
       .catch((error) => {
         // MARK : Failure
         alert(error.message)
       })
   }
+
 
   const sendNotification = async(token) =>{
     const message = {
@@ -678,7 +654,7 @@ export default function BookingFacility() {
           result.push({ id: doc.id, data: doc.data() });
         });
         result.map((elem) => {
-          console.log(selectedId)
+          //console.log(selectedId)
           if (selectedId.includes(elem.data.usingTime)) {//elem.usingTime이 selectedId 배열 안에 있으면
             reserveds.push(elem)
           }
@@ -699,12 +675,15 @@ export default function BookingFacility() {
       });
   };
 
+
+
   //예약하기 버튼
   const onPressedFin = () => {
     /*예약된 타임 다른데서 예약안되도록 처리 allocation table에 false로 변경*/
     /*booking table에 전화번호, 가격정보 저장 */
     //allocation중에 이 시설의 정보들만 가지고와서, 그것들의 usingTime이 selectedId배열안에 있으면 reserved안에넣기
     QueryAllo();
+
   }
 
   // 전화 걸기
@@ -760,6 +739,11 @@ export default function BookingFacility() {
 
   }
 
+  // const disabledButton=()=>{//true이면 예약 버튼 안보임, false이면 예약버튼 보임.
+  //   if(){return false}
+  //   else{ return true}
+
+  // }
 
 
 
@@ -951,7 +935,7 @@ export default function BookingFacility() {
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ ...styles.SelectionTitle, marginTop: 10 }}>예약 인원:</Text>
-              <TouchableOpacity onPress={() => { if (count > 0) setCount(count - 1) }}>
+              <TouchableOpacity onPress={() => { if (count > minPlayers) setCount(count - 1) }}>
                 <AntDesign name="minus" size={20} color="#1789fe" />
               </TouchableOpacity>
               <Text style={{ ...styles.SelectionTitle, fontSize: 19, fontWeight: 'normal' }}>{count}</Text>
@@ -993,7 +977,7 @@ export default function BookingFacility() {
             <Text style={{ ...styles.SelectionTitle, fontSize: 20 }}>가격: {totalCost + "₩"}</Text>
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity onPress={onPressedFin} ><Text style={styles.SelectionTitle}>예약하기</Text></TouchableOpacity>
+              <TouchableOpacity onPress={onPressedFin}><Text style={styles.SelectionTitle}>예약하기</Text></TouchableOpacity>
               <TouchableOpacity onPress={toggleModal} ><Text style={styles.SelectionTitle}>취소</Text></TouchableOpacity>
             </View>
 
@@ -1015,8 +999,10 @@ export default function BookingFacility() {
             style={{
               backgroundColor: '#3262d4', alignItems: 'center',
               borderRadius: 10, paddingVertical: 15, paddingHorizontal: 15, marginRight: 15
+              
             }}
             onPress={toggleModal}
+            disabled={!(value&&selectedStartDate&&(selectedId.length!=0))}
           >
             <Text style={{ fontSize: 18, color: 'white' }}>예약하기</Text>
           </TouchableOpacity>
@@ -1075,6 +1061,7 @@ const styles = StyleSheet.create({
   },
 
 });
+
 
 
 
