@@ -15,7 +15,7 @@ import { db } from '../Core/Config';
 const {height,width}=Dimensions.get("window");
 
 
-export default function AdminBooking() {
+export default function AdminBooking({navigation}) {
 
   const [adminId,setAdminId]=useState('AdminTestId')//현재 관리자의 id(문서이름)
   const [facility,setFacility]=useState(adminId);
@@ -569,11 +569,13 @@ function makeAllocationTime(array){
       })
     
       tempData.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:calcCost})
+      console.log(elem.usingTime)
       //---------------------------id를 usingTime 전체다 넣어줌
     }
       
     })
   //console.log(tempData)
+  console.log(tempData.sort((a,b)=>new Date(a.time)-new Date(b.time)),"[-----------------]")
     setData(tempData)
 }
 
@@ -609,10 +611,12 @@ Alert.alert(
   "결제는 회원님 방문시 하시면 됩니다.",
   [
     {
-      text: "예약내역 보러가기",
-      onPress: () => console.log("goto 관리자 예약내역"),
+      text: "예약 확인",
+      onPress: () => {
+        navigation.navigate('Home')
+        console.log("goto 관리자 예약내역")},
     },
-    { text: "첫 화면으로", onPress: () => console.log("goto main") }
+ 
   ]
 );
 
@@ -627,7 +631,7 @@ const modifyAllocation = (id) => {
   } // 문서에 담을 필드 데이터
   updateDoc(docRef, docData)
       .then(() => {
-          alert("Updated Successfully!")
+        //  alert("Updated Successfully!")
       })
       .catch((error) => {
           alert(error.message)
@@ -653,7 +657,7 @@ const AddBooking = (bookingTime,cost,usedPlayer,usingTime) => {
   addDoc(ref, docData)
             .then(() => {
                 // MARK : Success
-                alert("Document Created!")
+              //  alert("Document Created!")
             })
             .catch((error) => {
                 // MARK : Failure
@@ -844,7 +848,7 @@ const toggleSearchModal=()=>{
             style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
             paddingTop:20, paddingBottom:20}}
               onPress={toggleModal}
-              disabled={false}>
+              disabled={!(value&&selectedStartDate&&(selectedId.length!=0))}>
                 <Text style={{fontSize:16, color:'white'}}>예약하기</Text>
             </TouchableOpacity>
 
