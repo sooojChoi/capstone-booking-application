@@ -60,3 +60,11 @@ User 파일에 사용자와 관련된 화면들이 있고, Admin 파일에 관�
 - Image Slider
 
     npm i react-native-image-slider-box
+
+- Push Notification
+
+    expo install expo-device
+
+    expo install expo-notifications
+
+    expo install expo-permissions
