@@ -1,114 +1,86 @@
-// 예약 내역(사용자) -> 유진
+// 지난 예약 내역(사용자) -> 수빈, 유진
 
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, FlatList, SafeAreaView } from 'react-native';
-import { FacilityTable } from '../Table/FacilityTable';
 import { Dimensions } from 'react-native';
-import { BookingTable } from '../Table/BookingTable';
+import { auth } from '../Core/Config';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
 export default function App() {
-  const { height, width } = Dimensions.get("window");
+  const currentUser = auth.currentUser // 현재 접속한 user
+  const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
 
-  const facilityTable = new FacilityTable();
-  const [bookingTable, setBookingTable] = useState(new BookingTable)
+  const [booking, setBooking] = useState([])
 
-  //유저아이디 임의로 지정 => DB연결하면 변경해야함
-  // const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancleLast("yjb"))
-  const [bookings, setBookings] = useState([])
-
-  //지난 이용예 내역 db에서 가져오기
+  // 지난 이용 내역 가져오기
   const ReadLastBookingList = () => {
     const ref = collection(db, "Booking")
-    let now = new Date(+new Date() + 3240 * 10000).toISOString() //현재 날짜
-    const data = query(ref, where("cancel", "==", false)) //where id인것만 추가해야함 //////////////////////////
+    let now = new Date(+new Date() + 3240 * 10000).toISOString() // Today Date
+    const data = query(ref, where("cancel", "==", false), where("userId", "==", currentUserId))
     let result = []
 
     getDocs(data)
-      // Handling Promises
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          //console.log(doc.id, " => ", doc.data())
-          //현재 날짜보다 전 내역만 가져오기 위해
           if (doc.data().usingTime < now) {
             result.push(doc.data())
           }
-        });
-        setBookings(result)
+        })
+        setBooking(result)
       })
       .catch((error) => {
-        // MARK : Failure
         alert(error.message)
       })
   }
   useEffect(() => {
-    ReadLastBookingList();
-  }, [bookings])
+    ReadLastBookingList()
+  }, [booking])
 
-
-  //예약내역
-  const yItem = (itemData) => {
-    // const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
-    var facilitieName = itemData.item.facilityId
-    //usingTime에서 T빼기위해
+  // 예약 내역 Flatlist
+  const bookingItem = (itemData) => {
+    const facilitieName = itemData.item.facilityId
+    // usingTime에서 날짜와 시간 가져오기
     const usingTimearr = itemData.item.usingTime.split("T")
 
-    return <View style={{ borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width * 0.89, height: 75, }}>
-      <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
-
+    return <View style={{ borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: SCREEN_WIDTH * 0.89, SCREEN_HEIGHT: 75 }}>
+      <Text style={styles.text}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
       <View style={{ flexDirection: 'row', }}>
-        <Text style={styles.text3}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
+        <Text style={styles.text}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
         <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
-
       </View>
     </View>
-
   }
 
-
-
-
   return (
-
-    // 예약내역
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <View>
-
         <View style={{ padding: 10, margin: 8 }}>
-
-          <Text style={styles.text2}>지난 이용 내역</Text>
-          <View style={{ height: height * 0.8 }}>
+          <Text style={styles.title}>지난 이용 내역</Text>
+          <View style={{ height: SCREEN_HEIGHT * 0.8 }}>
             <FlatList
-              data={bookings}
-              renderItem={yItem}
+              data={booking}
+              renderItem={bookingItem}
             />
           </View>
         </View>
-
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  text1: {
-    fontSize: 36,
-    margin: 20,
-  },
-  text2: {
+  title: {
     fontSize: 30,
     margin: 5,
     height: 40,
   },
-  text3: {
-    fontSize: 15,
-    margin: 5,
-  },
-  text4: {
-    fontSize: 15,
-    margin: 5,
-    color: '#999',
-  },
 
+  text: {
+    fontSize: 15,
+    margin: 5,
+  },
 });

@@ -1,87 +1,64 @@
-// 예약 내역(사용자) -> 유진
+// 예약 & 취소 내역(사용자) -> 수빈, 유진
 
-import React, { useState, createRef, useEffect } from 'react';
-import { Button, StyleSheet, Text, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Dimensions } from 'react-native';
+import { auth } from '../Core/Config';
 import { doc, collection, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
 
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
 export default function App() {
-  const { height, width } = Dimensions.get("window");
+  const currentUser = auth.currentUser // 현재 접속한 user
+  const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
 
-  // const facilityTable = new FacilityTable();
-  // const [bookingTable, setBookingTable] = useState(new BookingTable)
+  const [booking, setBooking] = useState() // 예약 내역
+  const [bookingId, setBookingId] = useState() // 예약 취소할 문서 ID
 
-  //유저아이디 임의로 지정 => DB연결하면 변경해야함
-  //const [bookings, setBookings] = useState(bookingTable.getByUserIdNotCancle("yjb"))
-  const [bookings, setBookings] = useState()
-  const [bookingId, setBookingId] = useState()
-
-  //예약내역 db에서 가져오기
-  const ReadBookingList = () => {
+  // 예약 내역 가져오기
+  const readBookingList = () => {
     const ref = collection(db, "Booking")
-    let now = new Date(+new Date() + 3240 * 10000).toISOString() //현재 날짜
-    const data = query(ref, where("cancel", "==", false), where("userId", "==", "yjb123")) //id 가져와야함 //////////////////////////
+    let now = new Date(+new Date() + 3240 * 10000).toISOString() // Today Date
+    const data = query(ref, where("cancel", "==", false), where("userId", "==", currentUserId))
     let result = []
 
     getDocs(data)
-      // Handling Promises
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          //console.log(doc.id, " => ", doc.data())
-          //현재 날짜보다 전 내역은 가져오지 않기위해
+          //현재 날짜보다 이전 내역은 가져오지 않기 위함
           if (doc.data().usingTime >= now) {
             result.push(doc.data())
-
-            //console.log(result)
-
-            //console.log(doc.id)
           }
-        });
-        setBookings(result)
+        })
+        setBooking(result)
       })
       .catch((error) => {
-        // MARK : Failure
         alert(error.message)
       })
   }
-  useEffect(() => {
-    ReadBookingList();
-    ReadBookingListCancel();
-  },[bookings, bookingCancel])
 
+  // 예약 내역 Flatlist
+  const bookingItem = (itemData) => {
+    // 예약 취소 시작
+    const cancelBooking = () => {
+      // 예약 취소할 문서 ID 가져오기
+      const bookingRef = collection(db, "Booking")
+      const bookingData = query(bookingRef, where("usingTime", "==", itemData.item.usingTime), where("facilityId", "==", itemData.item.facilityId))
 
-
-  //예약내역
-  const yItem = (itemData) => {
-      // 예약 취소하기 시작 //
-      const CancelBooking = (merge) => {
-        //문서id가져오기위해
-        const bookingRef = collection(db, "Booking")
-        const bookingData = query(bookingRef, where("usingTime", "==", itemData.item.usingTime), where("facilityId", "==", itemData.item.facilityId))
-        
-        getDocs(bookingData)
+      getDocs(bookingData)
         .then((snapshot) => {
           snapshot.forEach((doc) => {
-            setBookingId(doc.id) //반영이 안됨
+            setBookingId(doc.id) // 즉각 반영 X -> 실행 후 수정해보기~~~
             console.log(bookingId)
-            // doc(db, 컬렉션 이름, 문서 ID)
             console.log(doc.id)
             UpdateCancel(doc.id)
-
-            // setDoc(문서 위치, 데이터) -> 데이터를 모두 덮어씀, 새로운 데이터를 추가할 때 유용할 듯함 => 필드가 사라질 수 있음
-            // setDoc(문서 위치, 데이터, { merge: true }) -> 기존 데이터에 병합함, 일부 데이터 수정 시 유용할 듯함 => 필드가 사라지지 않음(실수 방지)
-            // updateDoc(문서 위치, 데이터) == setDoc(문서 위치, 데이터, { merge: true })
-
-            //setDoc(docRef, docData, { merge: merge })
-
           })
-
         })
         .catch((error) => {
           alert(error.message)
         })
-
     }
 
     const UpdateCancel = (id) => {
@@ -89,164 +66,128 @@ export default function App() {
 
       const docData = {
         cancel: true
-      } // 문서에 담을 필드 데이터
+      }
 
       updateDoc(docRef, docData)
-        // Handling Promises
         .then(() => {
+          console.log(id)
           alert("취소가 완료되었습니다")
         })
         .catch((error) => {
           alert(error.message)
         })
-
     }
-    /// 예약 취소 끝 ////
 
     const facilitieName = itemData.item.facilityId
+    // usingTime에서 날짜와 시간 가져오기
+    const usingTimeArr = itemData.item.usingTime.split("T")
 
+    return <View style={styles.flatList}>
+      <Text style={styles.text}>{facilitieName} {usingTimeArr[0]} {usingTimeArr[1]}</Text>
 
-    //usingTime에서 T빼기위해
-    const usingTimearr = itemData.item.usingTime.split("T")
-
-    return <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width*0.89, height: 75,}}>
-    <Text style={styles.text3}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
-
-    <View style={{flexDirection:'row',}}>
-      <Text style={styles.text3}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
-      <TouchableOpacity style={{backgroundColor:'#3262d4',
-   // justifyContent:'space-around',
-    alignSelf:'flex-start',
-    borderRadius:8,
-    padding: 5,
-    paddingLeft:10,
-    paddingRight:10,
-    marginBottom:5,
-    marginLeft:width*0.35}} onPress={() => Alert.alert(                    //Alert를 띄운다
-    "주의",                    // 첫번째 text: 타이틀 제목
-    "예약을 취소하시겠습니까?",                         // 두번째 text: 그 밑에 작은 제목
-    [                              // 버튼 배열
-      {
-        text: "취소",                              // 버튼 제목
-        onPress: () => console.log("예약 취소하지않음"),     //onPress 이벤트시 콘솔창에 로그를 찍는다
-        style: "cancel"
-      },
-      { text: "확인", onPress: () => { CancelBooking(true)
-
-        // bookingTable.modify(new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true))
-        // setBookingTable(bookingTable)
-        // setBookings(bookingTable.getByUserIdNotCancle(itemData.item.userId))
-        // setBookingCancel(bookingTable.getByUserIdCancle(itemData.item.userId))
-      }
-      }, //버튼 제목
-//new booking(itemData.item.userId, itemData.item.facilityId,itemData.item.usingTime, itemData.item.bookingTime, itemData.item.usedPlayers, true)
-    ],
-    { cancelable: false }
-  )}>
-    <Text style={{fontSize:14, color:'white'}}>예약취소</Text>
-    </TouchableOpacity>
-      {/* <IconButton type={Images.delete} /> */}
+      <View style={{ flexDirection: 'row', }}>
+        <Text style={styles.text}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
+        <TouchableOpacity style={{
+          backgroundColor: '#3262d4',
+          alignSelf: 'flex-start',
+          borderRadius: 8,
+          padding: 5,
+          paddingLeft: 10,
+          paddingRight: 10,
+          marginBottom: 5,
+          marginLeft: SCREEN_WIDTH * 0.35
+        }} onPress={() => Alert.alert(
+          "주의", "예약을 취소하시겠습니까?", [
+          { text: "취소", onPress: () => console.log("예약 취소하지 않음"), style: "cancel" },
+          { text: "확인", onPress: () => { cancelBooking(true) } },
+        ], { cancelable: false })}>
+          <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
+        </TouchableOpacity>
+      </View>
     </View>
-</View>
   }
 
+  useEffect(() => {
+    readBookingList() // 예약 내역 가져오기
+    readCancelList() // 취소 내역 가져오기
+  }, [booking, bookingCancel])
 
-  //취소내역 - 취소내역은 현재보다 이전것도 가져옴
-  //취소내역 db에서 가져오기
-  const ReadBookingListCancel = () => {
+  // 취소 내역 - 취소내역은 현재보다 이전 내역도 가져옴
+  const readCancelList = () => {
     const ref = collection(db, "Booking")
-    const data = query(ref, where("cancel", "==", true), where("userId", "==", "yjb123")) //where id인것만 추가해야함//////////////////////////
+    const data = query(ref, where("cancel", "==", true), where("userId", "==", currentUserId))
     let result = []
 
     getDocs(data)
-      // Handling Promises
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          //console.log(doc.id, " => ", doc.data())
           result.push(doc.data())
-
-        });
+        })
         setBookingCancel(result)
       })
       .catch((error) => {
-        // MARK : Failure
         alert(error.message)
       })
   }
-  //const bookingCancle = bookingTable.getByUserIdCancle("yjb")
-  //유저아이디 임의로 지정 => DB연결하면 변경해야함
-  const [bookingCancel, setBookingCancel] = useState("")
 
+  const [bookingCancel, setBookingCancel] = useState("") // 취소 내역
 
-  const nItem = (itemData) => {
-    // const facilitieName = facilityTable.getNameById(itemData.item.facilityId)
+  // 취소 내역 Flatlist
+  const cancelItem = (itemData) => {
     const facilitieName = itemData.item.facilityId
-    const usingTimearr = itemData.item.usingTime.split("T")
-    return <View style={{ borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 7, width: width * 0.89, height: 75, }}>
-      <Text style={styles.text4}>{facilitieName} {usingTimearr[0]} {usingTimearr[1]}</Text>
-
-      <View style={{ flexDirection: 'row', }}>
-        <Text style={styles.text4}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
+    const usingTimeArr = itemData.item.usingTime.split("T")
+    return <View style={styles.flatList}>
+      <Text style={{ ...styles.text, color: '#999' }}>{facilitieName} {usingTimeArr[0]} {usingTimeArr[1]}</Text>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={{ ...styles.text, color: '#999' }}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
       </View>
     </View>
-
   }
 
-
-
   return (
-
-    // 예약내역
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <View>
-
         <View style={{ padding: 10, margin: 8 }}>
-          <Text style={styles.text2}>예약내역</Text>
-
-          <View style={{ height: height * 0.35 }}>
+          <Text style={styles.title}>예약 내역</Text>
+          <View style={{ height: SCREEN_HEIGHT * 0.35 }}>
             <FlatList
-              data={bookings}
-              renderItem={yItem}
+              data={booking}
+              renderItem={bookingItem}
             />
           </View>
-
-
         </View>
-
-        {/* 취소내역 */}
         <View style={{ padding: 10, margin: 8 }}>
-          <Text style={styles.text2}>취소내역</Text>
-          <View style={{ height: height * 0.35 }}>
+          <Text style={styles.title}>취소 내역</Text>
+          <View style={{ height: SCREEN_HEIGHT * 0.35 }}>
             <FlatList
               data={bookingCancel}
-              renderItem={nItem}
+              renderItem={cancelItem}
             />
           </View>
         </View>
-
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  text1: {
-    fontSize: 36,
-    margin: 20,
+  flatList: {
+    borderColor: '#999',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10, margin: 7,
+    width: SCREEN_WIDTH * 0.89,
+    height: 75,
   },
-  text2: {
+
+  title: {
     fontSize: 30,
     margin: 5,
     height: 40,
   },
-  text3: {
-    fontSize: 15,
-    margin: 5,
-  },
-  text4: {
-    fontSize: 15,
-    margin: 5,
-    color: '#999',
-  },
 
+  text: {
+    fontSize: 15,
+    margin: 5,
+  },
 });
