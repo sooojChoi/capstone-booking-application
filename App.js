@@ -72,13 +72,13 @@ export default function App() {
    //return <ChooseModeNavigation></ChooseModeNavigation> // 사용자/관리자 선택(수빈)
 
   ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
- // return (<Home></Home>) // 홈(유진)
+  //return (<Home></Home>) // 홈(유진)
 
 
   ////////// 관리자(Admin) UI
 
 
-  // return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
+ //  return (<AdminWholeStack></AdminWholeStack>)   // 관리자 홈 화면
 
 
 
