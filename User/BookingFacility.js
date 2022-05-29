@@ -536,7 +536,7 @@ export default function BookingFacility({navigation}) {
       "결제는 오셔서 하시면 됩니다.",
       [
         { text: "예약 확인", onPress: () =>{ 
-          navigation.replace('MyBookingList')
+          navigation.replace('DetailBookingManagement')
           console.log("goto main")
         } }
       ]
