@@ -26,6 +26,9 @@ export default function DetailAdminSignUp({navigation, route}) {
     const [unitMin, setUnitMin] = useState("");  // 예약 시간 단위
     const [timeSort, setTimeSort] = useState();  // open 또는 close
 
+    const [startTime, setStartTime] = useState("")  // 할인율 적용 시작 시간
+    
+
     const [minPlayer, setMinPlayer] = useState("");  // 예약 최소 인원
     const [maxPlayer, setMaxPlayer] = useState("");  // 예약 최대 인원
 
@@ -347,6 +350,50 @@ export default function DetailAdminSignUp({navigation, route}) {
                     </View>
 
                 </View> 
+
+                <View style={{...styles.borderBottomStyle}}>
+               
+                    <Text style={{...styles.titleText, }}>시간별 할인율 적용</Text>
+                    <Text style={{...styles.normalTextBlack}}>할인을 적용하고 싶은 시간과 할인율을 입력하세요.</Text>
+                    
+                    <View style={{flexDirection:'row', marginTop:10, justifyContent:'center'}}>
+                        <View style={{alignItems:'center', }}>
+                            <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10 , width:SCREEN_WIDTH*0.3, }}
+                            onPress={() => showTimePicker("open")}>
+                                {
+                                    openTime === null || openTime === undefined || openTime==="" ? (
+                                        <Text style={{...styles.normalText}}>시간 선택</Text>
+                                    ) : (
+                                        <Text style={{...styles.normalText}}>{openTime.substring(0,2)+"시 "+openTime.substring(2,4)+"분"}</Text>
+                                    )
+                                }
+                                
+                            </TouchableOpacity>
+                            <DateTimePickerModal
+                                isVisible={isTimePickerVisible}
+                                mode="time"
+                                onConfirm={date => handleConfirm(date)}
+                                onCancel={hideTimePicker}
+                                confirmTextIOS="확인"
+                                cancelTextIOS="취소"
+                                date={time}
+                            />
+                        </View>
+
+                        <View style={{marginLeft:30, alignItems:'center'}}>
+                            <TouchableOpacity style={{...styles.smallButtonStyle, marginTop:10, width:SCREEN_WIDTH*0.3 }}
+                            onPress={() => showTimePicker("close")}>
+                                 {
+                                    closeTime === null || closeTime === undefined || closeTime === "" ? (
+                                        <Text style={{...styles.normalText}}>시간 선택</Text>
+                                    ) : (
+                                        <Text style={{...styles.normalText}}>{closeTime.substring(0,2)+"시 "+closeTime.substring(2,4)+"분"}</Text>
+                                    )
+                                }
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
 
                 <View style={{...styles.borderBottomStyle}}>
 
@@ -701,7 +748,7 @@ const styles = StyleSheet.create({
     
   },
   titleText:{
-      fontSize:15,
+      fontSize:16,
       marginBottom:10,
       marginTop:20,
       color:"#191919"

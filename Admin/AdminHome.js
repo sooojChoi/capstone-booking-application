@@ -1,13 +1,11 @@
 
 
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, FlatList, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet} from 'react-native';
 import { Dimensions } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import BookingManagement from './BookingManagement';
 import AdminBooking from './AdminBooking';
@@ -15,12 +13,96 @@ import UserManagement from './UserManagement';
 import UserPermission from './UserPermission';
 import FacilityManagement from './FacilityManagement';
 import AdminMyPage from './AdminMyPage';
+import {useEffect, useRef, useCallback} from "react";
+import * as Notifications from 'expo-notifications'
+import * as Permissions from 'expo-permissions'
+import * as Device from 'expo-device'
+import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc } from 'firebase/firestore';
+import { db } from '../Core/Config';
 
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
 
 //const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 export default function AdminHomeNavigation() {
+    const myId = "AdminTestId"  // 임시로 저장해놓은 관리자 아이디
+
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const [notification, setNotification] = useState(false);
+    const notificationListener = useRef();
+    const responseListener = useRef();
+
+     // 혹시 다른 기기로 다시 로그인했을 수도 있기 때문에, home화면에 
+ const UpdateAdmin = (token) => {
+
+    const docRef = doc(db, "Facility", myId)
+  
+    getDoc(docRef)
+        // Handling Promises
+        .then((snapshot) => {
+            // MARK : Success
+            if (snapshot.exists) {
+                const result = snapshot.data()
+                const docData = {
+                    address: result.address,
+                    explain: result.explain,
+                    id: result.id,
+                    name: result.name,
+                    password: result.password,
+                    tel: result.tel,
+                    token: token                  
+                }
+  
+              updateDoc(docRef, docData)
+              // Handling Promises
+              .then(() => {
+                  //alert("Updated Successfully!")
+                  console.log("Updated Successfully!")
+              })
+              .catch((error) => {
+                  alert("푸시 알림을 받을 수 없습니다. 관리자에게 문의하십시오.")
+              })
+            }
+            else {
+                alert("No Doc Found")
+            }
+        })
+        .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+        })
+  
+  }
+
+    useEffect(() => {
+    registerForPushNotificationsAsync().then(token => {
+      setExpoPushToken(token)
+      UpdateAdmin(token)
+    });
+
+    // 알림이 도착했을 때
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+      console.log(navigation)
+    });
+
+    // 알림에 반응했을 때
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+
+    Notifications.removeNotificationSubscription(notificationListener.current);
+    Notifications.removeNotificationSubscription(responseListener.current);
+    
+  }, []);
 
     return (
         <Tab.Navigator>
@@ -151,3 +233,35 @@ const styles = StyleSheet.create({
       color:"#191919"
   }
 });
+
+async function registerForPushNotificationsAsync() {
+    let token;
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+     // token = (await Notifications.getDevicePushTokenAsync()).data;
+      console.log(token);
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
+  
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+  
+    return token;
+  }

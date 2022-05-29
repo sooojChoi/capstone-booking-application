@@ -15,7 +15,7 @@ import { db } from '../Core/Config';
 const {height,width}=Dimensions.get("window");
 
 
-export default function AdminBooking() {
+export default function AdminBooking({navigation}) {
 
   const [adminId,setAdminId]=useState('AdminTestId')//현재 관리자의 id(문서이름)
   const [facility,setFacility]=useState(adminId);
@@ -323,10 +323,10 @@ const SItem = ({ item, onPress}) => (
 
   useEffect(()=>{
     //user가 바뀔때마다 grade를 저장해줘야한다.
-    console.log(userSelected,"userselected 반영되는지 확인r")
+    //console.log(userSelected,"userselected 반영되는지 확인r")
     //여기서  thisUserPermission이 null이다.
     
-   console.log(thisUserPermission, "Userselected가 변경될 시점의 thisuserpermission?")
+   //console.log(thisUserPermission, "Userselected가 변경될 때 thisuserpermission?")
    if(thisUserPermission){
     setGrade(thisUserPermission.grade);
    }
@@ -349,7 +349,7 @@ const SItem = ({ item, onPress}) => (
   const [cost3,setCost3]=useState();
 
   let selectedDetailedFacility=null;
-  let limit,gradeCost;
+  let gradeCost;
   let openTime,unitTime,closeTime,booking1,booking2,booking3=null;
  const  ReadFacility = (v) => {
   // doc(db, 컬렉션 이름, 문서 ID)
@@ -414,14 +414,14 @@ const SItem = ({ item, onPress}) => (
 
 function setCostAndLimit(){
   // //이 사용자의 등급은 전체시설에 적용되는 등급이다. 세부시설마다 다르지 않다.
-  //등급제도를 이용하지 않는 경우 등급에 상관없이 가격과 limit은 동일하다.
-  console.log("setCost and Limit",cost1,cost2,cost3)
-  limit=booking3;
+
+  console.log("setCost",cost1,cost2,cost3)
+ 
   gradeCost=cost3;
   console.log("gade in setinfo",grade)//날짜선택시 이게 undefinded가된다.
-  if(grade===0){gradeCost=cost1;  limit=booking1;}
-  else if (grade===1){gradeCost=cost2;  limit=booking2;}
-  else if (grade===2){gradeCost=cost3;  limit=booking3;}
+  if(grade===0){gradeCost=cost1; }
+  else if (grade===1){gradeCost=cost2; }
+  else if (grade===2){gradeCost=cost3; }
 console.log(gradeCost)
   
 }
@@ -431,13 +431,6 @@ let totalCost=0;
 
 //달력에서 예약 가능기간 설정
 const minDate = new Date(); // Today
-
-//최대 limit일 뒤에 예약 가능
-var now = new Date();
-var bookinglimit = new Date(now.setDate(now.getDate() +limit));
-const maxDate = new Date(bookinglimit);
-
-
 
 
 
@@ -576,11 +569,13 @@ function makeAllocationTime(array){
       })
     
       tempData.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:calcCost})
+      console.log(elem.usingTime)
       //---------------------------id를 usingTime 전체다 넣어줌
     }
       
     })
   //console.log(tempData)
+  console.log(tempData.sort((a,b)=>new Date(a.time)-new Date(b.time)),"[-----------------]")
     setData(tempData)
 }
 
@@ -616,10 +611,12 @@ Alert.alert(
   "결제는 회원님 방문시 하시면 됩니다.",
   [
     {
-      text: "예약내역 보러가기",
-      onPress: () => console.log("goto 관리자 예약내역"),
+      text: "예약 확인",
+      onPress: () => {
+        navigation.navigate('Home')
+        console.log("goto 관리자 예약내역")},
     },
-    { text: "첫 화면으로", onPress: () => console.log("goto main") }
+ 
   ]
 );
 
@@ -634,7 +631,7 @@ const modifyAllocation = (id) => {
   } // 문서에 담을 필드 데이터
   updateDoc(docRef, docData)
       .then(() => {
-          alert("Updated Successfully!")
+        //  alert("Updated Successfully!")
       })
       .catch((error) => {
           alert(error.message)
@@ -660,7 +657,7 @@ const AddBooking = (bookingTime,cost,usedPlayer,usingTime) => {
   addDoc(ref, docData)
             .then(() => {
                 // MARK : Success
-                alert("Document Created!")
+              //  alert("Document Created!")
             })
             .catch((error) => {
                 // MARK : Failure
@@ -795,11 +792,11 @@ const toggleSearchModal=()=>{
                 onDateChange={onDateChange}
                 weekdays={['일', '월', '화', '수', '목', '금', '토']}
                 minDate={minDate}
-                maxDate={maxDate}
                 previousTitle="<"
                 nextTitle=">"
-                disabledDates={[minDate,new Date(2022, 3, 15)]}
+                disabledDates={[minDate,new Date(2022, 5, 1)]}
               />
+              {/*disableDates는 쉬는날 설정하는거~*/}
             {/* <Text>SELECTED DATE:{ startDate }</Text> */}
     
     
@@ -851,7 +848,7 @@ const toggleSearchModal=()=>{
             style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
             paddingTop:20, paddingBottom:20}}
               onPress={toggleModal}
-              disabled={false}>
+              disabled={!(value&&selectedStartDate&&(selectedId.length!=0))}>
                 <Text style={{fontSize:16, color:'white'}}>예약하기</Text>
             </TouchableOpacity>
 

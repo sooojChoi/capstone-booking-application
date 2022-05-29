@@ -33,7 +33,8 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             name: facilityBasicInfo.name,
             address: facilityBasicInfo.facilityAddress,
             tel: facilityBasicInfo.tel,
-            explain: facilityBasicInfo.explain
+            explain: facilityBasicInfo.explain,
+            token: ""
         }
         facInfo.map((value)=>{
             const detailInfo = {
@@ -68,7 +69,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
 
     }
 
-     // Random ID로 문서 생성 -> Facility Document
+     //  Facility Document
      const CreateFacility = (basicRef, detailRef) => {
         const ref1 = doc(db, "Facility", basicRef.id)
         const ref2 = doc(db, "Facility", basicRef.id, "Detail", detailRef.name)
