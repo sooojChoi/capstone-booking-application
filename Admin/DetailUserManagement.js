@@ -278,8 +278,8 @@ export default function DetailUserManagement({ route, navigation }) {
       const message = {
         to: token,
         sound: 'default',
-        title: '사용자 정보가 수정되었습니다. ',
-        body: '등급이 변경되었습니다. ',
+        title: '사용자 등급이 수정되었습니다. ',
+        body: '등급이 '+value+'(으)로 변경되었습니다. ',
         data: {data: 'goes here'},
       };
   
@@ -295,12 +295,12 @@ export default function DetailUserManagement({ route, navigation }) {
   
     }
 
-    const sendNotificationWithAllowDate = async(token) =>{
+    const sendNotificationWithAllowDate = async(token, date) =>{
       const message = {
         to: token,
         sound: 'default',
-        title: '사용자 정보가 수정되었습니다. ',
-        body: '예약 금지일이 부여되었습니다. ',
+        title: '예약 금지일이 '+date+'으로 부여되었습니다. ',
+        body: '해당 날짜까지 시설 예약이 불가능합니다. ',
         data: {data: 'goes here'},
       };
   
@@ -345,7 +345,7 @@ export default function DetailUserManagement({ route, navigation }) {
                         // MARK : Success
                         if (snapshot.exists) {
                             const result = snapshot.data().token
-                            sendNotificationWithAllowDate(result)
+                            sendNotificationWithAllowDate(result, docData.allowDate)
                             console.log(result)
                         }
                         else {

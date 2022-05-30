@@ -29,9 +29,11 @@ export default function BookingManagement({ navigation }) {
   // 해당 시설에 맞는 값을 가져오도록 추후 수정해야 함(Stack Navigation 설정)
   const adminId = "AdminTestId" // 시설 ID
 
-  const currentUser = auth.currentUser // 현재 접속한 user
-  const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
-  console.log(currentUserId)
+  //  #######
+  // const currentUser = auth.currentUser // 현재 접속한 user
+  // const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
+  // console.log(currentUserId)
+  // ########
 
   // 시설 선택 Modal에 출력할 세부 시설 목록(+ 체크리스트)
   const setFacCheckList = () => {
