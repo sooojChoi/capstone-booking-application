@@ -1,5 +1,4 @@
 // 시설 관리(관리자) -> 수빈
-// 로그아웃 추가
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
@@ -54,9 +53,9 @@ export default function FacilityManagement({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.detail}
+      <TouchableOpacity style={styles.basic}
         onPress={() => navigation.navigate('BasicFacilityManagement', { adminId: adminId })}>
-        <Text style={{ fontSize: 28 }}>기본 시설 정보(UI 수정 예정)</Text>
+        <Text style={{ fontSize: 24 }}>기본 시설 정보</Text>
       </TouchableOpacity>
       <FlatList
         data={facilityList}
@@ -71,6 +70,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
+  },
+
+  basic: {
+    backgroundColor: '#c5c7c9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    padding: 8,
+    width: SCREEN_WIDTH * 0.7,
+    marginTop: SCREEN_WIDTH * 0.05,
   },
 
   detail: {
