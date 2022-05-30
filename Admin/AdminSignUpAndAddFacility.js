@@ -51,8 +51,9 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
         })
 
         var num = 1;
+        console.log(imageUri)
         imageUri.map((value)=>{
-            uploadImages(value, num);
+            uploadImages(value.uri, num);
             num++;
         })
 

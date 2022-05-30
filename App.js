@@ -37,6 +37,7 @@ const Stack = createStackNavigator();
 // User  | ID : yjb123 / PW : 123456
 // Admin | ID : admintestid / PW : 123456
 export default function App() {
+
   // return (
   //   <NavigationContainer>
   //     <Stack.Navigator initialRouteName="ChooseMode">
