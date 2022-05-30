@@ -87,7 +87,7 @@ function AdminSignUptNavigation() {
          image1: image1, image2: image2, image3: image3, explain: explain,
         id: adminId, password: adminPw
       }
-        navigation.navigate('AdminSignUpAndAddFacility', {facilityBasicInfo:facilityBasicInfo, imageUriArray: imageUri})
+        navigation.navigate('AdminSignUpAndAddFacility', {facilityBasicInfo:facilityBasicInfo, imageUriArray: images})
     }
     
     // 도로명 검색하는 화면으로 이동
@@ -134,9 +134,9 @@ function AdminSignUptNavigation() {
           temp.unshift(item)
           setImages(temp)
 
-          const uriArray = [...imageUri];
-          uriArray.push(result.uri)
-          setImageUri(uriArray);
+          // const uriArray = [...imageUri];
+          // uriArray.push(result.uri)
+          // setImageUri(uriArray);
 
       
         }else{
@@ -184,7 +184,7 @@ function AdminSignUptNavigation() {
             //   setImage3(null)
             // }
             const temp = images.filter((value)=>
-              (value.uri) !== (uri)
+              value.uri !== uri
             )
             setImages(temp)
             console.log('temp.length: '+temp.length)
@@ -236,10 +236,12 @@ function AdminSignUptNavigation() {
     //adminId를 입력하는 textinput의 onChangeText에 등록된 함수임.
     const changeIdText = (value) => {
       //텍스트에 변경이 생겼기 때문에 중복 검사 결과와 유무를 false로 함.
+      
       setIdCheck(false)
       setIsIdCheck(false)
 
-      setAdminId(value)
+      // 아이디는 소문자만 가능하도록
+      setAdminId(value.toLowerCase())
 
     }
 
@@ -320,7 +322,7 @@ function AdminSignUptNavigation() {
                 value={adminId}
                 maxLength={50}
                 editable={true}
-                autoCorrect={false}
+                autoCorrect={false} autoCapitalize='none'
                 ></TextInput>
                 <TouchableOpacity style={{...styles.btnStyle2, marginLeft:10}}
                 onPress={() => idCheckButtonClicked()}>
@@ -332,8 +334,15 @@ function AdminSignUptNavigation() {
             
 
 
-
             <Text style={styles.titleText}>관리자 비밀번호</Text>
+            {
+              adminPw.length < 8 ? (
+                <Text style={{fontSize:14, color:"#ff3232", marginBottom:5,}}>비밀번호는 최소 8자리 이상이어야 합니다.</Text>
+              ) : (
+                <View></View>
+              )
+            }
+            
             <TextInput 
             style={styles.textinput}
             onChangeText={setAdminPw}
@@ -517,7 +526,7 @@ function AdminSignUptNavigation() {
             </KeyboardAwareScrollView>
         </ScrollView>
         {(facAddress !== "" && facName !=="" && facNumber !== "" && adminId !== "" &&
-         adminPw !== "" && idCheck === true) ? (
+         adminPw !== "" && idCheck === true && adminPw.length >7) ? (
             <TouchableOpacity 
             style={{alignItems:'center',width:SCREEN_WIDTH, justifyContent:'center', backgroundColor:'#3262d4',
             paddingTop:20, paddingBottom:20}}
