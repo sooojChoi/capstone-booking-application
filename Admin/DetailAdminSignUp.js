@@ -1,6 +1,6 @@
 // 관리자 회원가입 화면 (세부 시설 정보 입력 화면)
 
-import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity,
+import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity,FlatList,
     KeyboardAvoidingView, SafeAreaView, ScrollView, Keyboard, } from 'react-native';
 import React, {useEffect, useState, useRef, useCallback} from "react";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
@@ -10,13 +10,14 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { max } from 'moment';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
+import Modal from "react-native-modal";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailAdminSignUp({navigation, route}) {
-    const { sort, facility} = route.params;  //sort는 'add' 또는 'modify' (add이면 시설 추가하는 것, 'modify'이면 수정하는 것)
-   // const {sort, facilityName} = route.params;
+   const { sort, facility, facilityAllocation} = route.params;  //sort는 'add' 또는 'modify' (add이면 시설 추가하는 것, 'modify'이면 수정하는 것)
+ 
    const [time, setTime] = useState(() => new Date(2000, 1, 1, 0, 0))
 
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);  
@@ -25,6 +26,17 @@ export default function DetailAdminSignUp({navigation, route}) {
     const [unitHour, setUnitHour] = useState("");  // 예약 시간 단위
     const [unitMin, setUnitMin] = useState("");  // 예약 시간 단위
     const [timeSort, setTimeSort] = useState();  // open 또는 close
+
+    const [allocation, setAllocation] = useState([]);  // 할인율을 적용하기 위해 이용될 데이터. 오픈시간과 마감시간, 예약시간 단위를 입력하면 보여짐.
+    const [isModalVisible, setModalVisible] = useState(false);   // 할인율 적용할 때 modal을 위한 변수
+    const [isModalForShowingVisible, setIsModalForShowingVisible] = useState(false);
+    const toggleModal = () => {
+        setDiscountRate("")
+        setModalVisible(!isModalVisible);
+      };
+      const toggleModalForShowing = () => {
+        setIsModalForShowingVisible(!isModalForShowingVisible);
+      };
 
     const [minPlayer, setMinPlayer] = useState("");  // 예약 최소 인원
     const [maxPlayer, setMaxPlayer] = useState("");  // 예약 최대 인원
@@ -64,8 +76,12 @@ export default function DetailAdminSignUp({navigation, route}) {
         if(timeSort === "open"){
             setOpenTime(String(hour)+String(min))
             console.log(String(hour)+String(min))
+            setDiscountNotice("오픈 시간이  변경되었으므로 다시 적용하십시오.")
+            setAllocation(null)
         }else if(timeSort === "close"){
             setCloseTime(hour+min)
+            setDiscountNotice("마감 시간이 변경되었으므로 다시 적용하십시오.")
+            setAllocation(null)
         }
         hideTimePicker();
       };
@@ -79,11 +95,7 @@ export default function DetailAdminSignUp({navigation, route}) {
                 // 아직 구현 못함.
 
 
-        if(sort === 'add'){
-            
-        }else if(sort === 'modify'){
-
-        }
+       
         console.log("추가해라")
         const unitTime = (Number(unitHour)*60)+Number(unitMin)
         const openHour = Number(openTime.substring(0,2))*60
@@ -112,9 +124,23 @@ export default function DetailAdminSignUp({navigation, route}) {
                 explain: explain
             }
         }
+
+        var resultAllocation = []
+        if(allocation !== null){
+            allocation.map((value)=>{
+                if(value.discountRate !== "0"){
+                    resultAllocation.push({
+                        facilityId: facName,
+                        rate: Number(value.discountRate),
+                        time: value.time
+                    })
+                }
+            })
+        }
+
         
         console.log(Facility)
-        navigation.navigate('AdminSignUpAndAddFacility', { facility: Facility });
+        navigation.navigate('AdminSignUpAndAddFacility', { facility: Facility,allocation: resultAllocation });
 
         
         
@@ -208,9 +234,10 @@ export default function DetailAdminSignUp({navigation, route}) {
                 closeH = closeH < 10 ? ('0'+String(closeH)) : (closeH)
                 setCloseTime(String(closeH)+String(closeM))
 
+                var hour = 0
+                var min = 0
                 if( facility.unitTime !== null && facility.unitTime !== ""){
-                    var hour = 0
-                    var min = 0
+                   
                     const time = Number(facility.unitTime)
                     if(time>=60)
                     {
@@ -237,7 +264,70 @@ export default function DetailAdminSignUp({navigation, route}) {
                    // setGradeSetting(false)
                 }
                 setExplain(facility.explain)
+
+
+
+                if(facilityAllocation !== undefined && facilityAllocation !== null){
+                    const unitTime = Number(hour)*60+Number(min)
+                    const openHour = Number(openH)*60
+                    const openMin = Number(openM)
+                    const closeHour = Number(closeH)*60
+                    const closeMin = Number(closeM)
             
+                    var opentime=openHour+openMin
+                    const closetime=closeHour+closeMin
+                    const unittime=unitTime
+            
+                    var j=0;
+                    const time=[];
+                     
+                    var k=0;
+                    if(closeTime<openTime){
+                        while(opentime+j*unittime < 24*60){
+                            k = opentime+j*unitTime
+                            time.push({
+                                time: k,
+                                discountRate: "0"
+                            })
+                            j++;
+                        }
+                        k = opentime+j*unitTime
+                        opentime = (parseInt(k/60)%24)*60+k%60
+                        j=0
+                        while(opentime+j*unittime<closetime){
+                            k = opentime+j*unitTime
+                            time.push({
+                                time: k,
+                                discountRate: "0"
+                            })
+                            j++;
+                       }
+                    }else{
+                        while(opentime+j*unittime<closetime){
+                            k = opentime+j*unitTime
+                            time.push({
+                                time: k,
+                                discountRate: "0"
+                            })
+                            j++;
+                       }
+                    }
+    
+                    console.log(facilityAllocation)
+                    facilityAllocation.map((a)=>{
+                        time.map((b)=>{
+                           // console.log("a.time: "+a.time+", b.time: "+b.time)
+                            if(a.time === b.time){
+                                console.log("same")
+                                b.discountRate = a.rate
+                            }
+                        })
+                    })
+                   
+                    setAllocation(time)
+                    //console.log(time)
+                }
+     
 
         }
     },[])
@@ -262,9 +352,188 @@ export default function DetailAdminSignUp({navigation, route}) {
         }
 
     }
+
+    // allocation을 생성함.
+    const makeAllocation=()=>{
+      
+        const unitTime = (Number(unitHour)*60)+Number(unitMin)
+        const openHour = Number(openTime.substring(0,2))*60
+        const openMin = Number(openTime.substring(4,6))
+        const closeHour = Number(closeTime.substring(0,2))*60
+        const closeMin = Number(closeTime.substring(4,6))
+
+        var opentime=openHour+openMin
+        const closetime=closeHour+closeMin
+        const unittime=unitTime
+
+        var j=0;
+        const time=[];
+         
+        var k=0;
+        if(closeTime<openTime){
+            while(opentime+j*unittime < 24*60){
+                k = opentime+j*unitTime
+                time.push({
+                    time: k,
+                    discountRate: "0"
+                })
+                j++;
+            }
+            k = opentime+j*unitTime
+            opentime = (parseInt(k/60)%24)*60+k%60
+            j=0
+            while(opentime+j*unittime<closetime){
+                k = opentime+j*unitTime
+                time.push({
+                    time: k,
+                    discountRate: "0"
+                })
+                j++;
+           }
+        }else{
+            while(opentime+j*unittime<closetime){
+                k = opentime+j*unitTime
+                time.push({
+                    time: k,
+                    discountRate: "0"
+                })
+                j++;
+           }
+        }
+       
+        setAllocation(time)
+        console.log(time)
+      }
+
+
+      const changeUnitHour = (value) =>{
+          setUnitHour(value)
+          setDiscountNotice("시간 예약 단위가 변경되었으므로 다시 적용하십시오.")
+          setAllocation(null)
+      }
+      const changeUnitMin = (value) =>{
+          setUnitMin(value)
+          setDiscountNotice("시간 예약 단위가 변경되었으므로 다시 적용하십시오.")
+          setAllocation(null)
+    }
     
 
+    const renderItem = ({ item }) => {
+        return (
+            item.discountRate === "0" ? (
+                <TouchableOpacity style={{flexDirection:'row', justifyContent:'space-between',
+                paddingVertical:15, borderBottomColor:'grey', borderBottomWidth:1, }}
+                onPress={()=>changeDiscountRate(item.time)}>
+                    <Text style={{fontSize:15, marginLeft:10}}>{parseInt(item.time/60)+"시"+item.time%60+"분"}</Text>
+                    <Text style={{fontSize:15, marginRight:10}}>할인율 {item.discountRate} %</Text>
+                </TouchableOpacity>
+            ) : (
+                <TouchableOpacity style={{flexDirection:'row', justifyContent:'space-between',
+                paddingVertical:15, borderBottomColor:'grey', borderBottomWidth:1,backgroundColor:"#5cd0ff" }}
+                onPress={()=>changeDiscountRate(item.time)}>
+                    <Text style={{fontSize:15, marginLeft:10}}>{parseInt(item.time/60)+"시"+item.time%60+"분"}</Text>
+                    <Text style={{fontSize:15, marginRight:10}}>할인율 {item.discountRate} %</Text>
+                </TouchableOpacity>
+            )
+        
+        );
+      };
+
+      const changeDiscountRate = (time)=>{
+          
+          if(discountRate !== ""){
+            const temp = [...allocation]
+            temp.map((value)=>{
+                if(value.time === time){
+                    value.discountRate = discountRate
+                }
+            })
+            setAllocation(temp)
+          }
+      }
+
+      const showModal = () =>{
+        toggleModalForShowing();
+     
+      }
+
+      const showModalForNewDiscount = () =>{
+        makeAllocation();
+        toggleModal();
+        setDiscountNotice("")
+      }
+      
+    
+    const [discountRate, setDiscountRate] = useState("");
+    const [discountNotice, setDiscountNotice] = useState("");
+      
     return <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
+        <View>
+        <Modal isVisible={isModalVisible}
+        onBackdropPress={() => setModalVisible(false)}>
+          <View style={{ padding:10, backgroundColor:'white', justifyContent:'center', height:SCREEN_HEIGHT*0.7}}>
+              <Text style={{fontSize:15,color:"#191919"}}>
+                할인율을 입력하고 원하는 시간을 선택하세요.
+              </Text>
+              <View style={{flexDirection:'row', marginTop:10, justifyContent:'space-between', marginBottom:10, alignItems:'center'}}>
+                  <View style={{flexDirection:'row',alignItems:'center'}}>
+                        <Text style={{fontSize:15, marginRight:5, color:"#505050"}}>할인율 입력 </Text>
+                        <TextInput
+                            style={{borderWidth:1, borderColor:'grey', borderRadius:5, padding:5, fontSize:15}}
+                            onChangeText={setDiscountRate}
+                            placeholder="할인율"
+                            value={discountRate}
+                            maxLength={2}
+                            editable={true}
+                            autoCorrect={false}
+                            keyboardType='number-pad'
+                            />
+                  </View>
+                  
+                    <TouchableOpacity style={{...styles.smallButtonStyle}}
+                    onPress={() => setModalVisible(false)}>
+                        <Text style={{color:'white', fontSize:15}}>완료</Text>
+                    </TouchableOpacity>
+              </View>
+             <FlatList
+                numColumns={1}
+                data={allocation}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.time}
+        
+            />
+          </View>
+        </Modal>
+        <Modal isVisible={isModalForShowingVisible}
+        onBackdropPress={() => setIsModalForShowingVisible(false)}>
+          <View style={{ padding:10, backgroundColor:'white', justifyContent:'center', height:SCREEN_HEIGHT*0.6}}>
+            
+          {
+            allocation !== null ? (
+                <View>
+                    {
+                        allocation.length !== 0 ? (
+                            <FlatList
+                            numColumns={1}
+                            data={allocation}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.time}
+                    
+                            />
+                        ) : (
+                            <Text style={{fontSize:15, color:'grey', alignSelf:'center'}}>적용된 할인율이 없습니다.</Text>
+                        )
+                    }
+                </View>
+                
+            ) : (
+                <Text style={{fontSize:15, color:'grey', alignSelf:'center' }}>적용된 할인율이 없습니다.</Text>
+            )
+            }   
+             
+          </View>
+        </Modal>
+        </View>
      
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
       
@@ -348,6 +617,8 @@ export default function DetailAdminSignUp({navigation, route}) {
 
                 </View> 
 
+            
+
                 <View style={{...styles.borderBottomStyle}}>
 
                     <Text style={{...styles.titleText, }}>시간 예약 단위</Text>
@@ -355,7 +626,7 @@ export default function DetailAdminSignUp({navigation, route}) {
                     <View style={{flexDirection:'row', alignItems:'center', marginTop:20}}>
                         <TextInput
                         style={{...styles.textinputStyle2 }}
-                        onChangeText={setUnitHour}
+                        onChangeText={(value)=>changeUnitHour(value)}
                         value={unitHour}
                         maxLength={2}
                         keyboardType='number-pad'
@@ -364,7 +635,7 @@ export default function DetailAdminSignUp({navigation, route}) {
                         <Text style={{marginRight:20}}>시간</Text>
                         <TextInput
                         style={{...styles.textinputStyle2}}
-                        onChangeText={setUnitMin}
+                        onChangeText={(value) =>changeUnitMin(value)}
                         value={unitMin}
                         maxLength={2}
                         keyboardType='number-pad'
@@ -374,6 +645,43 @@ export default function DetailAdminSignUp({navigation, route}) {
                     </View>
                 
                 </View>   
+
+
+                <View style={{...styles.borderBottomStyle}}>
+               
+                    <Text style={{...styles.titleText, }}>시간별 할인율 적용</Text>
+                    {
+                        openTime !== "" && closeTime !== "" && (unitHour !== "" || unitMin !== "")? (
+                            <View>
+                                 <TouchableOpacity onPress={()=>showModalForNewDiscount()}
+                                    style={{...styles.smallButtonStyle,marginTop:15}}>
+                                        <Text style={{color:'white'}}>새로운 할인율 적용하기</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={()=>showModal()}
+                                    style={{...styles.smallButtonStyle}}>
+                                        <Text style={{color:'white'}}>적용된 할인율 확인하기</Text>
+                                    </TouchableOpacity>
+                               
+                                <Text style={{fontSize:15, color:"#ff3030"}}>
+                                    {discountNotice}
+                                </Text>
+
+                                {/* <FlatList
+                                    numColumns={1}
+                                    data={allocation}
+                                    renderItem={renderItem}
+                                    keyExtractor={(item) => item.time}
+                            
+                                /> */}
+                            </View>
+                        ) : (
+                            <Text style={{fontSize:14, color:"#ff3030", marginBottom:10}}>
+                                오픈시간, 마감시간, 시간 예약 단위를 먼저 입력하세요.
+                            </Text>
+                        )
+                    }
+                </View>
+
 
                 <View style={{...styles.borderBottomStyle}}>
                     <Text style={{...styles.titleText, }}>인원 예약 단위</Text>
@@ -701,7 +1009,7 @@ const styles = StyleSheet.create({
     
   },
   titleText:{
-      fontSize:15,
+      fontSize:16,
       marginBottom:10,
       marginTop:20,
       color:"#191919"

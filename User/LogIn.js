@@ -1,9 +1,8 @@
 // 로그인(사용자) -> 수빈, 혜림
 
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, Dimensions, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from "react";
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import React, { useState } from "react";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../Core/Config';
 
@@ -19,8 +18,7 @@ export default function LogIn({ navigation }) {
     const email = id + "@user.com"
 
     signInWithEmailAndPassword(auth, email, pw)
-      .then(userCredential => {
-        const user = userCredential.user
+      .then(() => {
         navigation.navigate('Home')
       })
       .catch(error => {
@@ -28,16 +26,11 @@ export default function LogIn({ navigation }) {
       })
   }
 
-  // 로그아웃 함수
-  const logout = () => {
-    auth.signOut()
-      .then(() => {
-        console.log("Logout")
-      })
-      .catch(error => {
-        alert(error.message)
-      })
-  }
+  // 로그아웃 시 호출
+  useEffect(() => {
+    setId("")
+    setPw("")
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -91,7 +84,6 @@ const styles = StyleSheet.create({
   },
 
   textInput: {
-    // height: SCREEN_HEIGHT * 0.05,
     width: SCREEN_WIDTH * 0.8,
     borderColor: "#828282",
     borderWidth: 1,
@@ -106,7 +98,7 @@ const styles = StyleSheet.create({
 
   text: {
     fontSize: 15,
-    color: "#464646"
+    color: "#464646",
   },
 
   loginForm: {
@@ -120,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3262D4",
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 3
+    borderRadius: 3,
   },
 
   circleStyle: {
@@ -129,6 +121,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: SCREEN_WIDTH * 0.45,
     height: SCREEN_WIDTH * 0.45,
-    borderRadius: SCREEN_WIDTH * 0.45 / 2
+    borderRadius: SCREEN_WIDTH * 0.45 / 2,
   }
 });

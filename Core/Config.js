@@ -4,7 +4,6 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 //import { getMessaging, getToken } from "firebase/messaging"
 
-
 const firebaseConfig = {
   apiKey: "AIzaSyB6An1-FsVHwYMf9PlP00HaO8pcETL6PeM",
   authDomain: "capstone-booking-application.firebaseapp.com",
@@ -21,5 +20,4 @@ const db = getFirestore(app);
 const storageDb = getStorage(app);
 //const messaging = getMessaging(app);
 
-export { auth, db, storageDb, };
-
+export { auth, db, storageDb };

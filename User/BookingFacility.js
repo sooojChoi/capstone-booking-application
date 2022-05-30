@@ -428,6 +428,7 @@ export default function BookingFacility({navigation}) {
           <Text style={{ ...styles.title, fontSize: 15 }}>최대 인원: {maxPlayers}</Text>
         </View>
       </View>
+      
     </TouchableOpacity>
   );
 
@@ -718,7 +719,6 @@ export default function BookingFacility({navigation}) {
       Linking.openURL('tel:'+tel)
     }
 
-    // 첫 번째 두 번째 방법 모두 android에서만 동작함. ios는 뭔가 더 추가해야하는데 아직 구현 못함..
   }
 
 
@@ -901,19 +901,18 @@ export default function BookingFacility({navigation}) {
           {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
           <View style={{
             height: showTimeSelect ? (ScrollView.height) : 0, width: showTimeSelect ? 400 : 0, marginTop: 20,
-            marginBottom: showTimeSelect ? 40 : 0
+            marginBottom: showTimeSelect ? 40 : 0, flex:1
           }}>
 
             <Text style={styles.SelectionTitle}>시간 선택</Text>
-            <View style={{width:"100%" ,backgroundColor:'yellow'}}>
-             
-          
-                <ScrollView horizontal={true} style={{ width: "100%"}} bounces={false}>
-                 
-                 
-                  
+
+            <View>
+              <View style={{ height: showTimeSelect ? 300 : 0, width: showTimeSelect ? 400 : 0 ,}}>
+                <ScrollView horizontal={true} style={{ width: "100%" }} bounces={false}>
+                  <View style={{ width: width, paddingHorizontal: 20 ,}}>
+
                     <FlatList
-                      style={{ borderWidth: 1, borderColor: '#646464', borderRadius: 5, }}
+                      style={{ borderWidth: 1, borderColor: '#646464', borderRadius: 5,}}
                       data={data}
                       renderItem={renderItem}
                       keyExtractor={(item) => item.id}
@@ -922,9 +921,11 @@ export default function BookingFacility({navigation}) {
                     //horizontal={true}
 
                     />
+
+                  </View>
                    
-               
-                  
+
+
                 </ScrollView>
       
 
