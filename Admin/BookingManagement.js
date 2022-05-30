@@ -3,6 +3,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from "react";
+import { auth } from '../Core/Config';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../Core/Config';
 import Modal from "react-native-modal";
@@ -28,12 +29,15 @@ export default function BookingManagement({ navigation }) {
   // 해당 시설에 맞는 값을 가져오도록 추후 수정해야 함(Stack Navigation 설정)
   const adminId = "AdminTestId" // 시설 ID
 
+  const currentUser = auth.currentUser // 현재 접속한 user
+  const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
+  console.log(currentUserId)
+
   // 시설 선택 Modal에 출력할 세부 시설 목록(+ 체크리스트)
   const setFacCheckList = () => {
     const ref = collection(db, "Facility", adminId, "Detail")
     const data = query(ref)
     let result = [] // 가져온 세부 시설 목록을 저장할 변수
-    //newFacilityCheck.length = 0
 
     getDocs(data)
       .then((snapshot) => {
@@ -397,7 +401,6 @@ export default function BookingManagement({ navigation }) {
           </View>
         </View>
       </Modal>
-
       <Modal isVisible={dateModalVisible} style={{ alignSelf: 'center', width: '95%' }}>
         <View style={{ padding: 20, backgroundColor: 'white' }}>
           <View style={{ alignSelf: 'center' }}>{
@@ -426,7 +429,6 @@ export default function BookingManagement({ navigation }) {
               />
             )}
           </View>
-
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <TouchableOpacity style={styles.resetButton} onPress={resetDateFilter}>
               <AntDesign name="reload1" size={20} color="black" />
@@ -443,7 +445,6 @@ export default function BookingManagement({ navigation }) {
           </View>
         </View>
       </Modal>
-
       <View style={styles.top}>
         <TouchableOpacity onPress={facilityModal}>
           {facilityList.length == 0 ? (
@@ -459,11 +460,10 @@ export default function BookingManagement({ navigation }) {
             <Text style={styles.selectedButton}>날짜</Text>
           )}
         </TouchableOpacity>
-
       </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
         <View style={styles.filter}>
-          <Text style={{ fontSize: 28, color: 'gray' }}>{filter}</Text>
+          <Text style={{ fontSize: 24, color: 'gray' }}>{filter}</Text>
         </View>
         <TouchableOpacity style={{ flexDirection: 'row', marginRight: 10 }} onPress={resetAll}>
           <AntDesign name="reload1" size={20} color="black" />
@@ -490,30 +490,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: SCREEN_WIDTH * 1,
     borderColor: 'gray',
-    borderBottomWidth: 2,
+    borderBottomWidth: 1.3,
     paddingBottom: 10,
     justifyContent: 'center'
   },
 
   name: {
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_HEIGHT * 0.13,
+    height: SCREEN_HEIGHT * 0.12,
     borderColor: 'gray',
     borderBottomWidth: 1,
     justifyContent: 'center',
   },
 
   booking: {
-    fontSize: 28,
-    marginLeft: SCREEN_WIDTH * 0.05,
+    fontSize: 24,
+    marginLeft: 13,
   },
 
   button: {
     color: '#3262d4',
-    fontSize: 22,
+    fontSize: 18,
     padding: 3,
-    paddingLeft: 30,
-    paddingRight: 30,
+    paddingLeft: 25,
+    paddingRight: 25,
     marginTop: 10,
     borderColor: 'lightgray',
     borderWidth: 2,
@@ -524,10 +523,10 @@ const styles = StyleSheet.create({
 
   selectedButton: {
     color: 'white',
-    fontSize: 22,
+    fontSize: 18,
     padding: 3,
-    paddingLeft: 30,
-    paddingRight: 30,
+    paddingLeft: 25,
+    paddingRight: 25,
     marginTop: 10,
     overflow: 'hidden',
     borderColor: '#3262d4',
@@ -567,7 +566,6 @@ const styles = StyleSheet.create({
   filter: {
     borderBottomWidth: 1,
     borderColor: 'gray',
-    marginTop: 10,
-    marginLeft: 20,
+    marginLeft: 10,
   },
 });
