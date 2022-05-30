@@ -23,12 +23,47 @@ export default function Home({ navigation, route }) {
   const { height, width } = Dimensions.get("window");
 
   const myId = "pushnotificationuser"  // 임시로 저장해놓은 유저 아이디
+  //const myId = "chmsoo"  // 임시로 저장해놓은 유저 아이디
 
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+  
+
+
+//현재 user의 정보를 가져옴
+// User 1명 정보 가져오기
+const ReadUser = () => {
+  // doc(db, 컬렉션 이름, 문서 ID)
+  const docRef = doc(db, "User", myId)
+  let result 
+  getDoc(docRef)
+            .then((snapshot) => {
+                if (snapshot.exists) {
+                    result = snapshot.data()
+                  const today=new Date()//오늘날짜
+                  const allowDate=new Date(result.allowDate)//allowdate 
+
+                  if(result.allowDate===null){
+                    console.log("아직 승인되지 않은 사용자")
+                  }else if (allowDate>today){//아직 정지 풀리지 않음
+                    console.log("today",today,"allowdate",allowDate,"기다려")
+                  }else{
+                    console.log("정상적으로 사용")
+                  }
+                    
+                }
+                else {
+                    alert("No Doc Found")
+                }
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+
+}
 
   
  // 혹시 다른 기기로 다시 로그인했을 수도 있기 때문에, home화면에 
@@ -75,9 +110,11 @@ export default function Home({ navigation, route }) {
 
 
   useEffect(() => {
+   // ReadUser();
     registerForPushNotificationsAsync().then(token => {
       setExpoPushToken(token)
       UpdateUser(token)
+      
     });
 
     // 알림이 도착했을 때

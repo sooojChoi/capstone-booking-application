@@ -16,6 +16,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
     const [isAllInfoEntered, setIsAllInfoEntered] = useState(false);  // true이면 아래 '입력 완료'버튼이 활성화된다.
     const [facilityBasicInfo, setFacilityBasicInfo] = useState();
     const [imageUri, setImageUri] = useState([]);
+    const [facilityAllocation, setFacilityAllocation] = useState([]);
 
     // '시설 추가'버튼을 누르면 동작함
     const goToDetailScene = () =>{
@@ -55,6 +56,17 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             num++;
         })
 
+        facilityAllocation.map((value)=>{
+            const docInfo = {
+                facilityId: value.facilityId,
+                rate: value.rate,
+                time: value.time,
+                adminId: facilityBasicInfo.id
+            }
+
+            CreateDiscountRate(docInfo)
+        })
+
     
     }
 
@@ -92,13 +104,31 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             })
 
     }
+
+    const CreateDiscountRate = (docRef) => {
+        const ref = collection(db, "DiscountRate") // Auto ID
+
+        addDoc(ref, docRef)
+            .then(() => {
+                // MARK : Success
+                console.log('discount rate table is updated successfully.')
+            })
+            .catch((error) => {
+                // MARK : Failure
+                console.log(error.message)
+            })
+
+    }
     
     // flatList에서 각 시설 클릭하면 호출되는 함수
     const goToDetailSceneAgain = (name) =>{
         console.log("#############")
         const facObj = facInfo.filter((value) => value.name === name)[0]
         console.log(facObj)
-        navigation.navigate('DetailAdminSignUp', {sort: 'modify', facility : facObj})
+
+        const allo = facilityAllocation.filter((value)=>value.facilityId===facObj.name)
+
+        navigation.navigate('DetailAdminSignUp', {sort: 'modify', facility : facObj, facilityAllocation:allo})
    //     console.log(facInfo.filter((value) => value.facilityName === name))
         
        
@@ -110,6 +140,7 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
         const name = params?.facility
         const basicInfo = params?.facilityBasicInfo
         const uris = params?.imageUriArray
+        const allocation = params?.allocation
         console.log(name)
 
         if(facInfo.length !==0){
@@ -188,6 +219,32 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
             else{
                 setFacInfo(tempArray)
             }
+
+
+            // allocation
+            if(allocation !== null && allocation !== undefined){
+                var temp = []
+                temp = [...facilityAllocation]
+                const result = temp.find((value)=>value.facilityId === list.name)
+                if(result === undefined){
+                    console.log(allocation[0])
+                    console.log(allocation)
+                    allocation.map((value)=>{
+                        temp.push(value)
+                    })
+                    setFacilityAllocation(temp)
+                }else{
+                    // 기존 것들은 지우고, 새로운 것을 추가한다.
+                    const res = temp.filter((value)=>value.facilityId !==list.name)
+                    allocation.map((value)=>{
+                        res.push(value)
+                    })
+                    setFacilityAllocation(res);
+                }
+                console.log('allocation: '+allocation)
+            }
+
+
           
         }
     },[route.params?.facility])
@@ -220,6 +277,9 @@ export default function AdminSignUpAndAddFacility({navigation, route}) {
 
                 const newArray = tempArray.filter((value)=>value.name !== name)
                 setFacInfo(newArray)
+
+                const tempAllo = facilityAllocation.filter((value)=>value.facilityId !==name)
+                setFacilityAllocation(tempAllo)
 
                 if(newArray.length ===0){
                     setIsAllInfoEntered(false)

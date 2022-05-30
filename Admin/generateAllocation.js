@@ -54,7 +54,7 @@ export default function GenerateAllocation(){
 // DB facility 가져오기
 const ReadfacilityList = () => {
   // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
-  const ref = collection(db, "Facility", "AdminTestId", "Detail") //관리자 ID 추가해야함
+  const ref = collection(db, "Facility", "AdminTestId200", "Detail") //관리자 ID 추가해야함
   const data = query(ref) 
   let result = [] // 가져온 facility 목록을 저장할 변수
 

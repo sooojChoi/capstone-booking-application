@@ -1,8 +1,9 @@
-//onsnapshot
+
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
 import {
-  StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput, Button, Alert
+  StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput,TouchableWithoutFeedback,
+   Button, Alert
 } from 'react-native';
 import React, { useState, useEffect } from "react";
 import { Dimensions } from 'react-native';
@@ -427,7 +428,6 @@ export default function BookingFacility({navigation}) {
           <Text style={{ ...styles.title, fontSize: 15 }}>최대 인원: {maxPlayers}</Text>
         </View>
       </View>
-      
     </TouchableOpacity>
   );
 
@@ -439,6 +439,7 @@ export default function BookingFacility({navigation}) {
     const backgroundColor = "#A9E2F3";
     const color = "#2E9AFE";
     return (
+  <TouchableWithoutFeedback onPress={()=>{}}>
       <Item
         item={item}
         onPress={() => {
@@ -451,6 +452,8 @@ export default function BookingFacility({navigation}) {
         backgroundColor={isSelected && { backgroundColor }}
         textColor={isSelected && { color }}
       />
+      </TouchableWithoutFeedback>
+     
     );
   };
   //console.log(selectedId)
@@ -715,6 +718,7 @@ export default function BookingFacility({navigation}) {
       Linking.openURL('tel:'+tel)
     }
 
+    // 첫 번째 두 번째 방법 모두 android에서만 동작함. ios는 뭔가 더 추가해야하는데 아직 구현 못함..
   }
 
 
@@ -753,7 +757,8 @@ export default function BookingFacility({navigation}) {
 
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView bounces={false}>
+        <ScrollView bounces={false} style={{width:"100%"}} nestedScrollEnabled={true}>
+    
           {/*시설 이미지*/}
 
           <View>
@@ -896,26 +901,32 @@ export default function BookingFacility({navigation}) {
           {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
           <View style={{
             height: showTimeSelect ? (ScrollView.height) : 0, width: showTimeSelect ? 400 : 0, marginTop: 20,
-            marginBottom: showTimeSelect ? 40 : 0, flex:1
+            marginBottom: showTimeSelect ? 40 : 0
           }}>
 
             <Text style={styles.SelectionTitle}>시간 선택</Text>
-            <View>
-              <View style={{ height: showTimeSelect ? 300 : 0, width: showTimeSelect ? 400 : 0 ,}}>
-                <ScrollView horizontal={true} style={{ width: "100%" }} bounces={false}>
-                  <View style={{ width: width, paddingHorizontal: 20 ,}}>
+            <View style={{width:"100%" ,backgroundColor:'yellow'}}>
+              <View style={{ height: showTimeSelect ? 300 : 0, width: showTimeSelect ? "100%" : 0}}>
+          
+                <ScrollView horizontal={true} style={{ width: "100%"}} bounces={false}>
+                 
+                 
+                  
                     <FlatList
-                      style={{ borderWidth: 1, borderColor: '#646464', borderRadius: 5,}}
+                      style={{ borderWidth: 1, borderColor: '#646464', borderRadius: 5, }}
                       data={data}
                       renderItem={renderItem}
                       keyExtractor={(item) => item.id}
+                    
+                      
                     //horizontal={true}
 
                     />
-                  </View>
                    
-
+               
+                  
                 </ScrollView>
+               
               </View>
 
 
@@ -985,9 +996,9 @@ export default function BookingFacility({navigation}) {
 
           </Modal>
 
-
+          
         </ScrollView>
-
+      
         <View style={{
           backgroundColor: 'white', height: height * 0.1, justifyContent: 'space-between',
           borderTopWidth: 1, borderColor: 'grey', flexDirection: 'row', alignItems: 'center'
@@ -1062,6 +1073,7 @@ const styles = StyleSheet.create({
   },
 
 });
+
 
 
 
