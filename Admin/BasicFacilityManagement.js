@@ -8,7 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-easy-toast';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, storageDb } from '../Core/Config';
-import { ref, uploadBytes } from 'firebase/storage';
+import { ref, getDownloadURL, listAll, deleteObject, uploadBytes } from 'firebase/storage';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -23,18 +23,34 @@ export default function BasicFacilityManagement({ route, navigation }) {
   const [explain, setExplain] = useState("")
   const [detailAddress, setDetailAddress] = useState("")
 
-  const [pwMode, setPwMode] = useState(false)
+  const [pwMode, setPwMode] = useState(false) // 비밀번호 변경 여부 확인
   const [pw, setPw] = useState("") // 기존 비밀번호
   const [inputOldPw, setInputOldPw] = useState("") // 입력한 현재 비밀번호 
   const [inputNewPw, setInputNewPw] = useState("") // 입력한 새 비밀번호
   const [checkNewPw, setCheckNewPw] = useState("") // 재입력 새 비밀번호
   const [equalPw, setEqualPw] = useState(false) // 입력한 새 비밀번호와 재입력된 비밀번호 일치 여부
 
+  const [imgCheck, setImgCheck] = useState(false) // 이미지 배열 변경 여부 확인
+  const [images, setImages] = useState([]) // 화면 출력용 이미지 배열
+  const [oldImgUri, setOldImgUri] = useState([]) // 기존 이미지 uri 배열
+  const [imageUri, setImageUri] = useState([]) // 업로드용 이미지 uri 배열
+
+  // 토스트 메시지 출력
+  const toastRef = useRef() // toast ref 생성
+
+  const showToast = useCallback(() => {
+    toastRef.current.show('현재 비밀번호가 일치하지 않습니다')
+  }, [])
+
+  const showToastForNewPw = useCallback(() => {
+    toastRef.current.show('새로운 비밀번호와 재입력된 비밀번호가 일치하지 않습니다')
+  }, [])
+
   // 시설 정보 가져오기(초기값)
   const getFacInfo = () => {
-    const ref = doc(db, "Facility", adminId)
+    const facRef = doc(db, "Facility", adminId)
 
-    getDoc(ref)
+    getDoc(facRef)
       .then((snapshot) => {
         if (snapshot.exists) {
           setPw(snapshot.data().password)
@@ -54,18 +70,8 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
   useEffect(() => {
     getFacInfo()
+    getImage()
   }, [])
-
-  //토스트 메시지 출력
-  const toastRef = useRef() // toast ref 생성
-
-  const showToast = useCallback(() => {
-    toastRef.current.show('현재 비밀번호가 일치하지 않습니다')
-  }, []);
-
-  const showToastForNewPw = useCallback(() => {
-    toastRef.current.show('새로운 비밀번호와 재입력된 비밀번호가 일치하지 않습니다')
-  }, []);
 
   // 비밀번호 변경 취소
   const cancelChangePw = () => {
@@ -85,9 +91,43 @@ export default function BasicFacilityManagement({ route, navigation }) {
     }
   }
 
-  // 시설 사진 변경
-  const [images, setImages] = useState([])
+  // 주소 찾기 후 돌아오면 호출됨
+  useEffect(() => {
+    const address = route.params?.address
+    setAddress(address)
+  }, [route.params?.address])
 
+  // 시설 사진 가져오기
+  const getImage = () => {
+    const storageRef = ref(storageDb, '/' + adminId) // test -> adminId
+    const temp = [...images]
+    const uriArray = [...imageUri]
+
+    listAll(storageRef)
+      .then((result) => {
+        result.items.forEach((itemRef) => {
+          getDownloadURL(itemRef)
+            .then((url) => {
+              const item = {
+                id: url,
+                uri: url
+              }
+              temp.unshift(item)
+              setImages(temp)
+              uriArray.push(url)
+              setOldImgUri(uriArray)
+              setImageUri(uriArray)
+            })
+            .catch((error) => {
+              console.log(error)
+            })
+        })
+      }).catch((error) => {
+        console.log(error)
+      })
+  }
+
+  // 시설 사진 변경
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -98,44 +138,42 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
     if (!result.cancelled) {
       const temp = [...images]
-      const item = {
-        id: "FacImg" + (temp.length + 1),
-        uri: result.uri
+      const selectedName = result.uri
+      console.log('image uri: ' + selectedName)
+
+      const findImage = temp.find((element) => {
+        if (element.id === selectedName) {
+          return true
+        }
+      })
+
+      if (findImage === undefined) {
+        console.log("can't find image")
+        const item = {
+          id: result.uri,
+          uri: result.uri
+        }
+        temp.unshift(item)
+        setImages(temp)
+
+        const uriArray = [...imageUri]
+        uriArray.push(result.uri)
+        setImageUri(uriArray)
+      } else {
+        console.log("there is same image")
       }
-      temp.unshift(item)
 
-      // temp.forEach((img) => {
-      //   console.log(getBlobFromUri(img.uri))
-      // })
-
-      setImages(temp)
+      setImgCheck(true)
     }
-  }
-
-  const getBlobFromUri = async (uri) => {
-    const blob = await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.onload = function () {
-        resolve(xhr.response)
-      }
-      xhr.onerror = function (e) {
-        reject(new TypeError("Network request failed"))
-      }
-      xhr.responseType = "blob"
-      xhr.open("GET", uri, true)
-      xhr.send(null)
-    })
-
-    return blob
   }
 
   // 선택된 사진을 지우는 함수
   const deleteImage = (uri) => {
-    Alert.alert("삭제하시겠습니까?", "", [{ text: "취소" },
-    {
+    Alert.alert("삭제하시겠습니까?", "", [{ text: "취소" }, {
       text: "삭제", onPress: () => {
         const temp = images.filter((value) => (value.uri) !== (uri))
         setImages(temp)
+        setImgCheck(true)
         console.log('temp.length: ' + temp.length)
       }
     }
@@ -153,15 +191,29 @@ export default function BasicFacilityManagement({ route, navigation }) {
           height: SCREEN_WIDTH * 0.18, marginRight: 10,
         }}></Image>
       </TouchableOpacity>
-    );
-  };
+    )
+  }
 
-  // 시설 상세 입력하고 돌아오면 호출됨
-  useEffect(() => {
-    const address = route.params?.address
-    setAddress(address)
-  }, [route.params?.address])
+  // Storage 사진 삭제
+  const delStorage = () => {
+    let num = 1
+    oldImgUri.forEach(() => {
+      console.log("delete" + num)
+      const imgRef = ref(storageDb, 'test' + '/image' + num + '.jpg') // test -> adminId
+      deleteObject(imgRef)
+      num++
+    })
+  }
 
+  // Storage 사진 업로드
+  const uploadImage = async (value, name) => {
+    const imgRef = ref(storageDb, 'test' + '/image' + name + '.jpg') // test -> adminId
+
+    const img = await fetch(value)
+    const bytes = await img.blob()
+
+    await uploadBytes(imgRef, bytes)
+  }
 
   // 시설 정보 수정
   const modifyFacInfo = () => {
@@ -189,29 +241,27 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
     updateDoc(docRef, docData)
       .then(() => {
-        //navigation.goBack()
-        alert("hi")
+        navigation.goBack()
       })
       .catch((error) => {
         alert(error.message)
       })
 
     // 사진 업로드
-
-
-    images.forEach((img) => {
-      const url = adminId + '/' + img.id
-      const storageRef = ref(storageDb, url)
-
-      uploadBytes(storageRef, img.uri).then(() => {
-        // navigation.goBack()
-        console.log(img.id)
-        console.log(img.uri)
+    if (imgCheck) {
+      console.log("변경했엉!")
+      delStorage()
+      console.log("업로드하잣!")
+      let num = 1
+      imageUri.forEach((value) => {
+        console.log(num)
+        console.log(value)
+        uploadImage(value, num)
+        num++
       })
-        .catch((error) => {
-          alert(error.message)
-        })
-    })
+    }
+    else
+      console.log("안해썽!")
   }
 
   // 수정 버튼 선택
@@ -226,7 +276,6 @@ export default function BasicFacilityManagement({ route, navigation }) {
       showToast()
     }
   }
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -278,8 +327,6 @@ export default function BasicFacilityManagement({ route, navigation }) {
             placeholder='주소 찾기를 클릭하세요' onChangeText={setAddress}>{address}</TextInput>
           <TextInput style={styles.textInput} placeholder='상세 주소' onChangeText={setDetailAddress}>{detailAddress}</TextInput>
           <Text style={styles.titleText}>시설 사진</Text>
-
-
           <View style={{ flexDirection: 'row', marginBottom: 10, height: SCREEN_WIDTH * 0.22 }}>
             <TouchableOpacity style={styles.imageViewContainer} onPress={pickImage}>
               <AntDesign name="pluscircleo" size={28} color="grey" style={{ color: '#787878' }} />
@@ -299,14 +346,10 @@ export default function BasicFacilityManagement({ route, navigation }) {
                 </View>
               )}
           </View>
-
-
-
           <Text style={styles.titleText}>시설 설명</Text>
           <TextInput style={styles.explain} multiline={true} placeholder='시설 설명' onChangeText={setExplain}>{explain}</TextInput>
         </View>
-      </ScrollView>
-      {
+      </ScrollView>{
         pwMode === false ? (
           name && tel && address ? (
             <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#3262d4' }}
@@ -330,9 +373,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
             <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#a0a0a0' }} disabled={true}>
               <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
             </TouchableOpacity>
-          )
-        )
-      }
+          ))}
       <Toast ref={toastRef} position={'center'} fadeInDuration={200} fadeOutDuration={1000} />
     </SafeAreaView >
   );
