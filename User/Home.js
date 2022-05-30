@@ -204,6 +204,7 @@ const ReadUser = () => {
               <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', }}>취소 내역</Text>
             </TouchableOpacity>
           </View>
+          <View style={{ height: height * 0.03 }}></View>
           <View style={{ flexDirection: 'row' }}>
             <TouchableOpacity style={{
               backgroundColor: '#3262d4',
