@@ -2,7 +2,8 @@
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
 import {
-  StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput, Button, Alert
+  StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput,TouchableWithoutFeedback,
+   Button, Alert
 } from 'react-native';
 import React, { useState, useEffect } from "react";
 import { Dimensions } from 'react-native';
@@ -439,6 +440,7 @@ export default function BookingFacility({navigation}) {
     const backgroundColor = "#A9E2F3";
     const color = "#2E9AFE";
     return (
+  <TouchableWithoutFeedback onPress={()=>{}}>
       <Item
         item={item}
         onPress={() => {
@@ -451,6 +453,8 @@ export default function BookingFacility({navigation}) {
         backgroundColor={isSelected && { backgroundColor }}
         textColor={isSelected && { color }}
       />
+      </TouchableWithoutFeedback>
+     
     );
   };
   //console.log(selectedId)
@@ -753,7 +757,8 @@ export default function BookingFacility({navigation}) {
 
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView bounces={false}>
+        <ScrollView bounces={false} style={{width:"100%"}} nestedScrollEnabled={true}>
+    
           {/*시설 이미지*/}
 
           <View>
@@ -900,23 +905,29 @@ export default function BookingFacility({navigation}) {
           }}>
 
             <Text style={styles.SelectionTitle}>시간 선택</Text>
+
             <View>
               <View style={{ height: showTimeSelect ? 300 : 0, width: showTimeSelect ? 400 : 0 ,}}>
                 <ScrollView horizontal={true} style={{ width: "100%" }} bounces={false}>
                   <View style={{ width: width, paddingHorizontal: 20 ,}}>
+
                     <FlatList
                       style={{ borderWidth: 1, borderColor: '#646464', borderRadius: 5,}}
                       data={data}
                       renderItem={renderItem}
                       keyExtractor={(item) => item.id}
+                    
+                      
                     //horizontal={true}
 
                     />
+
                   </View>
                    
 
+
                 </ScrollView>
-              </View>
+      
 
 
 
@@ -985,9 +996,9 @@ export default function BookingFacility({navigation}) {
 
           </Modal>
 
-
+          
         </ScrollView>
-
+      
         <View style={{
           backgroundColor: 'white', height: height * 0.1, justifyContent: 'space-between',
           borderTopWidth: 1, borderColor: 'grey', flexDirection: 'row', alignItems: 'center'
