@@ -81,7 +81,7 @@ export default function App() {
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
-  //return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
+  return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
 
   // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
