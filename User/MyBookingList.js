@@ -4,11 +4,20 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Dimensions } from 'react-native';
 import { auth } from '../Core/Config';
-import { doc, collection, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { doc, collection, getDocs, query, updateDoc, where, getDoc } from 'firebase/firestore';
 import { db } from '../Core/Config';
+import * as Notifications from 'expo-notifications'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function App() {
   const currentUser = auth.currentUser // 현재 접속한 user
@@ -41,6 +50,7 @@ export default function App() {
 
   // 예약 내역 Flatlist
   const bookingItem = (itemData) => {
+    var adminId = ""
     // 예약 취소 시작
     const cancelBooking = () => {
       // 예약 취소할 문서 ID 가져오기
@@ -53,6 +63,7 @@ export default function App() {
             setBookingId(doc.id) // 즉각 반영 X -> 실행 후 수정해보기~~~
             console.log(bookingId)
             console.log(doc.id)
+            adminId = doc.adminId
             UpdateCancel(doc.id)
           })
         })
@@ -72,11 +83,52 @@ export default function App() {
         .then(() => {
           console.log(id)
           alert("취소가 완료되었습니다")
+
+          // 관리자에게 예약을 취소했다는 푸시 알림을 보냄.
+          const facRef = doc(db, "Facility", adminId)
+
+          getDoc(facRef)
+              // Handling Promises
+              .then((snapshot) => {
+                  // MARK : Success
+                  if (snapshot.exists) {
+                      const result = snapshot.data().token
+
+                      const userRef = doc(db, "User", currentUserId)
+                      getDoc(userRef)
+                      // Handling Promises
+                      .then((snapshot) => {
+                          // MARK : Success
+                          if (snapshot.exists) {
+                              sendNotification(result, itemData.item.facilityId,snapshot.data().name )
+                          }
+                          else {
+                              alert("No Doc Found")
+                          }
+              })
+              .catch((error) => {
+                  // MARK : Failure
+                  alert(error.message)
+              })
+                      sendNotification(result)
+                  }
+                  else {
+                      alert("No Doc Found")
+                  }
+              })
+              .catch((error) => {
+                  // MARK : Failure
+                  alert(error.message)
+              })
+
         })
         .catch((error) => {
           alert(error.message)
         })
     }
+
+
+   
 
     const facilitieName = itemData.item.facilityId
     // usingTime에서 날짜와 시간 가져오기
@@ -105,6 +157,27 @@ export default function App() {
         </TouchableOpacity>
       </View>
     </View>
+  }
+
+  const sendNotification = async(token, facName, userName) =>{
+    const message = {
+      to: token,
+      sound: 'default',
+      title: '시설 예약이 취소되었습니다. ',
+      body: '시설 '+facName+'의 예약을 '+userName+'님이 취소하였습니다. ',
+      data: {data: 'goes here'},
+    };
+
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message)
+    })
+
   }
 
   useEffect(() => {

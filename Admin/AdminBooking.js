@@ -10,6 +10,16 @@ import Modal from "react-native-modal";
 import { Feather } from '@expo/vector-icons';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where,onSnapshot } from 'firebase/firestore';
 import { db } from '../Core/Config';
+import * as Notifications from 'expo-notifications'
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 
 const {height,width}=Dimensions.get("window");
@@ -658,11 +668,53 @@ const AddBooking = (bookingTime,cost,usedPlayer,usingTime) => {
             .then(() => {
                 // MARK : Success
               //  alert("Document Created!")
+              // 사용자에게 예약된 사실에 대한 푸시 알림을 보낸다.
+              const userDoc = doc(db, "User",  currentUserId)
+                    // 사용자의 토큰을 얻어서 사용자에게 푸시 알림을 보냄.
+                    getDoc(userDoc)
+                    // Handling Promises
+                    .then((snapshot) => {
+                        // MARK : Success
+                        if (snapshot.exists) {
+                            const result = snapshot.data().token
+                            sendNotification(result, value)
+                            console.log(result)
+                        }
+                        else {
+                            alert("No Doc Found")
+                        }
+                    })
+                    .catch((error) => {
+                        // MARK : Failure
+                        alert(error.message)
+                    })
+
             })
             .catch((error) => {
                 // MARK : Failure
                 alert(error.message)
             })
+}
+
+const sendNotification = async(token, facName) =>{
+  const message = {
+    to: token,
+    sound: 'default',
+    title: '시설 '+facName+'에 예약되었습니다.',
+    body: '예약 내역을 확인해주세요. ',
+    data: {data: 'goes here'},
+  };
+
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message)
+  })
+
 }
 
 let reserveds=[]//예약된 allocation들
@@ -674,7 +726,7 @@ const QueryAllo = () => {
     ref,
     where("facilityId","==",value),
     where("adminId","==",adminId),//전체시설id
-);
+  );
   getDocs(data)
       .then((querySnapshot) => {
           querySnapshot.forEach((doc) => {
@@ -732,9 +784,10 @@ const toggleSearchModal=()=>{
   return (
     <SafeAreaView style={{flex:1, backgroundColor: 'white'}}>
     <View style={styles.container}>
-      <Text style={styles.text1}>BBOOKING</Text>
+      <ScrollView style={{flex:1}}>
+      {/* <Text style={styles.text1}>BBOOKING</Text> */}
       <StatusBar style="auto" />
-      <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, width: width*0.95, height: height*0.25,}}>
+      <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8, }}>
       <Text style={styles.text2}>예약자 정보</Text>
 
 
@@ -765,16 +818,17 @@ const toggleSearchModal=()=>{
       </View>
     </View>
 
-    <View style={{borderColor: '#999', borderWidth: 1, borderRadius: 10, padding: 10, margin: 8,width: width*0.95, height: height*0.5,}}>
+    <View style={{borderColor: '#999', padding: 10, margin: 8,}}>
     
     <Text style={styles.text2}>시설 정보</Text>
-    <ScrollView bounces={false}>
+    {/* <ScrollView bounces={false}> */}
     <View style={{flexDirection: 'column'}}>
       
       {/*달력과 picker의 부모뷰. 여기에 style을 주지 않으면 picker와 달력이 겹쳐서 선택이 안된다. */}
       <View style={{backgroundColor:'white'}}>
 
             <DropDownPicker
+            style={{marginBottom:20}}
             open={open}
             value={value}
             items={items}
@@ -815,7 +869,7 @@ const toggleSearchModal=()=>{
       <View>
       
       <View style={{height:showTimeSelect?400:0, width:showTimeSelect?400:0}}>
-      <Text style={styles.text3}>시간 선택</Text>
+      <Text style={{...styles.text3, marginBottom:10, marginTop:20}}>시간 선택</Text>
        <ScrollView horizontal={true} style={{ width: "150%" }} bounces={false}>
       <FlatList
         data={data}
@@ -841,8 +895,9 @@ const toggleSearchModal=()=>{
       </View>
       </View>
 
-      </ScrollView>
+      {/* </ScrollView> */}
     </View>
+    </ScrollView>
     </View>
     <TouchableOpacity 
             style={{alignItems:'center', justifyContent:'center', backgroundColor:'#3262d4',
@@ -932,8 +987,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    // alignItems: 'center',
+    // justifyContent: 'center',
   },
   text1: {
     fontSize: 36,
