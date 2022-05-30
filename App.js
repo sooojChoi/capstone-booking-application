@@ -84,7 +84,7 @@ export default function App() {
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
-  //return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
+  return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
 
   // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
@@ -100,7 +100,7 @@ export default function App() {
 
   ////////// 사용자(User) UI
 
-  return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
+  //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
 
   //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)
   //return (<LogIn></LogIn>) // 로그인(수빈, 혜림)

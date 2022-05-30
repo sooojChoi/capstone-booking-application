@@ -86,7 +86,7 @@ const setallo = (result) => {
 
   /*facilityTable의 정보를 받아옴*/ 
   let i=0;
-  let openTime,closeTime,unitTime;
+  let openTime,closeTime,unitTime,unitTimeMin,unitTimeHour;
 
 function setBeforeTime(Array){//여기서는 available이 모두 true인 allocation생성만 하고
   let timeArray=[];
@@ -97,16 +97,29 @@ function setBeforeTime(Array){//여기서는 available이 모두 true인 allocat
      openTime=elem.openTime/60
      closeTime=elem.closeTime/60
      unitTime=elem.unitTime/60
+     unitTimeMin=(elem.unitTime)%60 //unitTime이 30분이라면 30
       let j=0;
       const t=[];
       
       let k=0;
-      while(openTime+j*unitTime<closeTime){
-       openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
-      t.push({"time":ThatDay+"T"+(openTime+j*unitTime)+":00","available":true})
-          j++;
-      }
-      //console.log("2", elem.name)
+      // while(openTime+j*unitTime<closeTime){ 
+      //   console.log(unitTime)
+      //  openTime+j*(unitTime)>9?(k=+openTime+j*(unitTime)):(k="0"+openTime+j*(unitTime))
+      // t.push({"time":ThatDay+"T"+(openTime+j*unitTime)+":00","available":true})
+      // // unitTimeMin==0?(unitTimeMin="00"):unitTimeMin==unitTimeMin
+      // // t.push({"time":ThatDay+"T"+(openTime+j*unitTime)+":"+unitTimeMin,"available":true})
+      //     j++;
+      // }
+      // //console.log("2", elem.name)
+      while(openTime+j*unitTime<closeTime){ //오픈시간부터 unitTime더해서 클로즈시간될때까지 반복
+        //openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
+        //unitTimeMin이 0이면 unitTimeMin은 00으로 unitTimeMin이 0이 아니면 unitTimeHour 소수점 떼기
+        //console.log("unitTime",unitTime,"정수로 바꾸면",Math.floor(unitTime))
+        unitTimeMin==0?(unitTimeMin="00"):(j==0?(unitTimeMin="00"):(((unitTimeMin*j)%60==0)?unitTimeMin="00":unitTimeMin=(unitTimeMin*j)%60))
+       t.push({"time":ThatDay+"T"+parseInt(openTime+j*unitTime)+":"+unitTimeMin,"available":true})
+           j++;
+           unitTimeMin=(elem.unitTime)%60
+       }
       return ({id:elem.name,time:t});//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
   });
   //console.log("타임",timeArray)
