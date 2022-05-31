@@ -37,7 +37,8 @@ export default function App() {
       })
   }
   useEffect(() => {
-    ReadLastBookingList()
+    let timer = setTimeout(()=>{ReadLastBookingList()}, 500)
+    return () => clearTimeout(timer)
   }, [booking])
 
   // 예약 내역 Flatlist
