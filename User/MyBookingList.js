@@ -127,6 +127,41 @@ export default function App() {
         })
     }
 
+      // 예약취소하면 db allocation 바꿔주기
+  const UpdateAlloCancel = (merge) => {
+    // doc(db, 컬렉션 이름, 문서 ID)
+    // 변경할 allocation 문서 ID가져오기
+    const allocationRef = collection(db, "Allocation")
+    const allocationData = query(allocationRef, where("usingTime", "==", itemData.item.usingTime), where("facilityId", "==", itemData.item.facilityId))
+
+    getDocs(allocationData)
+    .then((snapshot) => {
+      snapshot.forEach((doc) =>{
+        UpdateAllo(doc.id)
+      })
+    })
+    .catch((error) => {
+      alert(error.message)
+    })
+
+    const UpdateAllo = (id) => {
+      const docRef = doc(db, "Allocation", id)
+
+      const docData = {
+        available: true
+    } // 문서에 담을 필드 데이터
+
+    updateDoc(docRef, docData)
+        // Handling Promises
+        .then(() => {
+            alert("allocation 변경!")
+        })
+        .catch((error) => {
+            alert(error.message)
+        })
+    }
+}
+
 
    
 
@@ -151,7 +186,8 @@ export default function App() {
         }} onPress={() => Alert.alert(
           "주의", "예약을 취소하시겠습니까?", [
           { text: "취소", onPress: () => console.log("예약 취소하지 않음"), style: "cancel" },
-          { text: "확인", onPress: () => { cancelBooking(true) } },
+          { text: "확인", onPress: () => { cancelBooking(true)
+          UpdateAlloCancel(true) } },
         ], { cancelable: false })}>
           <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
         </TouchableOpacity>

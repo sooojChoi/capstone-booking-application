@@ -67,7 +67,6 @@ export default function App() {
   //   </NavigationContainer>
   // )
 
-
   ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
   //return (<Home></Home>) // 홈(유진)
 
@@ -78,7 +77,7 @@ export default function App() {
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 
-  return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
+  //return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
 
   // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
 
