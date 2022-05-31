@@ -3,9 +3,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from "react";
-import { auth } from '../Core/Config';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { auth, db } from '../Core/Config';
 import Modal from "react-native-modal";
 import CalendarPicker from 'react-native-calendar-picker';
 import { AntDesign } from '@expo/vector-icons';
@@ -26,18 +25,12 @@ export default function BookingManagement({ navigation }) {
   const [filter, setFilter] = useState("전체 예약 내역") // 필터링 된 내역(시설, 날짜)를 보여줌
   const isFocused = useIsFocused(); // 예약 취소 후 내역 목록 Refresh를 위한 변수
 
-  // 해당 시설에 맞는 값을 가져오도록 추후 수정해야 함(Stack Navigation 설정)
-  const adminId = "AdminTestId" // 시설 ID
-
-  //  #######
-  // const currentUser = auth.currentUser // 현재 접속한 user
-  // const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
-  // console.log(currentUserId)
-  // ########
-
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
+  
   // 시설 선택 Modal에 출력할 세부 시설 목록(+ 체크리스트)
   const setFacCheckList = () => {
-    const ref = collection(db, "Facility", adminId, "Detail")
+    const ref = collection(db, "Facility", currentAdminId, "Detail")
     const data = query(ref)
     let result = [] // 가져온 세부 시설 목록을 저장할 변수
 
@@ -221,7 +214,7 @@ export default function BookingManagement({ navigation }) {
     getDocs(data)
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          if (doc.data().adminId === adminId && doc.data().cancel == false && doc.data().usingTime >= today)
+          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
             if (doc.data().usingTime.substr(0, 10) === usingTime) {
               facility.find((facility) => {
                 if (doc.data().facilityId === facility.id)
@@ -245,7 +238,7 @@ export default function BookingManagement({ navigation }) {
     getDocs(data)
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          if (doc.data().adminId === adminId && doc.data().cancel == false && doc.data().usingTime >= today)
+          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
             facility.find((facility) => {
               if (doc.data().facilityId === facility.id)
                 result.push(doc.data())
@@ -267,7 +260,7 @@ export default function BookingManagement({ navigation }) {
     getDocs(data)
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          if (doc.data().adminId === adminId && doc.data().cancel == false && doc.data().usingTime >= today)
+          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
             if (doc.data().usingTime.substr(0, 10) === usingTime)
               result.push(doc.data())
         });
@@ -287,7 +280,7 @@ export default function BookingManagement({ navigation }) {
     getDocs(data)
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          if (doc.data().adminId === adminId && doc.data().cancel == false && doc.data().usingTime >= today)
+          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
             result.push(doc.data())
         });
         setBookingList(result)
@@ -340,8 +333,7 @@ export default function BookingManagement({ navigation }) {
     const time = usingTime.substr(11, 5)
 
     const bookingData = {
-      adminId: adminId, facilityId: itemData.item.facilityId,
-      usingTime: itemData.item.usingTime, userId: itemData.item.userId
+      facilityId: itemData.item.facilityId, usingTime: itemData.item.usingTime, userId: itemData.item.userId
     }
 
     if (resultDate == null) {
