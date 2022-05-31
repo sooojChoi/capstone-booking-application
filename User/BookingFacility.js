@@ -22,8 +22,11 @@ import { Linking, Platform } from 'react-native'
 import { AntDesign } from '@expo/vector-icons';
 import { storageDb } from '../Core/Config';
 import { getStorage, ref, getDownloadURL, listAll } from "firebase/storage"
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 //import call from 'react-native-phone-call'
 import * as Notifications from 'expo-notifications'
+import BookingFacilityDetail from './BookingFacilityDetail'
 
 
 /*모바일 윈도우의 크기를 가져온다*/
@@ -38,9 +41,16 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default function BookingFacility({navigation}) {
+
+function BookingFacilityHome({ navigation, route }) {
 
 
+  useEffect(() => {
+    if (route.params?.selectedIdlist) {
+      setSelectedId(route.params?.selectedIdlist)
+    }
+  }, [route.params?.selectedIdlist]);
+//console.log(selectedId)
 
   const [adminId, setAdminId] = useState('AdminTestId')
   const [facility, setFacility] = useState(adminId);
@@ -374,7 +384,9 @@ export default function BookingFacility({navigation}) {
   let showTimeSelect = selectedStartDate && value;
 
 
+
   const [data, setData] = useState();
+
   //const data=[]
   // let todayAvail = []//이게 push되기 전에 null이어야한다. 데이타가 바뀌면 전에거에 계속 추가가 됨. 교체되어야 하는데
   let d = new Date(selectedStartDate)
@@ -399,7 +411,12 @@ export default function BookingFacility({navigation}) {
 
       });
 
-      makeAllocationTime(selectedAllo);
+      makeAllocationTime(selectedAllo).then(function(resolvedData) {
+        // if(showTimeSelect){
+        //   navigation.navigate('BookingfacilityDetail',{timeArray:resolvedData,maxPlayers:maxPlayers,minPlayers:minPlayers})
+
+        // }
+      })
       selectedAllo.length = 0;//중간에 db에서 데이터가 변경되면, 변경된 데이터가 이 배열에 쌓이는게 아니라 교체되도록
       //  setData(dataPush())
     }, (error) => { alert(error.message); });
@@ -415,48 +432,10 @@ export default function BookingFacility({navigation}) {
   }, [selectedStartDate, value])
 
 
-  //시간선택
-  //cost는 등급에 따라 달라진다.
-  const Item = ({ item, onPress, backgroundColor, textColor }) => (
 
-    <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
-      <View style={{ paddingHorizontal: 15, paddingVertical: 10, borderBottomColor: '#b4b4b4', borderBottomWidth: 1 }}>
-        <View><Text style>{item.time.split('T')[1]}</Text></View>
-        <View style={{ width: width, flexDirection: 'row' }}>
-          <Text style={[styles.title, textColor, { fontSize: 15 }]}>{item.cost}원</Text>
-          <Text style={{ ...styles.title, fontSize: 15 }}>최소 인원: {minPlayers}</Text>
-          <Text style={{ ...styles.title, fontSize: 15 }}>최대 인원: {maxPlayers}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+   const [selectedId, setSelectedId] = useState([]);
 
-  const [selectedId, setSelectedId] = useState([]);
 
-  const renderItem = ({ item }) => {
-
-    const isSelected = selectedId.filter((i) => i === item.id).length > 0;
-    const backgroundColor = "#A9E2F3";
-    const color = "#2E9AFE";
-    return (
-  <TouchableWithoutFeedback onPress={()=>{}}>
-      <Item
-        item={item}
-        onPress={() => {
-          if (isSelected) {
-            setSelectedId((prev) => prev.filter((i) => i !== item.id));
-          } else {
-            setSelectedId((prev) => [...prev, item.id])
-          }
-        }}
-        backgroundColor={isSelected && { backgroundColor }}
-        textColor={isSelected && { color }}
-      />
-      </TouchableWithoutFeedback>
-     
-    );
-  };
-  //console.log(selectedId)
 
   //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
   function makeAllocationTime(array) {
@@ -496,12 +475,15 @@ export default function BookingFacility({navigation}) {
 
     })
     
-    console.log(tempData.sort((a,b)=>new Date(a.time)-new Date(b.time)),"[-----------------]")
+    
     setData(tempData);//data오름차순 정렬
+   
+  return new Promise(function(resolve, reject) {
+  
+    resolve(tempData);
+  });
 
   }
-
-
 
 
   //console.log("data!!!!",data)
@@ -540,7 +522,7 @@ export default function BookingFacility({navigation}) {
       "결제는 오셔서 하시면 됩니다.",
       [
         { text: "예약 확인", onPress: () =>{ 
-          navigation.replace('DetailBookingManagement')
+          navigation.navigate('Bookingfin')
           console.log("goto main")
         } }
       ]
@@ -589,7 +571,7 @@ export default function BookingFacility({navigation}) {
       .then(() => {
         // MARK : Success
 
-        alert("Document Created!")
+    //    alert("Document Created!")
 
         // 관리자에게 예약되었다는 푸시 알림을 보낸다.
         const docRef = doc(db, "Facility", adminId)
@@ -670,9 +652,10 @@ export default function BookingFacility({navigation}) {
           modifyAllocation(elem.id);
           AddBooking(nowFormat, totalCost, count, elem.data.usingTime);
         })
-
-        toggleModal();//예약 완료되고 그걸 어떻게 사용자한테  보여줄지
+ 
+        toggleModal();
         reservedAlert();//예약완료 alert
+     
       })
       .catch((error) => {
         alert(error.message);
@@ -742,12 +725,6 @@ export default function BookingFacility({navigation}) {
     )
 
   }
-
-  // const disabledButton=()=>{//true이면 예약 버튼 안보임, false이면 예약버튼 보임.
-  //   if(){return false}
-  //   else{ return true}
-
-  // }
 
 
 
@@ -896,6 +873,10 @@ export default function BookingFacility({navigation}) {
             )
           }
 
+<Button onPress={()=>{
+          navigation.navigate('Bookingfin')
+}} title="hello"></Button>
+
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
 
           {/*시설과 날짜 모두 선택해야 시간을 선택 할 수 있도록 바꿈 */}
@@ -903,33 +884,14 @@ export default function BookingFacility({navigation}) {
             height: showTimeSelect ? (ScrollView.height) : 0, width: showTimeSelect ? 400 : 0, marginTop: 20,
             marginBottom: showTimeSelect ? 40 : 0
           }}>
-
+            
+          <View style={{flexDirection:'row',alignItems:'center'}}>
             <Text style={styles.SelectionTitle}>시간 선택</Text>
-            <View style={{width:"100%" ,backgroundColor:'yellow'}}>
-              <View style={{ height: showTimeSelect ? 300 : 0, width: showTimeSelect ? "100%" : 0}}>
-          
-                <ScrollView horizontal={true} style={{ width: "100%"}} bounces={false}>
-                 
-                 
-                  
-                    <FlatList
-                      style={{ borderWidth: 1, borderColor: '#646464', borderRadius: 5, }}
-                      data={data}
-                      renderItem={renderItem}
-                      keyExtractor={(item) => item.id}
-                    
-                      
-                    //horizontal={true}
 
-                    />
-                   
-               
-                  
-                </ScrollView>
-               
-              </View>
-
-
+            <TouchableOpacity
+            style={{marginStart:20}}
+            onPress={()=>{navigation.navigate('BookingfacilityDetail',{timeArray:data,maxPlayers:maxPlayers,minPlayers:minPlayers})}}
+            ><Text style={{color:'blue'}}>  {'>'} </Text></TouchableOpacity>
 
             </View>
 
@@ -954,23 +916,9 @@ export default function BookingFacility({navigation}) {
               <TouchableOpacity onPress={() => { if (count < maxPlayers) setCount(count + 1) }}>
                 <AntDesign name="plus" size={20} color="#1789fe" />
               </TouchableOpacity>
-              {/* <Button title='-' onPress={() => {if(count > 0) setCount(count - 1)}}></Button>
-      <Text style={styles.SelectionTitle}>{count}</Text>
-      <Button title='+' onPress={() => {if(count<maxPlayers)setCount(count + 1)}}
-        ></Button> */}
+           
             </View>
 
-            {/* <View style={{flexDirection:'row'}}>
-        <Text style={styles.SelectionTitle}>공간사용료:</Text>
-        <Text style={{...styles.SelectionTitle, fontSize:18, fontWeight:'normal'}}>{totalCost} 원</Text>
-      </View>
-      <TouchableOpacity 
-      style={{ marginTop:30, backgroundColor:'#3262d4', alignItems:'center',marginHorizontal:width/5,
-    borderRadius:10, paddingVertical:15,}}
-      onPress={toggleModal}
-      >
-        <Text style={{fontSize:23,fontWeight:'bold', color:'white'}}>예약하기</Text>
-        </TouchableOpacity> */}
           </View>
 
 
@@ -1023,6 +971,33 @@ export default function BookingFacility({navigation}) {
       </SafeAreaView>
     </View>
 
+  );
+}
+
+
+// 앱이 각 화면이 전환될 수 있는 기본 틀을 제공한다.
+const Stack = createStackNavigator();
+
+export default function BookingFacility(){
+  return (
+    //네비게이션의 트리를 관리해주는 컴포넌트
+    <NavigationContainer independent={true} >
+      {/* 네비게이션 기본틀의 스택을 생성 */}
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {/* 해당스택에 들어갈 화면 요소를 넣어준다. */}
+        <Stack.Screen name="BookingFacilityHome" component={BookingFacilityHome}/>
+        <Stack.Screen name="BookingfacilityDetail" component={BookingFacilityDetail}/>
+        <Stack.Screen name="Bookingfin" component={Bookingfin}/>
+
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
+}
+function Bookingfin({navigation}){
+  return(
+    <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+      <Text style={{fontSize:30}}>완료되었습니다.</Text>
+    </View>
   );
 }
 

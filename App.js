@@ -69,7 +69,9 @@ export default function App() {
   //     </Stack.Navigator>
   //   </NavigationContainer>
   // )
+
   
+
 
   ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
   //return (<Home></Home>) // 홈(유진)
