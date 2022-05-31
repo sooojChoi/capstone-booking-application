@@ -10,7 +10,7 @@ import { AllocationTable } from '../Table/AllocationTable';
 import { FacilityTable } from '../Table/FacilityTable';
 import Modal from "react-native-modal";
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { auth, db } from '../Core/Config';
 //data 바로 적용안됨
 
 const { height, width } = Dimensions.get("window");
@@ -34,6 +34,9 @@ const MItem = ({ item, onLongPress }) => (
 
 
 export default function GenerateAllocation() {
+  // Admin
+const currentAdmin = auth.currentUser // 현재 접속한 admin
+const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const now = new Date();
   const temp = new Date(now.setDate(now.getDate() + 22));
@@ -52,7 +55,7 @@ export default function GenerateAllocation() {
   // DB facility 가져오기
   const ReadfacilityList = () => {
     // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
-    const ref = collection(db, "Facility", "AdminTestId", "Detail") //관리자 ID 임시
+    const ref = collection(db, "Facility", currentAdminId, "Detail") //관리자 ID 임시
     const data = query(ref)
     let result = [] // 가져온 facility 목록을 저장할 변수
 
@@ -273,7 +276,7 @@ export default function GenerateAllocation() {
     //allo(alloArray)
     //console.log("data", data) //안나옴
   }, [alloArray])
-
+  var data1 = []
   //함수정의
   function allo(alloArray) {
     data.length = 0
@@ -281,39 +284,23 @@ export default function GenerateAllocation() {
       if ((e.id === selectedId)) {
         e.time.map((t) => {
           if (t.available == true) {
-            data.push({ adminId: "AdminTestId", usingTime: t.time, available: t.available, facilityId: selectedId })
+            data1.push({ adminId: currentAdminId, usingTime: t.time, available: t.available, facilityId: selectedId })
           }
         })
       }
     })
-    setData(data) // 안됨
+    setDa(data1)
   }
 
   //함수로 넣어봤는데 안됨
-  const setDa = (data) => {
-    setData(data)
+  const setDa = (da) => {
+    setData(da)
   }
 
   // 선택한 시설 allocation data에 넣기
   useEffect(() => {
-    //let data=[]
-    //console.log("시설이름",selectedId) //잘나옴
     allo(alloArray) //해당시설 allo data에 넣기
-    //setData(data)
-    setDa(data)
-    //console.log("어로어레이는 잘나오나", alloArray) //잘나옴  ----이쪽에서 하다가 말았음
-    console.log("시간선택하고 데이터", data) //잘나옴
-    // alloArray.map((e)=>{
-    //   if((e.name===selectedId)){
-    //     e.time.map((t)=>{
-    //       if(t.available==true){
-    //      data.push({id:t.time,available:t.available,facilityId:e.name})
-    //       }
-    //    })
-    //   }
-    //   console.log("데이터",data)
-    //   setData(data)
-    // })
+    setData(data1)
 
   }, [selectedId]) //시설 선택했을 때
 
