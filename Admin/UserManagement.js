@@ -50,6 +50,9 @@ export default function UserManagement({ navigation }) {
           }
         })
 
+      }
+    })
+
     const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {

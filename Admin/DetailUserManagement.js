@@ -1,6 +1,6 @@
 // 상세 사용자 관리(관리자) -> 수진
 
-import { StyleSheet, SafeAreaView, Text, View, Dimensions, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, SafeAreaView, Text, View, Dimensions,ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import DropDownPicker from 'react-native-dropdown-picker';
 import CalendarPicker from 'react-native-calendar-picker';
@@ -25,7 +25,7 @@ const grade = ["A등급", "B등급", "C등급"];  // grade가 바뀌면 gradeRad
 export default function DetailUserManagement({ route, navigation }) {
   const { userId, userGrade } = route.params;
 
-  // const myFacilityId = "AdminTestId"
+  // const myFacilityId = "hansung"
 
   const currentAdmin = auth.currentUser // 현재 접속한 admin
   // const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
@@ -266,6 +266,12 @@ export default function DetailUserManagement({ route, navigation }) {
           .catch((error) => {
             alert(error.message)
           })
+        })
+        .catch((error) => {
+          alert(error.message)
+        })
+      }
+        
 
     const sendNotificationWithGrade = async(token) =>{
       const message = {
@@ -285,6 +291,7 @@ export default function DetailUserManagement({ route, navigation }) {
         },
         body: JSON.stringify(message)
       })
+    }
 
     const sendNotificationWithAllowDate = async(token, date) =>{
       const message = {
@@ -307,83 +314,46 @@ export default function DetailUserManagement({ route, navigation }) {
 
   }
 
-  const sendNotificationWithGrade = async (token) => {
-    const message = {
-      to: token,
-      sound: 'default',
-      title: '사용자 정보가 수정되었습니다. ',
-      body: '등급이 변경되었습니다. ',
-      data: { data: 'goes here' },
-    };
 
-    await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(message)
-    })
+      // //setDoc(docRef, docData, { merge: merge })
+      // updateDoc(docRef, docData)
+      //     // Handling Promises
+      //     .then(() => {
+      //         //alert("Updated Successfully!")
+      //         console.log("Updated Successfully!")
 
-  }
-
-      //setDoc(docRef, docData, { merge: merge })
-      updateDoc(docRef, docData)
-          // Handling Promises
-          .then(() => {
-              //alert("Updated Successfully!")
-              console.log("Updated Successfully!")
-
-              var temp  = {
-                userId: userInfo.userId, name: userInfo.name, grade: userInfo.grade,
-                phone: userInfo.phone, 
-                registerDate: userInfo.registerDate, allowDate: docData.allowDate
-              }
+      //         var temp  = {
+      //           userId: userInfo.userId, name: userInfo.name, grade: userInfo.grade,
+      //           phone: userInfo.phone, 
+      //           registerDate: userInfo.registerDate, allowDate: docData.allowDate
+      //         }
           
-              setUserInfo(temp);
-              setAllowDateInfo([..."예약 금지일: "+docData.allowDate]);
-              setDateForAllow(...[new Date(selectedDate)]);
+      //         setUserInfo(temp);
+      //         setAllowDateInfo([..."예약 금지일: "+docData.allowDate]);
+      //         setDateForAllow(...[new Date(selectedDate)]);
 
-              // 사용자의 토큰을 얻어서 사용자에게 푸시 알림을 보냄.
-              getDoc(docRef)
-                    // Handling Promises
-                    .then((snapshot) => {
-                        // MARK : Success
-                        if (snapshot.exists) {
-                            const result = snapshot.data().token
-                            sendNotificationWithAllowDate(result, docData.allowDate)
-                            console.log(result)
-                        }
-                        else {
-                            alert("No Doc Found")
-                        }
-                    })
-                    .catch((error) => {
-                        // MARK : Failure
-                        alert(error.message)
-                    })
+      //         // 사용자의 토큰을 얻어서 사용자에게 푸시 알림을 보냄.
+      //         getDoc(docRef)
+      //               // Handling Promises
+      //               .then((snapshot) => {
+      //                   // MARK : Success
+      //                   if (snapshot.exists) {
+      //                       const result = snapshot.data().token
+      //                       sendNotificationWithAllowDate(result, docData.allowDate)
+      //                       console.log(result)
+      //                   }
+      //                   else {
+      //                       alert("No Doc Found")
+      //                   }
+      //               })
+      //               .catch((error) => {
+      //                   // MARK : Failure
+      //                   alert(error.message)
+      //               })
 
-  const sendNotificationWithAllowDate = async (token) => {
-    const message = {
-      to: token,
-      sound: 'default',
-      title: '사용자 정보가 수정되었습니다. ',
-      body: '예약 금지일이 부여되었습니다. ',
-      data: { data: 'goes here' },
-    };
+  
 
-    await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(message)
-    })
 
-  }
 
   // 유저 정보 업데이트 하기
   const UpdateUser = (docData) => {
@@ -687,4 +657,4 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 20 / 2
   }
-});
+})
