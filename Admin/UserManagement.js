@@ -32,90 +32,74 @@ export default function UserManagement({ navigation }) {
   const [userInfoForModal, setUserInfoForModal] = useState({});  // 수정되기 위해 모달에 띄워지는 사용자 정보 (한 명의 정보)
   const [searchUserText, setSearchUserText] = useState("")  // 사용자 검색
 
-  const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId))
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      // if (change.type === "added") {
-      //     console.log("New city: ", change.doc.data());
-      // }
-      if (change.type === "modified") {
-        console.log("-------------------------------------")
-        console.log("Modified permission: ", change.doc.data());
-        const changeData = change.doc.data()
-        // const index = users.findIndex(element => element.id === changeData.userId)
-        let temp = [...users];
-        temp.map((value) => {
-          if (value.id === changeData.userId) {
-            value.grade = changeData.grade
-          }
-        })
-
-      }
-    })
-
-    const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-            console.log("added: ", change.doc.data());
-            const data = change.doc.data()
-
-            var temp = [...users];
-              if(temp.find((value)=>value.id === data.userId)===undefined){
-                getUsersFromTable();
-              }
-
-        }
-        if (change.type === "modified") {
-            console.log("-------------------------------------")
-            console.log("Modified permission: ", change.doc.data());
-            const changeData = change.doc.data()
-           // const index = users.findIndex(element => element.id === changeData.userId)
-            let temp = [...users];
-            temp.map((value)=>{
-              if(value.id === changeData.userId){
-                value.grade = changeData.grade
-              }
-            })
-      
-            setUsers(temp)
-        }
-        // if (change.type === "removed") {
-        //     console.log("Removed city: ", change.doc.data());
+  useEffect(()=>{
+    const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId))
+    onSnapshot(q, (snapshot) => {
+      var refresh = 0
+      snapshot.forEach((doc) => {
+        refresh = 1;
+        // if (change.type === "added") {
+        //     console.log("New city: ", change.doc.data());
         // }
-      });
-
-    });
-  });
-
-  const userQ = query(collection(db, "User"));
-  const userUnsubscribe = onSnapshot(userQ, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      // if (change.type === "added") {
-      //     console.log("Added User: ", change.doc.data());
-      // }
-      if (change.type === "modified") {
-        console.log("-------------------------------------")
-        console.log("Modified User: ", change.doc.data());
-        const changeData = change.doc.data()
-
-        let temp = [...users];
-        temp.map((value) => {
-          if (value.id === changeData.id) {
-
-            value.phone = changeData.phone
-            value.allowDate = changeData.allowDate
-            value.name = changeData.name
-          }
-        })
-
-        setUsers(temp)
+        // if (change.type === "modified") {
+        //   console.log("-------------------------------------")
+        //   console.log("Modified permission: ", change.doc.data());
+        //   const changeData = change.doc.data()
+        //   // const index = users.findIndex(element => element.id === changeData.userId)
+        //   let temp = [...users];
+        //   temp.map((value) => {
+        //     if (value.id === changeData.userId) {
+        //       value.grade = changeData.grade
+        //     }
+        //   })
+  
+        // }
+      })
+  
+      if(refresh === 1){
+        refresh = 0;
+        getUsersFromTable();
       }
-      // if (change.type === "removed") {
-      //     console.log("Removed User: ", change.doc.data());
-      // }
     });
-  });
+  
+    const userQ = query(collection(db, "User"));
+    onSnapshot(userQ, (snapshot) => {
+      var refresh = 0;
+      // snapshot.docChanges().forEach((change) => {
+      snapshot.forEach((doc) => {
+        refresh = 1;
+        // if (change.type === "added") {
+        //     console.log("Added User: ", change.doc.data());
+        // }
+        // if (change.type === "modified") {
+        //   console.log("-------------------------------------")
+        //   console.log("Modified User: ", change.doc.data());
+        //   const changeData = change.doc.data()
+  
+        //   let temp = [...users];
+        //   temp.map((value) => {
+        //     if (value.id === changeData.id) {
+  
+        //       value.phone = changeData.phone
+        //       value.allowDate = changeData.allowDate
+        //       value.name = changeData.name
+        //     }
+        //   })
+  
+        //   setUsers(temp)
+        // }
+        // if (change.type === "removed") {
+        //     console.log("Removed User: ", change.doc.data());
+        // }
+        
+      });
+      if(refresh === 1){
+        refresh = 0;
+        getUsersFromTable();
+      }
+    });
+  },[])
+  
 
 
 

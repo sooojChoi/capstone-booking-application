@@ -464,7 +464,7 @@ export default function DetailUserManagement({ route, navigation }) {
       style={{ backgroundColor: 'grey' }}
       textStyle={{ color: 'white' }}
     />
-    <ScrollView>
+    <ScrollView nestedScrollEnabled={true} style={{width:"100%"}}>
     <View style={{ backgroundColor: 'white', justifyContent: 'center' }}>
       <View>
         <Text style={{ fontSize: 18, marginTop: 10, marginLeft: 10 }}>
@@ -520,6 +520,10 @@ export default function DetailUserManagement({ route, navigation }) {
           setOpen={setOpen}
           setValue={setValue}
           setItems={setItems}
+          listMode="SCROLLVIEW"
+          scrollViewProps={{
+            nestedScrollEnabled: true,
+          }}
         />
         <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#a6a6a6', marginLeft: 5, marginRight: 5 }}>
           <Text style={{ fontSize: 18, margin: 10, marginLeft: 10 }}>
