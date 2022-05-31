@@ -73,7 +73,7 @@ export default function App() {
 
   ////////// 관리자(Admin) UI
 
- // return (<AdminWholeStack></AdminWholeStack>) // 관리자 홈 화면
+  return (<AdminWholeStack></AdminWholeStack>) // 관리자 홈 화면
 
   //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
 

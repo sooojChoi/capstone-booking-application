@@ -50,11 +50,38 @@ export default function UserManagement({ navigation }) {
           }
         })
 
-        setUsers(temp)
-      }
-      // if (change.type === "removed") {
-      //     console.log("Removed city: ", change.doc.data());
-      // }
+    const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+            console.log("added: ", change.doc.data());
+            const data = change.doc.data()
+
+            var temp = [...users];
+              if(temp.find((value)=>value.id === data.userId)===undefined){
+                getUsersFromTable();
+              }
+
+        }
+        if (change.type === "modified") {
+            console.log("-------------------------------------")
+            console.log("Modified permission: ", change.doc.data());
+            const changeData = change.doc.data()
+           // const index = users.findIndex(element => element.id === changeData.userId)
+            let temp = [...users];
+            temp.map((value)=>{
+              if(value.id === changeData.userId){
+                value.grade = changeData.grade
+              }
+            })
+      
+            setUsers(temp)
+        }
+        // if (change.type === "removed") {
+        //     console.log("Removed city: ", change.doc.data());
+        // }
+      });
+
     });
   });
 

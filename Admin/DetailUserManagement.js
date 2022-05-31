@@ -132,40 +132,50 @@ export default function DetailUserManagement({ route, navigation }) {
     const data = query(ref) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
 
     getDocs(data)
-      // Handling Promises
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          userArray.push(doc.data())
-        });
-        userArray.find((user) => {
-          if (user.id === userId) { // gradeInfo에 id, name, grade정보가 있음(현재 등급이 수정되고 있는 사람의 정보)
-            const grade = userGrade
-            const realPhone = user.phone
-            const phone = realPhone.substring(0, 3) + '-' + realPhone.substring(3, 7) + '-' + realPhone.substring(7, 11);
-            const name = user.name
-            const allowDate = user.allowDate
-            const registerDate = user.registerDate
 
-            const temp = {
-              userId: userId, name: name, grade: grade, phone: phone,
-              registerDate: registerDate, allowDate: allowDate
-            }
-            setUserInfo(temp);
+          // Handling Promises
+          .then((snapshot) => {
+              snapshot.forEach((doc) => {
+                  //console.log(doc.id, " => ", doc.data())
+                  userArray.push(doc.data())
+                  
+              });
+              userArray.find((user)=>{
+                if(user.id===userId){  //gradeInfo에 id, name, grade정보가 있음(현재 등급이 수정되고 있는 사람의 정보)
+                  const grade = userGrade
+                  const realPhone = user.phone
+                  const phone = realPhone.substring(0,3)+'-'+realPhone.substring(3,7)+'-'+realPhone.substring(7,11);
+                  const name = user.name
+                  const allowDate = user.allowDate
+                  const registerDate = user.registerDate
+                  
+                  const temp  = {
+                    userId: userId, name: name, grade: grade, phone: phone, 
+                    registerDate: registerDate,allowDate: allowDate
+                  }
+                  setUserInfo(temp);
+                  
+                  if(allowDate === null || allowDate === "permission"){
+                    setAllowDateInfo("예약 금지일이 설정되지 않았습니다.")
+                  }else{
+                    setAllowDateInfo("예약 금지일: "+allowDate);
+                    setDateForAllow(new Date(allowDate));
+                  }
 
-            if (allowDate === null) {
-              setAllowDateInfo("예약 금지일이 설정되지 않았습니다.")
-            } else {
-              setAllowDateInfo("예약 금지일: " + allowDate);
-              setDateForAllow(new Date(allowDate));
-            }
-          }
-        })
-      })
-      .catch((error) => {
-        // MARK : Failure
-        //  alert(error.message)
-        alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오.");
-      })
+                   
+
+          
+                }
+              })
+              
+          })
+          .catch((error) => {
+              // MARK : Failure
+            //  alert(error.message)
+            alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오.");
+          })
+
+
   }
 
   useEffect(() => {
@@ -475,6 +485,7 @@ export default function DetailUserManagement({ route, navigation }) {
   }
 
 
+
   return <SafeAreaView style={styles.container}>
     <Toast ref={toastRef}
       positionValue={SCREEN_HEIGHT * 0.55}
@@ -483,7 +494,7 @@ export default function DetailUserManagement({ route, navigation }) {
       style={{ backgroundColor: 'grey' }}
       textStyle={{ color: 'white' }}
     />
-    {/* <ScrollView> */}
+    <ScrollView>
     <View style={{ backgroundColor: 'white', justifyContent: 'center' }}>
       <View>
         <Text style={{ fontSize: 18, marginTop: 10, marginLeft: 10 }}>
@@ -549,6 +560,7 @@ export default function DetailUserManagement({ route, navigation }) {
                 onPress={() => changeUserAllowDate()} disabled={true}>
                 <Text style={{ fontSize: 15, color: "white" }}>
                   변경하기
+
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -605,11 +617,13 @@ export default function DetailUserManagement({ route, navigation }) {
               <Text style={{ marginLeft: 5, fontSize: 14 }}>선택된 날짜</Text>
             </View>
           </View>
+
         </View>
       </View>
     </View>
-    {/* </ScrollView> */}
+    </ScrollView>
   </SafeAreaView>
+
 }
 
 const styles = StyleSheet.create({

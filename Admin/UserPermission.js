@@ -10,11 +10,18 @@ import RadioForm, { RadioButton, RadioButtonInput, RadioButtonLabel } from 'reac
 import Toast, { DURATION } from 'react-native-easy-toast';
 import { UserTable } from '../Table/UserTable';
 import { PermissionTable } from '../Table/PermissionTable';
-import { doc, collection, addDoc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
-import { auth, db } from '../Core/Config';
-import * as Notifications from 'expo-notifications';
-import * as Permissions from 'expo-permissions';
-import * as Device from 'expo-device';
+
+import { permission } from '../Category';
+import { user } from '../Category';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import DetailUserDeny from './DetailUserDeny';
+import { onSnapshot, doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
+import { db,  } from '../Core/Config';
+import * as Notifications from 'expo-notifications'
+import * as Permissions from 'expo-permissions'
+import * as Device from 'expo-device'
+
 import { async } from '@firebase/util';
 //import { getToken } from 'firebase/messaging';
 //import messaging from '@react-native-firebase/messaging';
@@ -34,7 +41,9 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급", "C등급"]  // grade가 바뀌면 gradeRadioProps도 수정해야됨.
 //const flexNotChecked = 5.5
 const flexChecked = 5
-// const thisFacilityId = "AdminTestId"
+
+const thisFacilityId = "hansung"
+
 const permissionTable = new PermissionTable();  //function안에 두면 안됨.
 const userTable = new UserTable();
 
@@ -64,6 +73,51 @@ export default function UserPermission({ navigation, route }) {
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+
+  useEffect(()=>{
+    const q = query(collection(db, "User"), where("adminId", "==", thisFacilityId), where("allowDate","==",null));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        //ReadUserList();
+        const data = change.doc.data();
+        if (change.type === "added") {
+          if(userCheck.find((value)=>value.id === data.id)===undefined){
+            ReadUserList();
+          }
+          
+          // console.log("-------------------------------------")
+          // console.log("added permission: ", change.doc.data());
+
+          // const temp = [...userCheck]
+        
+          // if(temp.find((value)=>value.id === change.doc.data().id)=== undefined){
+          //   console.log('push')
+          //   temp.push(change.doc.data())
+          // }
+          // console.log("-------------------added temp---------------")
+          // console.log(temp)
+          // getAllUsers(temp)
+        }
+        if (change.type === "modified") {
+          const compare = userCheck.find((value)=>value.id === data.id)
+          // if(compare!== undefined){
+          //   if(compare.name !== data.name || compare.phone !== data.phone){
+          //     ReadUserList();
+          //   }  
+          // }
+          console.log("호출호출")
+          
+        }
+        if (change.type === "removed") {
+          if(userCheck.find((value)=>value.id === data.id)!==undefined){
+            ReadUserList();
+          }
+        }
+      });
+    });
+  
+  },[])
+
 
 
   const [fresh, setFresh] = useState(true);
@@ -194,10 +248,14 @@ export default function UserPermission({ navigation, route }) {
       const isCheck = false
       const gradeIndex = grade.length - 1
       newUserCheck.push({
-        id: id, name: name, phone: realPhone,
-        registerDate: registerDate, allowDate: allowDate,
-        isCheck: isCheck, gradeIndex: gradeIndex,   // 원래 배열에서 새로 추가한 것.
+
+        id: id, name : name, phone : realPhone,
+        registerDate: registerDate, allowDate : allowDate, 
+        isCheck : isCheck, 
+        gradeIndex: gradeIndex,   // 원래 배열에서 새로 추가한 것.
+
       })
+      
     });
     // register date(등록일)이 오래된 순서대로 정렬함.
     tempArray = newUserCheck.sort((a, b) => a.registerDate - b.registerDate)
@@ -217,6 +275,7 @@ export default function UserPermission({ navigation, route }) {
 
     const data = query(ref, where("allowDate", "==", null), where("adminId", "==", thisFacilityId)) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
     let result = [] // 가져온 User 목록을 저장할 변수
+
 
     getDocs(data)
       // Handling Promises
