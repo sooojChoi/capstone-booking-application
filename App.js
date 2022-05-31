@@ -15,8 +15,6 @@ import DetailUserDeny from './Admin/DetailUserDeny';
 import FacilityManagement from './Admin/FacilityManagement';
 import SearchAddress from './Admin/SearchAddress';
 import GenerateAllocation from './Admin/generateAllocation';
-import UserManagementNavigation from './Admin/UserManagement';
-import UserPermissionNavigation from './Admin/UserPermission';
 import BookingFacility from './User/BookingFacility';
 import ChooseMode from './User/ChooseMode';
 import DeleteAccount from './User/DeleteAccount';
@@ -37,7 +35,6 @@ const Stack = createStackNavigator();
 // User  | ID : yjb123 / PW : 123456
 // Admin | ID : admintestid / PW : 123456
 export default function App() {
-
   // return (
   //   <NavigationContainer>
   //     <Stack.Navigator initialRouteName="ChooseMode">
@@ -69,8 +66,6 @@ export default function App() {
   //     </Stack.Navigator>
   //   </NavigationContainer>
   // )
-
-  
 
 
   ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)

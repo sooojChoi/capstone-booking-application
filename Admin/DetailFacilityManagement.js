@@ -1,18 +1,21 @@
 // 상세 시설 관리(관리자) -> 수빈
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TextInput, FlatList, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import Modal from "react-native-modal";
+import { doc, collection, addDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { auth, db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function DetailFacilityManagement({ route, navigation }) {
-  const adminId = route.params.adminId // 시설 ID
   const facilityId = route.params.facilityId // 세부 시설 ID
+
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   // Cloud Firestore
   const [name, setName] = useState("")
@@ -39,10 +42,17 @@ export default function DetailFacilityManagement({ route, navigation }) {
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false)
   const [timeSort, setTimeSort] = useState() // Open or Close
 
+  // 시간별 할인율 적용
+  const [newDiscount, setNewDiscount] = useState(false)
+  const [discountRate, setDiscountRate] = useState("")
+  const [discountNotice, setDiscountNotice] = useState("")
+  const [allocation, setAllocation] = useState([])  // 할인율 적용에 이용될 데이터
+  const [isModalVisible, setModalVisible] = useState(false)   // 할인율 적용을 보여주는 modal 변수
+  const [isModalForShowingVisible, setIsModalForShowingVisible] = useState(false) // 적용된 할인율을 보여주는 modal 변수
+
   // 시설 정보 가져오기(초기값)
-  // 사진, 설명에 대한 DB 관리는 어떻게 할 것인가?(Firebase 연동 시 고려하기)
   const getFacInfo = () => {
-    const ref = doc(db, "Facility", adminId, "Detail", facilityId)
+    const ref = doc(db, "Facility", currentAdminId, "Detail", facilityId)
 
     getDoc(ref)
       .then((snapshot) => {
@@ -141,16 +151,144 @@ export default function DetailFacilityManagement({ route, navigation }) {
     const hour = date.toTimeString().split(" ")[0].substring(0, 2)
     const min = date.toTimeString().split(" ")[0].substring(3, 5)
     setTime(new Date(2000, 1, 1, hour, min))
-    if (timeSort === "open")
+    if (timeSort === "open") {
       setOpenTime(String(hour) + String(min))
-    else if (timeSort === "close")
+      setDiscountNotice("오픈 시간이 변경되었으므로 다시 적용하십시오.")
+      setAllocation(null)
+    }
+    else if (timeSort === "close") {
       setCloseTime(String(hour) + String(min))
+      setDiscountNotice("마감 시간이 변경되었으므로 다시 적용하십시오.")
+      setAllocation(null)
+    }
     hideTimePicker()
+  }
+
+  // Unit Time
+  const changeUnitHour = (value) => {
+    setUnitHour(value)
+    setDiscountNotice("시간 예약 단위가 변경되었으므로 다시 적용하십시오.")
+    setAllocation(null)
+  }
+  const changeUnitMin = (value) => {
+    setUnitMin(value)
+    setDiscountNotice("시간 예약 단위가 변경되었으므로 다시 적용하십시오.")
+    setAllocation(null)
+  }
+
+  // Allocation 생성
+  const makeAllocation = () => {
+    const unitTime = (Number(unitHour) * 60) + Number(unitMin)
+    const openHour = Number(openTime.substring(0, 2)) * 60
+    const openMin = Number(openTime.substring(4, 6))
+    const closeHour = Number(closeTime.substring(0, 2)) * 60
+    const closeMin = Number(closeTime.substring(4, 6))
+
+    let opentime = openHour + openMin
+    const closetime = closeHour + closeMin
+    const unittime = unitTime
+
+    let j = 0
+    const time = []
+
+    let k = 0
+    if (closeTime < openTime) {
+      while (opentime + j * unittime < 24 * 60) {
+        k = opentime + j * unitTime
+        time.push({
+          time: k,
+          discountRate: "0"
+        })
+        j++
+      }
+      k = opentime + j * unitTime
+      opentime = (parseInt(k / 60) % 24) * 60 + k % 60
+      j = 0
+      while (opentime + j * unittime < closetime) {
+        k = opentime + j * unitTime
+        time.push({
+          time: k,
+          discountRate: "0"
+        })
+        j++
+      }
+    } else {
+      while (opentime + j * unittime < closetime) {
+        k = opentime + j * unitTime
+        time.push({
+          time: k,
+          discountRate: "0"
+        })
+        j++
+      }
+    }
+    setAllocation(time)
+  }
+
+  // 시간별 할인율 적용
+  const toggleModal = () => {
+    setDiscountRate("")
+    setModalVisible(!isModalVisible)
+  }
+  const toggleModalForShowing = () => {
+    setIsModalForShowingVisible(!isModalForShowingVisible)
+  }
+
+  const showModal = () => {
+    toggleModalForShowing()
+  }
+
+  const showModalForNewDiscount = () => {
+    makeAllocation()
+    toggleModal()
+    setDiscountNotice("")
+  }
+
+  const changeDiscountRate = (time) => {
+    if (discountRate !== "") {
+      const temp = [...allocation]
+      temp.map((value) => {
+        if (value.time === time) {
+          value.discountRate = discountRate
+        }
+      })
+      setAllocation(temp)
+    }
+  }
+
+  const renderItem = ({ item }) => {
+    return (
+      item.discountRate === "0" ? (
+        <TouchableOpacity style={styles.flatList}
+          onPress={() => changeDiscountRate(item.time)}>
+          <Text style={{ fontSize: 15, marginLeft: 10 }}>{parseInt(item.time / 60) + "시" + item.time % 60 + "분"}</Text>
+          <Text style={{ fontSize: 15, marginRight: 10 }}>할인율 {item.discountRate} %</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={{ ...styles.flatList, backgroundColor: "#5cd0ff" }}
+          onPress={() => changeDiscountRate(item.time)}>
+          <Text style={{ fontSize: 15, marginLeft: 10 }}>{parseInt(item.time / 60) + "시" + item.time % 60 + "분"}</Text>
+          <Text style={{ fontSize: 15, marginRight: 10 }}>할인율 {item.discountRate} %</Text>
+        </TouchableOpacity>
+      ))
+  }
+
+  // 시간별 할인율 적용하기
+  const CreateDiscountRate = (docData) => {
+    const docRef = collection(db, "DiscountRate")
+
+    addDoc(docRef, docData)
+      .then(() => {
+        console.log('discount rate table is updated successfully.')
+      })
+      .catch((error) => {
+        console.log(error.message)
+      })
   }
 
   // 수정 버튼 선택
   const modifyInfo = () => {
-    const docRef = doc(db, "Facility", adminId, "Detail", facilityId)
+    const facRef = doc(db, "Facility", currentAdminId, "Detail", facilityId)
 
     const unitTime = (Number(unitHour) * 60) + Number(unitMin)
     const openHour = Number(openTime.substring(0, 2)) * 60
@@ -158,7 +296,7 @@ export default function DetailFacilityManagement({ route, navigation }) {
     const closeHour = Number(closeTime.substring(0, 2)) * 60
     const closeMin = Number(closeTime.substring(4, 6))
 
-    const docData = {
+    const facData = {
       name: name,
       openTime: parseInt(openHour + openMin),
       closeTime: parseInt(closeHour + closeMin),
@@ -174,29 +312,109 @@ export default function DetailFacilityManagement({ route, navigation }) {
       explain: explain
     }
 
-    updateDoc(docRef, docData)
-      .then(() => {
-        navigation.goBack()
+    // updateDoc(facRef, facData)
+    //   .then(() => {
+    //     navigation.goBack()
+    //   })
+    //   .catch((error) => {
+    //     alert(error.message)
+    //   })
+
+    let resultAllocation = []
+    if (newDiscount === true && allocation !== null) {
+      allocation.map((value) => {
+        if (value.discountRate !== "0") {
+          resultAllocation.push({
+            adminId: currentAdminId,
+            facilityId: name,
+            rate: Number(value.discountRate),
+            time: value.time
+          })
+          const docData = {
+            adminId: currentAdminId,
+            facilityId: name,
+            rate: Number(value.discountRate),
+            time: value.time
+          }
+          CreateDiscountRate(docData)
+        }
       })
-      .catch((error) => {
-        alert(error.message)
-      })
+    }
+    console.log(resultAllocation)
   }
 
   return (
     <SafeAreaView style={styles.container}>
+      <View>
+        <Modal isVisible={isModalVisible}
+          onBackdropPress={() => setModalVisible(false)}>
+          <View style={{ ...styles.modal, height: SCREEN_HEIGHT * 0.7 }}>
+            <Text style={{ fontSize: 15, color: "#191919" }}>
+              할인율을 입력하고 원하는 시간을 선택하세요.
+            </Text>
+            <View style={{ flexDirection: 'row', marginTop: 10, justifyContent: 'space-between', marginBottom: 10, alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontSize: 15, marginRight: 5, color: "#505050" }}>할인율 입력 </Text>
+                <TextInput
+                  style={{ borderWidth: 1, borderColor: 'grey', borderRadius: 5, padding: 5, fontSize: 15 }}
+                  onChangeText={setDiscountRate}
+                  placeholder="할인율"
+                  value={discountRate}
+                  maxLength={2}
+                  editable={true}
+                  autoCorrect={false}
+                  keyboardType='number-pad'
+                />
+              </View>
+              <TouchableOpacity style={styles.discountBtn} onPress={() => setModalVisible(false)}>
+                <Text style={{ color: 'white', fontSize: 15 }}>완료</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              numColumns={1}
+              data={allocation}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.time}
+            />
+          </View>
+        </Modal>
+        <Modal isVisible={isModalForShowingVisible}
+          onBackdropPress={() => setIsModalForShowingVisible(false)}>
+          <View style={{ ...styles.modal, height: SCREEN_HEIGHT * 0.6 }}>{
+            allocation !== null ? (
+              <View>{
+                allocation.length !== 0 ? (
+                  <FlatList
+                    numColumns={1}
+                    data={allocation}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.time}
+
+                  />
+                ) : (
+                  <Text style={{ fontSize: 15, color: 'grey', alignSelf: 'center' }}>적용된 할인율이 없습니다.</Text>
+                )}
+              </View>
+            ) : (
+              <Text style={{ fontSize: 15, color: 'grey', alignSelf: 'center' }}>적용된 할인율이 없습니다.</Text>
+            )}
+          </View>
+        </Modal>
+      </View>
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ marginTop: 10, marginBottom: 10 }}>
-          <View style={styles.bottomLine}>
+          <View style={{ ...styles.bottomLine, paddingBottom: 10 }}>
             <Text style={styles.titleText}>세부시설 이름</Text>
-            <TextInput style={styles.nameInput} onChangeText={setName}>{name}</TextInput>
+            <Text style={{ fontSize: 24 }}>{name}</Text>
+            {/* <TextInput style={styles.nameInput} onChangeText={setName}>{name}</TextInput> */}
           </View>
           <View style={styles.bottomLine}>
             <Text style={styles.titleText}>시설 운영 시간</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
               <View style={{ alignItems: 'center' }}>
                 <Text style={{ marginBottom: 10 }}>오픈 시간</Text>
-                <TouchableOpacity style={styles.button} onPress={() => showTimePicker("open")}>{
+                <TouchableOpacity style={styles.timeBtn} onPress={() => showTimePicker("open")}>{
                   openTime === null || openTime === undefined || openTime === "" ? (
                     <Text style={{ color: 'white' }}>시간 선택</Text>
                   ) : (
@@ -213,7 +431,7 @@ export default function DetailFacilityManagement({ route, navigation }) {
               </View>
               <View style={{ marginLeft: 30, alignItems: 'center' }}>
                 <Text style={{ marginBottom: 10 }}>마감 시간</Text>
-                <TouchableOpacity style={styles.button} onPress={() => showTimePicker("close")}>{
+                <TouchableOpacity style={styles.timeBtn} onPress={() => showTimePicker("close")}>{
                   closeTime === null || closeTime === undefined || closeTime === "" ? (
                     <Text style={{ color: 'white' }}>시간 선택</Text>
                   ) : (
@@ -231,6 +449,37 @@ export default function DetailFacilityManagement({ route, navigation }) {
               <TextInput style={styles.numInput} keyboardType='number-pad' maxLength={2} onChangeText={setUnitMin}>{unitMin}</TextInput>
               <Text>분</Text>
             </View>
+          </View>
+          <View style={styles.bottomLine}>
+            <Text style={styles.titleText}>시간별 할인율</Text>{
+              newDiscount === false ? (
+                <TouchableOpacity onPress={() => setNewDiscount(true)}>
+                  <Text style={{ color: '#1789fe', textDecorationLine: 'underline', marginTop: 5 }}>새로운 시간별 할인율 적용하기</Text>
+                </TouchableOpacity>
+              ) : (
+                openTime !== "" && closeTime !== "" && (unitHour !== "" || unitMin !== "") ? (
+                  <View>
+                    <TouchableOpacity onPress={() => setNewDiscount(false)}>
+                      <Text style={{ color: '#1789fe', textDecorationLine: 'underline', marginTop: 5, marginBottom: 5 }}>기존 시간별 할인율 사용하기</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => showModalForNewDiscount()}
+                      style={{ ...styles.discountBtn, marginTop: 10 }}>
+                      <Text style={{ color: 'white' }}>새로운 할인율 적용하기</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => showModal()}
+                      style={{ ...styles.discountBtn }}>
+                      <Text style={{ color: 'white' }}>적용된 할인율 확인하기</Text>
+                    </TouchableOpacity>
+                    {discountNotice !== "" ? (
+                      <Text style={{ fontSize: 15, color: "#ff3030" }}>{discountNotice}</Text>
+                    ) : (<View></View>)}
+                  </View>
+                ) : (
+                  <Text style={{ fontSize: 14, color: "#ff3030" }}>
+                    오픈시간, 마감시간, 시간 예약 단위를 먼저 입력하세요.
+                  </Text>
+                )
+              )}
           </View>
           <View style={styles.bottomLine}>
             <Text style={styles.titleText}>인원 예약 단위</Text>
@@ -318,7 +567,7 @@ export default function DetailFacilityManagement({ route, navigation }) {
           </View>
         </View>
       </ScrollView>{
-        (name !== "") ? (
+        name && (unitHour || unitMin) && maxPlayer && minPlayer && booking1 && booking2 && booking3 && cost1 && cost2 && cost3 ? (
           <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#3262d4' }}
             onPress={() => Alert.alert("확인", "시설 정보를 수정하시겠습니까?",
               [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => modifyInfo() }])}>
@@ -380,6 +629,21 @@ const styles = StyleSheet.create({
     height: 40,
   },
 
+  modal: {
+    padding: 10,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+  },
+
+  flatList: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    marginHorizontal: 3,
+    borderBottomColor: 'grey',
+    borderBottomWidth: 1,
+  },
+
   photo: {
     width: 60,
     height: 60,
@@ -395,7 +659,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 
-  button: {
+  timeBtn: {
     backgroundColor: '#3262d4',
     alignItems: 'center',
     borderRadius: 8,
@@ -403,6 +667,17 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     width: SCREEN_WIDTH * 0.3,
+  },
+
+  discountBtn: {
+    backgroundColor: '#3262d4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    padding: 8,
+    paddingLeft: 20,
+    paddingRight: 20,
+    marginBottom: 10,
   },
 
   submitBtn: {

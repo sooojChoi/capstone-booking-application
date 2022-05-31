@@ -146,21 +146,17 @@ export default function MyInfoManagement({ navigation }) {
       })
   }
 
-  // 수정 버튼 눌렀을 때 함수
+  // 비밀번호 변경 후 수정 버튼 선택
   const complete = () => {
-    if (pwMode === true) {
-      const credential = EmailAuthProvider.credential(currentUser.email, inputOldPw)
+    const credential = EmailAuthProvider.credential(currentUser.email, inputOldPw)
 
-      reauthenticateWithCredential(currentUser, credential)
-        .then(() => {
-          alertBtn() // 비밀번호가 맞을 경우
-        })
-        .catch(() => {
-          showToast() // 비밀번호가 틀린 경우
-        })
-    }
-    else
-      alertBtn()
+    reauthenticateWithCredential(currentUser, credential)
+      .then(() => {
+        alertBtn() // 비밀번호가 맞을 경우
+      })
+      .catch(() => {
+        showToast() // 비밀번호가 틀린 경우
+      })
   }
 
   return (
@@ -299,11 +295,7 @@ export default function MyInfoManagement({ navigation }) {
         </View>{  // 모든 정보가 다 입력되어야 "수정 완료" 버튼이 활성화됨
           pwMode === true ? (
             name && inputOldPw && inputNewPw && checkNewPw && phone && pwLen && correctedNewPw ? (
-              <TouchableOpacity
-                style={styles.completeBtn}
-                onPress={complete}
-                disabled={false}
-              >
+              <TouchableOpacity style={styles.completeBtn} onPress={complete} disabled={false}>
                 <Text style={{ ...styles.text, marginTop: 0, color: 'white' }}>수정</Text>
               </TouchableOpacity>
             ) : (
@@ -314,7 +306,7 @@ export default function MyInfoManagement({ navigation }) {
           ) : (
             // 비밀번호 변경 모드가 false이면 비밀번호는 입력이 안되어도 됨
             name && phone ? (
-              <TouchableOpacity style={styles.completeBtn} onPress={complete} disabled={false}>
+              <TouchableOpacity style={styles.completeBtn} onPress={alertBtn} disabled={false}>
                 <Text style={{ ...styles.text, marginTop: 0, color: 'white' }}>수정</Text>
               </TouchableOpacity>
             ) : (

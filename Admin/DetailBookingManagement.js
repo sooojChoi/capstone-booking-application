@@ -4,8 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
 import { doc, collection, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
-import * as Notifications from 'expo-notifications'
+import { auth, db } from '../Core/Config';
+import * as Notifications from 'expo-notifications';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -20,9 +20,12 @@ Notifications.setNotificationHandler({
 
 
 export default function DetailBookingManagement({ route, navigation }) {
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
+  console.log("detailBookingManagement : " + currentAdminId)
+
   // BookingManagement에서 받은 값
   const bookingData = route.params.bookingData
-  const adminId = bookingData.adminId
   const facilityId = bookingData.facilityId
   const usingTime = bookingData.usingTime
   const userId = bookingData.userId
@@ -40,7 +43,7 @@ export default function DetailBookingManagement({ route, navigation }) {
   // 예약 목록 가져오기
   const getBookingList = () => {
     const bookingRef = collection(db, "Booking")
-    const bookingData = query(bookingRef, where("adminId", "==", adminId), where("cancel", "==", false),
+    const bookingData = query(bookingRef, where("adminId", "==", currentAdminId), where("cancel", "==", false),
       where("facilityId", "==", facilityId), where("usingTime", "==", usingTime))
 
     getDocs(bookingData)
@@ -72,7 +75,7 @@ export default function DetailBookingManagement({ route, navigation }) {
       })
 
     const allocationRef = collection(db, "Allocation")
-    const allocationData = query(allocationRef, where("adminId", "==", adminId),
+    const allocationData = query(allocationRef, where("adminId", "==", currentAdminId),
       where("facilityId", "==", facilityId), where("usingTime", "==", usingTime))
 
     getDocs(allocationData)
@@ -101,7 +104,7 @@ export default function DetailBookingManagement({ route, navigation }) {
     const allocationRef = doc(db, "Allocation", allocationId)
 
     const allocationData = {
-      available: false
+      available: true
     }
 
 
@@ -206,7 +209,7 @@ export default function DetailBookingManagement({ route, navigation }) {
       </View>
       <TouchableOpacity style={styles.button} onPress={() => Alert.alert("주의", "예약을 취소하시겠습니까?",
         [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => cancelBooking() }])}>
-        <Text style={{ fontSize: 16, color: 'white' }}>취 소</Text>
+        <Text style={{ fontSize: 16, color: 'white' }}>취  소</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )

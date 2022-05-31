@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, query } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { auth, db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -13,14 +13,12 @@ export default function FacilityManagement({ navigation }) {
   // Cloud Firestore
   const [facilityList, setFacilityList] = useState([])
 
-  // 해당 시설에 맞는 값을 가져오도록 추후 수정해야 함(Stack Navigation 설정)
-  const adminId = "AdminTestId"
-
-  //const [facCount, setFacCount] = useState(1) // 세부 시설 개수
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   // 세부 시설 목록 가져오기
   const readDetailFacList = () => {
-    const ref = collection(db, "Facility", adminId, "Detail")
+    const ref = collection(db, "Facility", currentAdminId, "Detail")
     const data = query(ref)
     let result = [] // 가져온 세부 시설 목록을 저장할 변수
 
@@ -30,7 +28,6 @@ export default function FacilityManagement({ navigation }) {
           result.push(doc.data())
         });
         setFacilityList(result)
-        //setFacCount(result.length)
       })
       .catch((error) => {
         alert(error.message)
@@ -45,16 +42,16 @@ export default function FacilityManagement({ navigation }) {
   const renderItem = (itemData) => {
     return (
       <TouchableOpacity style={styles.detail}
-        onPress={() => navigation.navigate('DetailFacilityManagement', { adminId: adminId, facilityId: itemData.item.name })}>
+        onPress={() => navigation.navigate('DetailFacilityManagement', { facilityId: itemData.item.name })}>
         <Text style={{ fontSize: 28 }}>{itemData.item.name}</Text>
       </TouchableOpacity>
-    );
+    )
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity style={styles.basic}
-        onPress={() => navigation.navigate('BasicFacilityManagement', { adminId: adminId })}>
+        onPress={() => navigation.navigate('BasicFacilityManagement')}>
         <Text style={{ fontSize: 24 }}>기본 시설 정보</Text>
       </TouchableOpacity>
       <FlatList
@@ -63,7 +60,7 @@ export default function FacilityManagement({ navigation }) {
         keyExtracter={(item) => item.id} />
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
