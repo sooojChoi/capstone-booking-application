@@ -69,7 +69,7 @@ export default function SignIn({ navigation, route }) {
     // 텍스트에 변경이 생겼기 때문에 중복 검사 결과와 유무를 false로 함
     setIdCheck(false)
     setIsIdCheck(false)
-    setInputId(value)
+    setInputId(value.toLowerCase())
   }
 
   // userPw를 입력하는 textInput의 onChangeText에 등록된 함수
@@ -197,6 +197,7 @@ export default function SignIn({ navigation, route }) {
                         onChangeText={(value) => changeIdText(value)}
                         value={inputId}
                         autoCorrect={false}
+                        autoCapitalize='none'
                         placeholder="아이디를 입력해주세요."
                       />
                       <TouchableOpacity style={{ ...styles.btnStyle, marginLeft: 15 }} onPress={checkUserId}>

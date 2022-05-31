@@ -51,13 +51,11 @@ export default function AdminWholeStack() {
         component={FacilityManagement}
         options={{title: '시설 관리', headerBackTitle:"관리"}}
         />
-
         <Stack.Screen
         name="GenerateAllocation"
         component={GenerateAllocation}
         options={{title:"예약일 생성", headerBackTitle:"관리"}}
         />
-
       </Stack.Navigator>
     </NavigationContainer>
   )
