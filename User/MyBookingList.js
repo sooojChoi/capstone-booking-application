@@ -186,8 +186,7 @@ export default function App() {
         }} onPress={() => Alert.alert(
           "주의", "예약을 취소하시겠습니까?", [
           { text: "취소", onPress: () => console.log("예약 취소하지 않음"), style: "cancel" },
-          { text: "확인", onPress: () => { cancelBooking(true)
-          UpdateAlloCancel(true) } },
+          { text: "확인", onPress: () => { cancelBooking(true); UpdateAlloCancel(true); } },
         ], { cancelable: false })}>
           <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
         </TouchableOpacity>
