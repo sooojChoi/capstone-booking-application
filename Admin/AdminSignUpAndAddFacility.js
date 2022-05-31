@@ -66,16 +66,7 @@ export default function AdminSignUpAndAddFacility({ navigation, route }) {
       CreateDiscountRate(docInfo)
     })
 
-    const email = facilityBasicInfo.id + "@admin.com"
-
-    // DB 유저 생성 후 로그인 화면으로 이동함
-    createUserWithEmailAndPassword(auth, email, facilityBasicInfo.password)
-      .then(() => {
-        navigation.replace('AdminLogIn')
-      })
-      .catch(error => {
-        alert(error.message)
-      })
+   
   }
 
   // firebase에 사진 한 장을 업로드 하는 함수
@@ -119,6 +110,16 @@ export default function AdminSignUpAndAddFacility({ navigation, route }) {
       .then(() => {
         // MARK : Success
         console.log('discount rate table is updated successfully.')
+        const email = facilityBasicInfo.id + "@admin.com"
+
+        // DB 유저 생성 후 로그인 화면으로 이동함
+        createUserWithEmailAndPassword(auth, email, facilityBasicInfo.password)
+          .then(() => {
+            navigation.replace('AdminLogIn')
+          })
+          .catch(error => {
+            alert(error.message)
+          })
       })
       .catch((error) => {
         // MARK : Failure
