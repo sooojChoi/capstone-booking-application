@@ -154,7 +154,7 @@ export default function DetailUserManagement({ route, navigation }) {
                   }
                   setUserInfo(temp);
                   
-                  if(allowDate === null){
+                  if(allowDate === null || allowDate === "permission"){
                     setAllowDateInfo("예약 금지일이 설정되지 않았습니다.")
                   }else{
                     setAllowDateInfo("예약 금지일: "+allowDate);
@@ -422,7 +422,7 @@ export default function DetailUserManagement({ route, navigation }) {
              style={{backgroundColor:'grey'}}
              textStyle={{color:'white'}}
           />
-          {/* <ScrollView> */}
+          <ScrollView>
         <View style={{ backgroundColor:'white', justifyContent:'center'}}>
             <View>
                 <Text style={{fontSize:18,marginTop:10, marginLeft:10}}>
@@ -541,7 +541,7 @@ export default function DetailUserManagement({ route, navigation }) {
               </View>
             </View>
           </View>
-          {/* </ScrollView> */}
+          </ScrollView>
     </SafeAreaView>
 }
 
