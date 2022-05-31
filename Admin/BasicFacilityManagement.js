@@ -1,20 +1,21 @@
 // 시설 기본 정보 관리(관리자) -> 수빈
 
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, TextInput, SafeAreaView, ScrollView, TouchableOpacity, Image, Alert, FlatList } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-easy-toast';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db, storageDb } from '../Core/Config';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import { auth, db, storageDb } from '../Core/Config';
 import { ref, getDownloadURL, listAll, deleteObject, uploadBytes } from 'firebase/storage';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function BasicFacilityManagement({ route, navigation }) {
-  const adminId = route.params.adminId // 시설 ID
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   // Cloud Firestore
   const [name, setName] = useState("")
@@ -24,11 +25,11 @@ export default function BasicFacilityManagement({ route, navigation }) {
   const [detailAddress, setDetailAddress] = useState("")
 
   const [pwMode, setPwMode] = useState(false) // 비밀번호 변경 여부 확인
-  const [pw, setPw] = useState("") // 기존 비밀번호
   const [inputOldPw, setInputOldPw] = useState("") // 입력한 현재 비밀번호 
   const [inputNewPw, setInputNewPw] = useState("") // 입력한 새 비밀번호
   const [checkNewPw, setCheckNewPw] = useState("") // 재입력 새 비밀번호
-  const [equalPw, setEqualPw] = useState(false) // 입력한 새 비밀번호와 재입력된 비밀번호 일치 여부
+  const [pwLen, setPwLen] = useState(false) // 새 비밀번호의 길이가 8자 이상인지 여부
+  const [correctedNewPw, setNewCorrect] = useState(false) // 변경할 PW와 재입력 된 PW 일치 여부
 
   const [imgCheck, setImgCheck] = useState(false) // 이미지 배열 변경 여부 확인
   const [images, setImages] = useState([]) // 화면 출력용 이미지 배열
@@ -42,18 +43,13 @@ export default function BasicFacilityManagement({ route, navigation }) {
     toastRef.current.show('현재 비밀번호가 일치하지 않습니다')
   }, [])
 
-  const showToastForNewPw = useCallback(() => {
-    toastRef.current.show('새로운 비밀번호와 재입력된 비밀번호가 일치하지 않습니다')
-  }, [])
-
   // 시설 정보 가져오기(초기값)
   const getFacInfo = () => {
-    const facRef = doc(db, "Facility", adminId)
+    const facRef = doc(db, "Facility", currentAdminId)
 
     getDoc(facRef)
       .then((snapshot) => {
         if (snapshot.exists) {
-          setPw(snapshot.data().password)
           setName(snapshot.data().name)
           setTel(snapshot.data().tel)
           setAddress(snapshot.data().address)
@@ -73,6 +69,15 @@ export default function BasicFacilityManagement({ route, navigation }) {
     getImage()
   }, [])
 
+  // userPw를 입력하는 textInput의 onChangeText에 등록된 함수
+  const changePwText = (value) => {
+    // 텍스트에 변경이 생겼기 때문에 중복 검사 결과와 유무를 false로 함
+    setNewCorrect(false)
+    setInputNewPw(value)
+    if (value.length >= 8)
+      setPwLen(true)
+  }
+
   // 비밀번호 변경 취소
   const cancelChangePw = () => {
     setPwMode(false)
@@ -85,21 +90,22 @@ export default function BasicFacilityManagement({ route, navigation }) {
   const checkEqualPw = (value) => {
     setCheckNewPw(value)
     if (inputNewPw === value) {
-      setEqualPw(true)
+      setNewCorrect(true)
     } else {
-      setEqualPw(false)
+      setNewCorrect(false)
     }
   }
 
   // 주소 찾기 후 돌아오면 호출됨
   useEffect(() => {
     const address = route.params?.address
+    console.log(address)
     setAddress(address)
   }, [route.params?.address])
 
   // 시설 사진 가져오기
   const getImage = () => {
-    const storageRef = ref(storageDb, '/' + adminId) // test -> adminId
+    const storageRef = ref(storageDb, '/' + 'test') // test -> currentAdminId
     const temp = [...images]
     const uriArray = [...imageUri]
 
@@ -194,20 +200,16 @@ export default function BasicFacilityManagement({ route, navigation }) {
     )
   }
 
-  // Storage 사진 삭제
-  const delStorage = () => {
-    let num = 1
-    oldImgUri.forEach(() => {
-      console.log("delete" + num)
-      const imgRef = ref(storageDb, 'test' + '/image' + num + '.jpg') // test -> adminId
-      deleteObject(imgRef)
-      num++
-    })
+  // Storage 이미지 삭제
+  const delStorage = async (name) => {
+    const imgRef = ref(storageDb, 'test' + '/image' + name + '.png') // test -> currentAdminId
+
+    await deleteObject(imgRef)
   }
 
-  // Storage 사진 업로드
+  // Storage 이미지 업로드
   const uploadImage = async (value, name) => {
-    const imgRef = ref(storageDb, 'test' + '/image' + name + '.jpg') // test -> adminId
+    const imgRef = ref(storageDb, 'test' + '/image' + name + '.png') // test -> currentAdminId
 
     const img = await fetch(value)
     const bytes = await img.blob()
@@ -217,7 +219,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
   // 시설 정보 수정
   const modifyFacInfo = () => {
-    const docRef = doc(db, "Facility", adminId)
+    const docRef = doc(db, "Facility", currentAdminId)
 
     let fullAddress
     if (detailAddress !== null)
@@ -225,14 +227,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
     else
       fullAddress = address
 
-    let password
-    if (pwMode === true)
-      password = inputNewPw
-    else
-      password = pw
-
     const docData = {
-      password: password,
       name: name,
       tel: tel,
       address: fullAddress,
@@ -241,47 +236,59 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
     updateDoc(docRef, docData)
       .then(() => {
-        navigation.goBack()
+        if (pwMode === true) {
+          updatePassword(currentAdmin, inputNewPw)
+            .then(() => {
+              navigation.goBack()
+            })
+            .catch((error) => {
+              alert(error.message)
+            })
+        }
       })
       .catch((error) => {
         alert(error.message)
       })
 
     // 사진 업로드
-    if (imgCheck) {
-      console.log("변경했엉!")
-      delStorage()
-      console.log("업로드하잣!")
-      let num = 1
-      imageUri.forEach((value) => {
-        console.log(num)
-        console.log(value)
-        uploadImage(value, num)
-        num++
-      })
-    }
-    else
-      console.log("안해썽!")
+    // if (imgCheck) {
+    console.log("변경했엉!")
+    let num = 1
+    console.log(oldImgUri)
+    oldImgUri.forEach(() => {
+      console.log("delete" + num)
+      delStorage(num)
+      num++
+    })
+    num = 1
+    console.log("업로드하잣!")
+    imageUri.forEach((value) => {
+      console.log(num)
+      console.log(value)
+      uploadImage(value, num)
+      num++
+    })
+    // }
   }
 
-  // 수정 버튼 선택
+  // 비밀번호 변경 후 수정 버튼 선택
   const submit = () => {
-    if (inputOldPw === pw) { // 현재 비밀번호 일치
-      if (inputNewPw === checkNewPw) { // 새 비밀번호와 재입력 비밀번호 일치
-        modifyFacInfo()
-      } else { // 새 비밀번호와 재입력 비밀번호 불일치
-        showToastForNewPw()
-      }
-    } else { // 현재 비밀번호 불일치
-      showToast()
-    }
+    const credential = EmailAuthProvider.credential(currentAdmin.email, inputOldPw)
+
+    reauthenticateWithCredential(currentAdmin, credential)
+      .then(() => {
+        modifyFacInfo() // 비밀번호가 맞을 경우
+      })
+      .catch(() => {
+        showToast() // 비밀번호가 틀린 경우
+      })
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10 }}>
-          <Text style={{ fontSize: 24, marginBottom: 10 }}>{adminId}</Text>
+          <Text style={{ fontSize: 24, marginBottom: 10 }}>{currentAdminId}</Text>
           {pwMode === false ? (
             <TouchableOpacity onPress={() => setPwMode(true)}>
               <Text style={{ ...styles.titleText, color: '#1789fe', textDecorationLine: 'underline' }}>비밀번호 변경</Text>
@@ -293,11 +300,36 @@ export default function BasicFacilityManagement({ route, navigation }) {
               </TouchableOpacity>
               <Text style={styles.titleText}>현재 비밀번호</Text>
               <TextInput style={styles.textInput} placeholder='현재 비밀번호'
-                secureTextEntry={true} textContentType="oneTimeCode" onChangeText={setInputOldPw}>{inputOldPw}</TextInput>
-              <Text style={styles.titleText}>새 비밀번호</Text>
-              <TextInput style={styles.textInput} placeholder='새 비밀번호'
-                secureTextEntry={true} textContentType="oneTimeCode" onChangeText={setInputNewPw}>{inputNewPw}</TextInput>
-              {equalPw === true || checkNewPw === "" ? (
+                secureTextEntry={true} textContentType="oneTimeCode" onChangeText={setInputOldPw}>{inputOldPw}</TextInput>{
+                inputNewPw !== undefined && inputNewPw.length < 8 ? (
+                  <View>
+                    <View style={{ flexDirection: 'row' }}>
+                      <Text style={{ ...styles.titleText, color: "#ff4141" }}>새 비밀번호</Text>
+                      <Text style={{ ...styles.titleText, color: "#ff4141", fontSize: 15, marginLeft: 15 }}>* 8자 이상이어야 합니다.</Text>
+                    </View>
+                    <TextInput
+                      style={styles.textInput}
+                      value={inputNewPw}
+                      onChangeText={(value) => changePwText(value)}
+                      secureTextEntry={true}
+                      textContentType="oneTimeCode"
+                      placeholder='새 비밀번호'
+                    />
+                  </View>
+                ) : (
+                  <View>
+                    <Text style={styles.titleText}>새 비밀번호</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      value={inputNewPw}
+                      onChangeText={(value) => changePwText(value)}
+                      secureTextEntry={true}
+                      textContentType="oneTimeCode"
+                      placeholder='새 비밀번호'
+                    />
+                  </View>
+                )}
+              {correctedNewPw === true || checkNewPw === "" ? (
                 <View>
                   <Text style={styles.titleText}>새 비밀번호 확인</Text>
                   <TextInput style={styles.textInput} placeholder='새 비밀번호 확인'
@@ -320,7 +352,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
           <Text style={styles.titleText}>시설 전화번호</Text>
           <TextInput style={styles.textInput} placeholder='시설 전화번호' onChangeText={setTel}>{tel}</TextInput>
           <Text style={styles.titleText}>주소 설정</Text>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SearchAddress', { adminId: adminId })}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SearchAddress', { adminId: currentAdminId })}>
             <Text style={{ color: 'white', fontSize: 16 }}>주소 찾기</Text>
           </TouchableOpacity>
           <TextInput style={{ ...styles.textInput, width: SCREEN_WIDTH * 0.95 }}
@@ -363,7 +395,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
             </TouchableOpacity>
           )
         ) : (
-          name && tel && address && inputOldPw && inputNewPw && checkNewPw ? (
+          name && tel && address && inputOldPw && inputNewPw && checkNewPw && pwLen && correctedNewPw ? (
             <TouchableOpacity style={{ ...styles.submitBtn, backgroundColor: '#3262d4' }}
               onPress={() => Alert.alert("확인", "기본 정보를 수정하시겠습니까?",
                 [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => submit() }])}>
