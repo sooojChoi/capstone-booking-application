@@ -17,10 +17,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import DetailUserDeny from './DetailUserDeny';
 import { onSnapshot, doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
-import { db,  } from '../Core/Config';
+import { db,  auth} from '../Core/Config';
 import * as Notifications from 'expo-notifications'
 import * as Permissions from 'expo-permissions'
 import * as Device from 'expo-device'
+
 
 import { async } from '@firebase/util';
 //import { getToken } from 'firebase/messaging';
