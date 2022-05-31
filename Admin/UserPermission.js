@@ -1,7 +1,7 @@
 // 사용자 승인(관리자) -> 수진
 // 일단 USER를 '승인 요청한 사용자 목록' 이라고 가정하고 코드 구현하였음
 
-import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, StatusBar, Alert, SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, FlatList,TouchableOpacity, StatusBar, Alert, SafeAreaView, Platform } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
@@ -55,6 +55,7 @@ export default function UserPermission({ navigation, route }) {
 
   // const userTable = new UserTable();
   //const permissionTable = new PermissionTable();   
+
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
   const [flexByMode, setFlexByMode] = useState(6)  // ui(flatlist)의 flex값을 조절하기 위함.(체크모드가 true이면 flex:5, false이면 flex:6)
   const [userCheck, setUserCheck] = useState([]);  // 각 사용자가 현재 체크버튼이 눌린 상태인지 알기 위함.
@@ -75,47 +76,23 @@ export default function UserPermission({ navigation, route }) {
   const notificationListener = useRef();
   const responseListener = useRef();
 
+  
   useEffect(()=>{
     const q = query(collection(db, "User"), where("adminId", "==", thisFacilityId), where("allowDate","==",null));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        //ReadUserList();
-        const data = change.doc.data();
-        if (change.type === "added") {
-          if(userCheck.find((value)=>value.id === data.id)===undefined){
-            ReadUserList();
-          }
-          
-          // console.log("-------------------------------------")
-          // console.log("added permission: ", change.doc.data());
-
-          // const temp = [...userCheck]
-        
-          // if(temp.find((value)=>value.id === change.doc.data().id)=== undefined){
-          //   console.log('push')
-          //   temp.push(change.doc.data())
-          // }
-          // console.log("-------------------added temp---------------")
-          // console.log(temp)
-          // getAllUsers(temp)
-        }
-        if (change.type === "modified") {
-          const compare = userCheck.find((value)=>value.id === data.id)
-          // if(compare!== undefined){
-          //   if(compare.name !== data.name || compare.phone !== data.phone){
-          //     ReadUserList();
-          //   }  
-          // }
-          console.log("호출호출")
-          
-        }
-        if (change.type === "removed") {
-          if(userCheck.find((value)=>value.id === data.id)!==undefined){
-            ReadUserList();
-          }
-        }
+      onSnapshot(q, (snapshot) => {
+      var refresh = 0
+      console.log("#########snapshot#######")
+       
+      snapshot.forEach((doc) => {
+        console.log("변경 내용 출력")
+        refresh = 1
       });
-    });
+      if(refresh === 1){
+        refresh = 0;
+        ReadUserList();
+      }
+      
+    })
   
   },[])
 
