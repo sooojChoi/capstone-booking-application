@@ -1,9 +1,8 @@
 // 로그인(관리자) -> 수빈
 
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, Dimensions, SafeAreaView } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../Core/Config';
 
@@ -14,19 +13,24 @@ export default function AdminLogIn({ navigation }) {
   const [id, setId] = useState("")
   const [pw, setPw] = useState("")
 
-  // 로그인 버튼 클릭 시 호출되는 함수 -> 메인 화면으로 이동
+  // 로그인 함수
   const loginAdmin = () => {
     const email = id + "@admin.com"
 
     signInWithEmailAndPassword(auth, email, pw)
-      .then(userCredential => {
-        const user = userCredential.user
+      .then(() => {
         navigation.navigate('TabNavi')
       })
       .catch(error => {
         alert(error.message)
       })
   }
+
+  // 로그아웃 시 호출
+  useEffect(() => {
+    setId("")
+    setPw("")
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -57,8 +61,7 @@ export default function AdminLogIn({ navigation }) {
             <TouchableOpacity style={styles.loginBtn} disabled={false} onPress={() => loginAdmin()}>
               <Text style={{ ...styles.text, color: "white" }}>로그인</Text>
             </TouchableOpacity>
-          )
-        }
+          )}
         <View style={styles.signUpBtn}>
           <TouchableOpacity onPress={() => navigation.navigate('AdminSignUp')}>
             <Text style={styles.text}>회원가입</Text>
@@ -67,7 +70,7 @@ export default function AdminLogIn({ navigation }) {
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -81,7 +84,6 @@ const styles = StyleSheet.create({
   },
 
   textInput: {
-    // height: SCREEN_HEIGHT * 0.05,
     width: SCREEN_WIDTH * 0.8,
     borderColor: "#828282",
     borderWidth: 1,
@@ -119,6 +121,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: SCREEN_WIDTH * 0.45,
     height: SCREEN_WIDTH * 0.45,
-    borderRadius: SCREEN_WIDTH * 0.45 / 2
+    borderRadius: SCREEN_WIDTH * 0.45 / 2,
   }
 });

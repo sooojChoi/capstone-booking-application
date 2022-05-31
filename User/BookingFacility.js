@@ -1,4 +1,4 @@
-//onsnapshot
+
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -434,6 +434,7 @@ function BookingFacilityHome({ navigation, route }) {
 
 
    const [selectedId, setSelectedId] = useState([]);
+
 
 
   //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
@@ -886,10 +887,12 @@ function BookingFacilityHome({ navigation, route }) {
             
           <View style={{flexDirection:'row',alignItems:'center'}}>
             <Text style={styles.SelectionTitle}>시간 선택</Text>
+
             <TouchableOpacity
             style={{marginStart:20}}
             onPress={()=>{navigation.navigate('BookingfacilityDetail',{timeArray:data,maxPlayers:maxPlayers,minPlayers:minPlayers})}}
             ><Text style={{color:'blue'}}>  {'>'} </Text></TouchableOpacity>
+
             </View>
 
             <View>

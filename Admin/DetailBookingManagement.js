@@ -5,9 +5,19 @@ import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity, Ale
 import React, { useEffect, useState } from "react";
 import { doc, collection, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
 import { db } from '../Core/Config';
+import * as Notifications from 'expo-notifications'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 
 export default function DetailBookingManagement({ route, navigation }) {
   // BookingManagement에서 받은 값
@@ -24,6 +34,8 @@ export default function DetailBookingManagement({ route, navigation }) {
   const [phone, setPhone] = useState()
   const [usedPlayer, setUsedPlayer] = useState()
   const [name, setName] = useState()
+
+  
 
   // 예약 목록 가져오기
   const getBookingList = () => {
@@ -97,7 +109,29 @@ export default function DetailBookingManagement({ route, navigation }) {
       .then(() => {
         updateDoc(allocationRef, allocationData)
           .then(() => {
-            navigation.navigate('TabNavi')
+            // 사용자에게 예약이 취소되었다는 푸시 알림을 보낸다.
+            const docRef = doc(db, "User", userId)
+
+            getDoc(docRef)
+                // Handling Promises
+                .then((snapshot) => {
+                    // MARK : Success
+                    if (snapshot.exists) {
+                        const result = snapshot.data().token
+                        sendNotification(result)
+                    }
+                    else {
+                        alert("No Doc Found")
+                    }
+
+                    navigation.navigate('TabNavi')
+                })
+                .catch((error) => {
+                    // MARK : Failure
+                    alert(error.message)
+                })
+
+         
           })
           .catch((error) => {
             alert(error.message)
@@ -106,6 +140,27 @@ export default function DetailBookingManagement({ route, navigation }) {
       .catch((error) => {
         alert(error.message)
       })
+  }
+
+  const sendNotification = async(token) =>{
+    const message = {
+      to: token,
+      sound: 'default',
+      title: facilityId+' 시설 예약이 취소되었습니다. ',
+      body: '예약 취소 내역을 확인해주십시오. ',
+      data: {data: 'goes here'},
+    };
+
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message)
+    })
+
   }
 
   // 시설 사용 시간("XXXX-XX-XXTXX:XX")
@@ -151,7 +206,7 @@ export default function DetailBookingManagement({ route, navigation }) {
       </View>
       <TouchableOpacity style={styles.button} onPress={() => Alert.alert("주의", "예약을 취소하시겠습니까?",
         [{ text: "취소", style: "cancel" }, { text: "확인", onPress: () => cancelBooking() }])}>
-        <Text style={{ fontSize: 16, color: 'white' }}>수 정</Text>
+        <Text style={{ fontSize: 16, color: 'white' }}>취 소</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )

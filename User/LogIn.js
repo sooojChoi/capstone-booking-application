@@ -60,8 +60,7 @@ export default function LogIn({ navigation }) {
             <TouchableOpacity style={styles.loginBtn} disabled={false} onPress={loginUser}>
               <Text style={{ ...styles.text, color: "white" }}>로그인</Text>
             </TouchableOpacity>
-          )
-        }
+          )}
         <View style={styles.signUpBtn}>
           <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
             <Text style={styles.text}>회원가입</Text>

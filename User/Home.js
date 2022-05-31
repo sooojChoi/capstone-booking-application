@@ -30,6 +30,7 @@ export default function Home({ navigation, route }) {
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+  const [allowDateNotice, setAllowDateNotice] = useState("");
   
 
 
@@ -48,8 +49,10 @@ const ReadUser = () => {
 
                   if(result.allowDate===null){
                     console.log("아직 승인되지 않은 사용자")
+                    setAllowDateNotice("관리자가 아직 "+result.name+"님을 승인하지 않았습니다. 승인된 후에 예약이 가능합니다.")
                   }else if (allowDate>today){//아직 정지 풀리지 않음
                     console.log("today",today,"allowdate",allowDate,"기다려")
+                    setAllowDateNotice("예약 금지일이 부여되어 있습니다. "+result.allowDate+"까지 예약이 불가능합니다.")
                   }else{
                     console.log("정상적으로 사용")
                   }
@@ -134,6 +137,9 @@ const ReadUser = () => {
     
   }, []);
 
+  useEffect(()=> {
+    ReadUser();
+  },[]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -143,9 +149,14 @@ const ReadUser = () => {
             <Text style={styles.text1}>BBOOKING</Text>
           </View>
           <View style={{ height: height * 0.13 }}>
+            <Text style={{paddingHorizontal:10, fontSize:16, alignSelf:'center'}}>
+              {allowDateNotice}
+            </Text>
           </View>
           <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={{
+            {
+              allowDateNotice === "" ? (
+              <TouchableOpacity style={{
               backgroundColor: '#3262d4',
               alignSelf: 'center',
               width: width * 0.3,
@@ -159,6 +170,24 @@ const ReadUser = () => {
             }} onPress={() => { navigation.navigate('BookingFacility') }}>
               <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', marginTop: height * 0.075, }}>예약하기</Text>
             </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={{
+                  backgroundColor: 'grey',
+                  alignSelf: 'center',
+                  width: width * 0.3,
+                  height: height * 0.2,
+                  borderRadius: 8,
+                  padding: 5,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  marginBottom: 5,
+                  marginLeft: width * 0.1
+                }}>
+                  <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', marginTop: height * 0.075, }}>예약하기</Text>
+                </TouchableOpacity>
+              )
+            }
+            
             <TouchableOpacity style={{
               backgroundColor: '#3262d4',
               alignSelf: 'center',
@@ -175,6 +204,7 @@ const ReadUser = () => {
               <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', }}>취소 내역</Text>
             </TouchableOpacity>
           </View>
+          <View style={{ height: height * 0.03 }}></View>
           <View style={{ flexDirection: 'row' }}>
             <TouchableOpacity style={{
               backgroundColor: '#3262d4',

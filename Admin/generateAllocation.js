@@ -1,5 +1,3 @@
-//관리자가 버튼 누르면 allocation 생성화면 원래버전
-
 import { StyleSheet, Text, View, Dimensions, TextInput, 
   TouchableOpacity,Pressable, SafeAreaView, ScrollView,FlatList,Alert } from 'react-native';
 import React, { useState,useEffect } from "react";

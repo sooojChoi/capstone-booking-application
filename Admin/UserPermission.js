@@ -705,28 +705,28 @@ export default function UserPermission({navigation, route}) {
 
   },[])
 
-  useEffect(()=>{
-  const docRef = doc(db, "User", "pushnotificationuser")
+  // useEffect(()=>{
+  // const docRef = doc(db, "User", "pushnotificationuser")
 
-  getDoc(docRef)
-      // Handling Promises
-      .then((snapshot) => {
-          // MARK : Success
-          if (snapshot.exists) {
-              const result = snapshot.data().token
-              setExpoPushToken(result)
-              console.log(result)
-          }
-          else {
-              alert("No Doc Found")
-          }
-      })
-      .catch((error) => {
-          // MARK : Failure
-          alert(error.message)
-      })
+  // getDoc(docRef)
+  //     // Handling Promises
+  //     .then((snapshot) => {
+  //         // MARK : Success
+  //         if (snapshot.exists) {
+  //             const result = snapshot.data().token
+  //             setExpoPushToken(result)
+  //             console.log(result)
+  //         }
+  //         else {
+  //             alert("No Doc Found")
+  //         }
+  //     })
+  //     .catch((error) => {
+  //         // MARK : Failure
+  //         alert(error.message)
+  //     })
 
-  },[])
+  // },[])
 
 
   const sendNotification = async(token) =>{
