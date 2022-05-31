@@ -98,7 +98,8 @@ export default function SignIn({ navigation, route }) {
       phone: phone,
       registerDate: register,
       allowDate: null,
-      adminId: route.params?.facId
+      adminId: route.params?.facId,
+      token:null
     }
 
     const docRef = doc(db, "User", docData.id)
