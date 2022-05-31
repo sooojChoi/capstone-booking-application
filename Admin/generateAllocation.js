@@ -1,4 +1,4 @@
-//관리자가 버튼 누르면 allocation 생성화면
+//관리자가 버튼 누르면 allocation 생성화면 원래버전
 
 import { StyleSheet, Text, View, Dimensions, TextInput, 
   TouchableOpacity,Pressable, SafeAreaView, ScrollView,FlatList,Alert } from 'react-native';
@@ -109,7 +109,7 @@ function setBeforeTime(Array){//여기서는 available이 모두 true인 allocat
       //console.log("2", elem.name)
       return ({id:elem.name,time:t});//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
   });
-  //console.log("타임",timeArray)
+  console.log("타임",timeArray)
   return timeArray
 }
 
@@ -393,4 +393,5 @@ SelectionTitle: {
   fontSize:25,
 },
 });
+
 

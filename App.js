@@ -25,7 +25,7 @@ import LogIn from './User/LogIn';
 import MyBookingList from './User/MyBookingList';
 import MyInfoManagement from './User/MyInfoManagement';
 import MyLastBookingList from './User/MyLastBookingList';
-import SearchFacility from './User/SearchFacility';
+import SearchFacility from './User/searchFacility';
 import SignIn from './User/SignIn';
 import CloudFirestore from './CloudFirestore';
 import AdminHomeNavigation from './Admin/AdminHome';
@@ -71,7 +71,7 @@ export default function App() {
   // )
 
 
-  //  return <ChooseModeNavigation></ChooseModeNavigation> // 사용자/관리자 선택(수빈)
+   //return <ChooseModeNavigation></ChooseModeNavigation> // 사용자/관리자 선택(수빈)
 
   ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
   //return (<Home></Home>) // 홈(유진)
