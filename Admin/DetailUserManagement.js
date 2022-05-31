@@ -257,13 +257,42 @@ export default function DetailUserManagement({ route, navigation }) {
             alert(error.message)
           })
 
+    const sendNotificationWithGrade = async(token) =>{
+      const message = {
+        to: token,
+        sound: 'default',
+        title: '사용자 등급이 수정되었습니다. ',
+        body: '등급이 '+value+'(으)로 변경되었습니다. ',
+        data: {data: 'goes here'},
+      };
+  
+      await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message)
       })
 
-      .catch((error) => {
-        console.log("ddd")
-        // MARK : Failure
-        alert(error.message)
-        //alert("사용자 목록을 불러올 수 없습니다. 개발자에게 문의하십시오. ")
+    const sendNotificationWithAllowDate = async(token, date) =>{
+      const message = {
+        to: token,
+        sound: 'default',
+        title: '예약 금지일이 '+date+'으로 부여되었습니다. ',
+        body: '해당 날짜까지 시설 예약이 불가능합니다. ',
+        data: {data: 'goes here'},
+      };
+  
+      await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message)
       })
 
   }
@@ -288,6 +317,42 @@ export default function DetailUserManagement({ route, navigation }) {
     })
 
   }
+
+      //setDoc(docRef, docData, { merge: merge })
+      updateDoc(docRef, docData)
+          // Handling Promises
+          .then(() => {
+              //alert("Updated Successfully!")
+              console.log("Updated Successfully!")
+
+              var temp  = {
+                userId: userInfo.userId, name: userInfo.name, grade: userInfo.grade,
+                phone: userInfo.phone, 
+                registerDate: userInfo.registerDate, allowDate: docData.allowDate
+              }
+          
+              setUserInfo(temp);
+              setAllowDateInfo([..."예약 금지일: "+docData.allowDate]);
+              setDateForAllow(...[new Date(selectedDate)]);
+
+              // 사용자의 토큰을 얻어서 사용자에게 푸시 알림을 보냄.
+              getDoc(docRef)
+                    // Handling Promises
+                    .then((snapshot) => {
+                        // MARK : Success
+                        if (snapshot.exists) {
+                            const result = snapshot.data().token
+                            sendNotificationWithAllowDate(result, docData.allowDate)
+                            console.log(result)
+                        }
+                        else {
+                            alert("No Doc Found")
+                        }
+                    })
+                    .catch((error) => {
+                        // MARK : Failure
+                        alert(error.message)
+                    })
 
   const sendNotificationWithAllowDate = async (token) => {
     const message = {
