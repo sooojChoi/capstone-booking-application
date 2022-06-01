@@ -5,7 +5,7 @@ import { StyleSheet, Text, View, Dimensions, TextInput, FlatList, SafeAreaView, 
 import React, { useEffect, useState } from "react";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Modal from "react-native-modal";
-import { doc, collection, addDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, deleteDoc, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -273,19 +273,6 @@ export default function DetailFacilityManagement({ route, navigation }) {
       ))
   }
 
-  // 시간별 할인율 적용하기
-  const CreateDiscountRate = (docData) => {
-    const docRef = collection(db, "DiscountRate")
-
-    addDoc(docRef, docData)
-      .then(() => {
-        console.log('discount rate table is updated successfully.')
-      })
-      .catch((error) => {
-        console.log(error.message)
-      })
-  }
-
   // 수정 버튼 선택
   const modifyInfo = () => {
     const facRef = doc(db, "Facility", currentAdminId, "Detail", facilityId)
@@ -312,35 +299,40 @@ export default function DetailFacilityManagement({ route, navigation }) {
       explain: explain
     }
 
-    // updateDoc(facRef, facData)
-    //   .then(() => {
-    //     navigation.goBack()
-    //   })
-    //   .catch((error) => {
-    //     alert(error.message)
-    //   })
-
-    let resultAllocation = []
-    if (newDiscount === true && allocation !== null) {
-      allocation.map((value) => {
-        if (value.discountRate !== "0") {
-          resultAllocation.push({
-            adminId: currentAdminId,
-            facilityId: name,
-            rate: Number(value.discountRate),
-            time: value.time
-          })
-          const docData = {
-            adminId: currentAdminId,
-            facilityId: name,
-            rate: Number(value.discountRate),
-            time: value.time
-          }
-          CreateDiscountRate(docData)
-        }
+    updateDoc(facRef, facData)
+      .then(() => {
+        navigation.goBack()
       })
+      .catch((error) => {
+        alert(error.message)
+      })
+
+    if (newDiscount === true && allocation !== null) {
+      const docRef = collection(db, "DiscountRate")
+      const docData = query(docRef, where("adminId", "==", currentAdminId), where("facilityId", "==", facilityId))
+
+      getDocs(docData)
+        .then((snapshot) => {
+          snapshot.forEach((data) => {
+            const disRef = doc(db, "DiscountRate", data.id)
+            deleteDoc(disRef) // 기존 시간별 할인율 삭제
+          })
+          allocation.map((value) => {
+            if (value.discountRate !== "0") {
+              const docData = {
+                adminId: currentAdminId,
+                facilityId: name,
+                rate: Number(value.discountRate),
+                time: value.time
+              }
+              addDoc(docRef, docData) // 새로운 시간별 할인율 적용
+            }
+          })
+        })
+        .catch((error) => {
+          alert(error.message)
+        })
     }
-    console.log(resultAllocation)
   }
 
   return (
