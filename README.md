@@ -74,4 +74,4 @@
   * 파이어베이스(Firebase)는 2011년 파이어베이스사가 개발하고 2014년 구글에 인수된 모바일 및 웹 애플리케이션 개발 플랫폼이다.
   * 실시간으로 모든 클라이언트에서 데이터가 동기화 되고, 앱이 오프라인 상태라도 계속 사용할 수 있다. Data는 Json tree 형태로 저장이 된다.
 
-![panel](https://user-images.githubusercontent.com/75026933/171328115-9f32cb2a-d2ec-4648-a86f-69f8fa79f64a.jpg){: width="100%" height="100%"}
+![panel](https://user-images.githubusercontent.com/75026933/171328115-9f32cb2a-d2ec-4648-a86f-69f8fa79f64a.jpg)
