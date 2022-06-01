@@ -3,7 +3,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
 import Modal from "react-native-modal";
 import CalendarPicker from 'react-native-calendar-picker';
@@ -16,8 +16,8 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function BookingManagement({ navigation }) {
   // Cloud Firestore
   const [bookingList, setBookingList] = useState([]) // 필터링 된 예약 목록(FlatList 출력)
-
-  const newFacilityCheck = [] // facilityCheck 값 변경을 위한 전역 변수
+  
+  let newFacilityCheck = [] // facilityCheck 값 변경을 위한 전역 변수
   const [oldFacilityCheck, setOldFacilityCheck] = useState([]) // facilityCheck 값 변경 취소를 위한 변수
   const [facilityCheck, setFacilityCheck] = useState([]) // 시설 선택 Modal - Check List 구현
   const [facilityList, setFacilityList] = useState([]) // 선택된 시설 목록
@@ -32,28 +32,28 @@ export default function BookingManagement({ navigation }) {
   const setFacCheckList = () => {
     const ref = collection(db, "Facility", currentAdminId, "Detail")
     const data = query(ref)
-    let result = [] // 가져온 세부 시설 목록을 저장할 변수
+   
 
-    getDocs(data)
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          result.push(doc.id)
-        });
+    onSnapshot(data,(snapshot)=>{
+      let result = [] // 가져온 세부 시설 목록을 저장할 변수
+      let tempNewFacilityCheck=[]//data가 실시간으로 변경 될 때, newFacilityCheck변수에  변경 전 data가 남아있는것 방지.
+      snapshot.forEach((doc) => {
+        result.push(doc.id)
+      });
 
-        result.map((facilityId) => {
-          const id = facilityId
-          const isCheck = false
-          newFacilityCheck.push({
-            id: id, isCheck: isCheck
-          })
+      result.map((facilityId) => {
+        const id = facilityId
+        const isCheck = false
+        tempNewFacilityCheck.push({
+          id: id, isCheck: isCheck
         })
+      })
 
-        setFacilityCheck(newFacilityCheck)
-        setOldFacilityCheck(newFacilityCheck)
-      })
-      .catch((error) => {
-        alert(error.message)
-      })
+      setFacilityCheck(tempNewFacilityCheck)
+      setOldFacilityCheck(tempNewFacilityCheck)
+      newFacilityCheck=tempNewFacilityCheck;//newFacilityCheck에 새로운 data 복사
+    },(error)=>{alert(error.message)});
+    
   }
 
   useEffect(() => {
@@ -209,85 +209,116 @@ export default function BookingManagement({ navigation }) {
   const getListWithAllFilter = (today, facility, usingTime) => {
     const ref = collection(db, "Booking")
     const data = query(ref, orderBy("facilityId"), orderBy("usingTime"))
+    
+ 
+  onSnapshot(data,(snapshot)=>{
     let result = [] // 가져온 예약 목록을 저장할 변수
 
-    getDocs(data)
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
-            if (doc.data().usingTime.substr(0, 10) === usingTime) {
-              facility.find((facility) => {
-                if (doc.data().facilityId === facility.id)
-                  result.push(doc.data())
-              })
-            }
-        });
-        setBookingList(result)
-      })
-      .catch((error) => {
-        alert(error.message)
-      })
+    snapshot.forEach((doc) => {
+      if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
+        if (doc.data().usingTime.substr(0, 10) === usingTime) {
+          facility.find((facility) => {
+            if (doc.data().facilityId === facility.id)
+              result.push(doc.data())
+          })
+        }
+    });
+    setBookingList(result)
+  },(error)=>{
+    alert(error.message)
+  });
+  
   }
 
   // 시설 필터링
   const getListWithFacFilter = (today, facility) => {
     const ref = collection(db, "Booking")
     const data = query(ref, orderBy("facilityId"), orderBy("usingTime"))
-    let result = [] // 가져온 예약 목록을 저장할 변수
+    
 
-    getDocs(data)
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
-            facility.find((facility) => {
-              if (doc.data().facilityId === facility.id)
-                result.push(doc.data())
-            })
-        });
-        setBookingList(result)
-      })
-      .catch((error) => {
-        alert(error.message)
-      })
+  onSnapshot(data,(snapshot)=>{
+    let result = [] // 가져온 예약 목록을 저장할 변수
+    snapshot.forEach((doc) => {
+      if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
+        facility.find((facility) => {
+          if (doc.data().facilityId === facility.id)
+            result.push(doc.data())
+        })
+    });
+    setBookingList(result)
+
+  },(error)=>{ alert(error.message)});
+    // getDocs(data)
+    //   .then((snapshot) => {
+    //     snapshot.forEach((doc) => {
+    //       if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
+    //         facility.find((facility) => {
+    //           if (doc.data().facilityId === facility.id)
+    //             result.push(doc.data())
+    //         })
+    //     });
+    //     setBookingList(result)
+    //   })
+    //   .catch((error) => {
+    //     alert(error.message)
+    //   })
   }
 
   // 날짜 필터링
   const getListWithDateFilter = (today, usingTime) => {
     const ref = collection(db, "Booking")
     const data = query(ref, orderBy("facilityId"), orderBy("usingTime"))
-    let result = [] // 가져온 예약 목록을 저장할 변수
+    
+    onSnapshot(data,(snapshot)=>{
+      let result = [] // 가져온 예약 목록을 저장할 변수
 
-    getDocs(data)
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
-            if (doc.data().usingTime.substr(0, 10) === usingTime)
-              result.push(doc.data())
-        });
-        setBookingList(result)
-      })
-      .catch((error) => {
-        alert(error.message)
-      })
+      snapshot.forEach((doc) => {
+        if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
+          if (doc.data().usingTime.substr(0, 10) === usingTime)
+            result.push(doc.data())
+      });
+      setBookingList(result)
+
+    },(error)=>{alert(error.message)});
+    // getDocs(data)
+    //   .then((snapshot) => {
+    //     snapshot.forEach((doc) => {
+    //       if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
+    //         if (doc.data().usingTime.substr(0, 10) === usingTime)
+    //           result.push(doc.data())
+    //     });
+    //     setBookingList(result)
+    //   })
+    //   .catch((error) => {
+    //     alert(error.message)
+    //   })
   }
 
   // 필터링 X
   const getListWithNoFilter = (today) => {
     const ref = collection(db, "Booking")
     const data = query(ref, orderBy("facilityId"), orderBy("usingTime"))
-    let result = [] // 가져온 예약 목록을 저장할 변수
+  
 
-    getDocs(data)
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
-            result.push(doc.data())
-        });
-        setBookingList(result)
-      })
-      .catch((error) => {
-        alert(error.message)
-      })
+    onSnapshot(data,(snapshot)=>{
+      let result = [] // 가져온 예약 목록을 저장할 변수
+      snapshot.forEach((doc) => {
+        if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
+          result.push(doc.data())
+      });
+      setBookingList(result)
+    },(error)=>{ alert(error.message)});
+    // getDocs(data)
+    //   .then((snapshot) => {
+    //     snapshot.forEach((doc) => {
+    //       if (doc.data().adminId === currentAdminId && doc.data().cancel == false && doc.data().usingTime >= today)
+    //         result.push(doc.data())
+    //     });
+    //     setBookingList(result)
+    //   })
+    //   .catch((error) => {
+    //     alert(error.message)
+    //   })
   }
 
   // 시설 & 날짜 필터된 예약 내역를 가져옴
