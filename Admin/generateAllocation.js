@@ -346,7 +346,12 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
   return (
     <View style={{ marginTop: 50, alignItems: 'center', flex: 1 }}>
 
-      <Text style={{ fontSize: 30, marginVertical: height * 0.02 }}>{ThatDay + "\n"}시설별로 예약 생성</Text>
+      {/* <Text style={{ fontSize: 20, marginVertical: height * 0.02 }}>{ThatDay + "\n"}시설별로 예약 생성</Text> */}
+      <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: 24}}>{ThatDay}</Text>
+            <Text style={{ fontSize: 18,}}>시설별로 선택하여 예약 생성</Text>
+            <View style={{ height: height * 0.03 }}></View>
+          </View>
       <FlatList
         data={facility}
         renderItem={renderItem}
@@ -397,7 +402,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   title: {
-    fontSize: 25,
+    fontSize: 20,
   },
   SelectionTitle: {
     paddingVertical: 15,
