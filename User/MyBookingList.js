@@ -158,7 +158,8 @@ export default function App() {
 
       <View style={{ flexDirection: 'row', }}>
         <Text style={styles.text}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
-        <TouchableOpacity style={{
+      </View>
+      <TouchableOpacity style={{
           backgroundColor: '#3262d4',
           alignSelf: 'flex-start',
           borderRadius: 8,
@@ -166,7 +167,7 @@ export default function App() {
           paddingLeft: 10,
           paddingRight: 10,
           marginBottom: 5,
-          marginLeft: SCREEN_WIDTH * 0.35
+          marginLeft: SCREEN_WIDTH * 0.64
         }} onPress={() => Alert.alert(
           "주의", "예약을 취소하시겠습니까?", [
           { text: "취소", onPress: () => console.log("예약 취소하지 않음"), style: "cancel" },
@@ -174,7 +175,6 @@ export default function App() {
         ], { cancelable: false })}>
           <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
         </TouchableOpacity>
-      </View>
     </View>
   }
 
@@ -235,7 +235,7 @@ export default function App() {
   const cancelItem = (itemData) => {
     const facilitieName = itemData.item.facilityId
     const usingTimeArr = itemData.item.usingTime.split("T")
-    return <View style={styles.flatList}>
+    return <View style={styles.flatList2}>
       <Text style={{ ...styles.text, color: '#999' }}>{facilitieName} {usingTimeArr[0]} {usingTimeArr[1]}</Text>
       <View style={{ flexDirection: 'row' }}>
         <Text style={{ ...styles.text, color: '#999' }}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
@@ -271,6 +271,15 @@ export default function App() {
 
 const styles = StyleSheet.create({
   flatList: {
+    borderColor: '#999',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10, margin: 7,
+    width: SCREEN_WIDTH * 0.89,
+    height: 105,
+  },
+
+  flatList2: {
     borderColor: '#999',
     borderWidth: 1,
     borderRadius: 10,
