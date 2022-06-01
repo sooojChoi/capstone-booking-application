@@ -105,12 +105,12 @@ export default function App() {
                           else {
                               alert("No Doc Found")
                           }
-              })
-              .catch((error) => {
-                  // MARK : Failure
-                  alert(error.message)
-              })
-                      sendNotification(result)
+                        })
+                        .catch((error) => {
+                            // MARK : Failure
+                            alert(error.message)
+                        })
+                     // sendNotification(result)
                   }
                   else {
                       alert("No Doc Found")

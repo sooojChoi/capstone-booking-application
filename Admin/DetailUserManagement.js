@@ -297,7 +297,7 @@ export default function DetailUserManagement({ route, navigation }) {
       const message = {
         to: token,
         sound: 'default',
-        title: '예약 금지일이 '+date+'으로 부여되었습니다. ',
+        title: '예약 금지일이 부여되었습니다. ',
         body: '해당 날짜까지 시설 예약이 불가능합니다. ',
         data: {data: 'goes here'},
       };
