@@ -94,23 +94,7 @@ export default function App() {
                   if (snapshot.exists) {
                       const result = snapshot.data().token
 
-                      const userRef = doc(db, "User", currentUserId)
-                      getDoc(userRef)
-                      // Handling Promises
-                      .then((snapshot) => {
-                          // MARK : Success
-                          if (snapshot.exists) {
-                              sendNotification(result, itemData.item.facilityId,snapshot.data().name )
-                          }
-                          else {
-                              alert("No Doc Found")
-                          }
-                        })
-                        .catch((error) => {
-                            // MARK : Failure
-                            alert(error.message)
-                        })
-                     // sendNotification(result)
+                      sendNotification(result, itemData.item.facilityId,snapshot.data().name )
                   }
                   else {
                       alert("No Doc Found")
