@@ -31,7 +31,10 @@ Notifications.setNotificationHandler({
 const Tab = createBottomTabNavigator();
 
 export default function AdminHomeNavigation() {
-  const myId = "AdminTestId"  // 임시로 저장해놓은 관리자 아이디
+ // const myId = "AdminTestId"  // 임시로 저장해놓은 관리자 아이디
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  // const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
+  const myId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   // const currentAdmin = auth.currentUser // 현재 접속한 admin
   //   // const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
