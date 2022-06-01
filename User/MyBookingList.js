@@ -84,26 +84,26 @@ export default function App() {
           console.log(id)
           alert("취소가 완료되었습니다")
 
-          // 관리자에게 예약을 취소했다는 푸시 알림을 보냄.
-          const facRef = doc(db, "Facility", adminId)
+          // // 관리자에게 예약을 취소했다는 푸시 알림을 보냄.
+          // const facRef = doc(db, "Facility", adminId)
 
-          getDoc(facRef)
-              // Handling Promises
-              .then((snapshot) => {
-                  // MARK : Success
-                  if (snapshot.exists) {
-                      const result = snapshot.data().token
+          // getDoc(facRef)
+          //     // Handling Promises
+          //     .then((snapshot) => {
+          //         // MARK : Success
+          //         if (snapshot.exists) {
+          //             const result = snapshot.data().token
 
-                      sendNotification(result, itemData.item.facilityId,snapshot.data().name )
-                  }
-                  else {
-                      alert("No Doc Found")
-                  }
-              })
-              .catch((error) => {
-                  // MARK : Failure
-                  alert(error.message)
-              })
+          //             sendNotification(result, itemData.item.facilityId,snapshot.data().name )
+          //         }
+          //         else {
+          //             alert("No Doc Found")
+          //         }
+          //     })
+          //     .catch((error) => {
+          //         // MARK : Failure
+          //         alert(error.message)
+          //     })
 
         })
         .catch((error) => {
