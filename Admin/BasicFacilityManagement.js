@@ -8,7 +8,7 @@ import Toast from 'react-native-easy-toast';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { auth, db, storageDb } from '../Core/Config';
-import { ref, getDownloadURL, listAll, deleteObject, uploadBytes } from 'firebase/storage';
+import { ref, listAll, deleteObject, uploadBytes } from 'firebase/storage';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -161,6 +161,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
     listAll(storageRef)
       .then((result) => {
         result.items.forEach((itemRef) => {
+          console.log("삭제 => " + itemRef)
           const imgRef = ref(storageDb, currentAdminId + '/' + itemRef.name)
           deleteObject(imgRef)
         })
@@ -218,7 +219,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
     // 사진 업로드
     if (imgMode) {
-      // delStorage()
+      delStorage()
       let num = 1
       images.forEach((value) => {
         uploadImage(value.uri, num)
