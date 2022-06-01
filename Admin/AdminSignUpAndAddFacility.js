@@ -24,36 +24,9 @@ export default function AdminSignUpAndAddFacility({ navigation, route }) {
     navigation.navigate('DetailAdminSignUp', { sort: 'add', facility: null })
   }
 
+  var canGoNextScene = 0;
   // '추가 완료'버튼을 누르면 동작함
   const goToNextScreen = () => {
-    // 시설 기본 정보
-    const basicInfo = {
-      id: facilityBasicInfo.id,
-      name: facilityBasicInfo.name,
-      address: facilityBasicInfo.facilityAddress,
-      tel: facilityBasicInfo.tel,
-      explain: facilityBasicInfo.explain,
-      token: ""
-    }
-    facInfo.map((value) => {
-      const detailInfo = {
-        name: value.name,
-        openTime: value.openTime, closeTime: value.closeTime, unitTime: value.unitTime,
-        minPlayer: value.minPlayer, maxPlayer: value.maxPlayer,
-        booking1: value.booking1, booking2: value.booking2, booking3: value.booking3,
-        cost1: value.cost1, cost2: value.cost2, cost3: value.cost3,
-        explain: value.explain
-      }
-
-      CreateFacility(basicInfo, detailInfo)
-    })
-
-    var num = 1;
-    console.log(imageUri)
-    imageUri.map((value) => {
-      uploadImages(value.uri, num);
-      num++;
-    })
 
     facilityAllocation.map((value) => {
       const docInfo = {
@@ -65,6 +38,35 @@ export default function AdminSignUpAndAddFacility({ navigation, route }) {
 
       CreateDiscountRate(docInfo)
     })
+
+    var num = 1;
+    console.log(imageUri)
+    imageUri.map((value) => {
+      uploadImages(value.uri, num);
+      num++;
+    })
+
+  // 시설 기본 정보
+  const basicInfo = {
+    id: facilityBasicInfo.id,
+    name: facilityBasicInfo.name,
+    address: facilityBasicInfo.facilityAddress,
+    tel: facilityBasicInfo.tel,
+    explain: facilityBasicInfo.explain,
+    token: ""
+  }
+  facInfo.map((value) => {
+    const detailInfo = {
+      name: value.name,
+      openTime: value.openTime, closeTime: value.closeTime, unitTime: value.unitTime,
+      minPlayer: value.minPlayer, maxPlayer: value.maxPlayer,
+      booking1: value.booking1, booking2: value.booking2, booking3: value.booking3,
+      cost1: value.cost1, cost2: value.cost2, cost3: value.cost3,
+      explain: value.explain
+    }
+
+    CreateFacility(basicInfo, detailInfo)
+  })
 
    
   }
@@ -91,6 +93,20 @@ export default function AdminSignUpAndAddFacility({ navigation, route }) {
         setDoc(ref2, detailRef)
           // Handling Promises
           .then(() => {
+            canGoNextScene++;
+            if(canGoNextScene === facInfo.length){
+              console.log(canGoNextScene+', '+facInfo.length)
+              const email = facilityBasicInfo.id + "@admin.com"
+
+              // DB 유저 생성 후 로그인 화면으로 이동함
+              createUserWithEmailAndPassword(auth, email, facilityBasicInfo.password)
+                .then(() => {
+                  navigation.replace('AdminLogIn')
+                })
+                .catch(error => {
+                  alert(error.message)
+                })
+            }
             //alert("User Document Created!")
           })
           .catch((error) => {
@@ -109,17 +125,9 @@ export default function AdminSignUpAndAddFacility({ navigation, route }) {
     addDoc(ref, docRef)
       .then(() => {
         // MARK : Success
+        
         console.log('discount rate table is updated successfully.')
-        const email = facilityBasicInfo.id + "@admin.com"
-
-        // DB 유저 생성 후 로그인 화면으로 이동함
-        createUserWithEmailAndPassword(auth, email, facilityBasicInfo.password)
-          .then(() => {
-            navigation.replace('AdminLogIn')
-          })
-          .catch(error => {
-            alert(error.message)
-          })
+       
       })
       .catch((error) => {
         // MARK : Failure
