@@ -27,7 +27,7 @@ const {height,width}=Dimensions.get("window");
 
 export default function AdminBooking({navigation}) {
 
-  const [adminId,setAdminId]=useState('AdminTestId')//현재 관리자의 id(문서이름)
+  const [adminId,setAdminId]=useState('test1234')//현재 관리자의 id(문서이름)
   const [facility,setFacility]=useState(adminId);
 
 
@@ -247,7 +247,7 @@ const [items, setItems] = useState(facilityArray);
           tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
   
         })
-        console.log(dc)
+        console.log(tempDclist,"this is dc=======================")
         setDclist(tempDclist)
         console.log(dcList)
   
@@ -336,7 +336,7 @@ const SItem = ({ item, onPress}) => (
     //console.log(userSelected,"userselected 반영되는지 확인r")
     //여기서  thisUserPermission이 null이다.
     
-   //console.log(thisUserPermission, "Userselected가 변경될 때 thisuserpermission?")
+   console.log(thisUserPermission, "Userselected가 변경될 때 thisuserpermission?")
    if(thisUserPermission){
     setGrade(thisUserPermission.grade);
    }
@@ -363,7 +363,7 @@ const SItem = ({ item, onPress}) => (
   let openTime,unitTime,closeTime,booking1,booking2,booking3=null;
  const  ReadFacility = (v) => {
   // doc(db, 컬렉션 이름, 문서 ID)
-  const docRef = doc(db, "Facility","AdminTestId","Detail", v)
+  const docRef = doc(db, "Facility",adminId,"Detail", v)
   let result
 
   getDoc(docRef)
@@ -448,7 +448,8 @@ const minDate = new Date(); // Today
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
      <View><Text style>{item.time.split('T')[1]}</Text></View>
-     <View style={{width: width*0.9, height: height*0.06,flexDirection:'row'}}>
+     <View style={{width: width*0.8, height: height*0.06,flexDirection:'row',borderBottomColor:"#c8c8c8",
+        borderBottomWidth:1}}>
      <Text style={[styles.title, textColor,{fontSize:16}]}>{item.cost}</Text>
      <Text style={{...styles.title,fontSize:16, marginLeft:20}}>최소 인원:{minPlayers}</Text>
     <Text style={{...styles.title,fontSize:16, marginLeft:20}}>최대 인원:{maxPlayers}</Text>
@@ -563,23 +564,29 @@ function makeAllocationTime(array){
       }
     });
   }
-//  console.log("thisis gradeCost",gradeCost)
+  //console.log("thisis gradeCost",gradeCost)
   let calcCost;
   todayAvail.map((elem)=>{
     if (elem.available===true){//선택된 날짜에 개설된 시간들중에 available이 true인거
     
 
-     dcList.map((e)=>{
-       if (e.time==elem.usingTime.split('T')[1]){//할인되는 시간
-        calcCost=gradeCost*e.rate;
-        }
-        else{//할인 안되는 시간
-          calcCost=gradeCost;
-        }
-      })
+      if (dcList.length==0){//할인되는 시간이 없을경우
+        calcCost=gradeCost;
+      }else{
+        dcList.map((e)=>{
+          if (e.time==elem.usingTime.split('T')[1]){//할인되는 시간
+           calcCost=gradeCost*e.rate;
+           }
+           else{//할인 안되는 시간
+      
+             calcCost=gradeCost;
+           }
+         })
+      }
+   
     
       tempData.push({id:elem.usingTime,title:" ",time:elem.usingTime,cost:calcCost})
-      console.log(elem.usingTime)
+      console.log(elem.calcCost,"calcCost")
       //---------------------------id를 usingTime 전체다 넣어줌
     }
       
@@ -607,6 +614,7 @@ if (data){
    SelectedTimeObject.map(elem=>{if(elem){temparr.push(elem.cost)}})//가격만 뽑아서 배열로 반환
    totalCost=temparr.reduce((sum,cv)=>{return sum+cv},0);//배열의 합을 계산
   }
+//  console.log(totalCost,"------------------------")
 }
 useEffect(()=>{setCount(minPlayers)},[minPlayers])
   //인원 선택
@@ -762,8 +770,12 @@ const reservation=()=>{
   QueryAllo();  
 }
 
+//시간선택 모달
+const [isTimeModalVisible, setTimeModalVisible] = useState(false);
 
-
+const toggleTimeModal = () => {
+  setTimeModalVisible(!isTimeModalVisible);
+};
 
   
 //마지막 모달
@@ -869,17 +881,17 @@ const toggleSearchModal=()=>{
       <View>
       
       <View style={{height:showTimeSelect?400:0, width:showTimeSelect?400:0}}>
-      <Text style={{...styles.text3, marginBottom:10, marginTop:20}}>시간 선택</Text>
-       <ScrollView horizontal={true} style={{ width: "150%" }} bounces={false}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        extraData={selectedId}
-        //horizontal = { true }
-        style={{width:400, height:300}}
-      />
-      </ScrollView>
+  
+     <View style={{flexDirection:'row',alignItems:'center',marginVertical:20}}>
+            <Text style={{fontSize:30}}>시간 선택</Text>
+
+            <TouchableOpacity
+            style={{marginStart:20}}
+            onPress={toggleTimeModal}
+            ><Text style={{color:'blue'}}>  {'>'} </Text></TouchableOpacity>
+
+            </View>
+       
 
       <View style={{flexDirection:'row'}}>
       <Text style={styles.text3}>예약 인원:</Text>
@@ -977,9 +989,40 @@ const toggleSearchModal=()=>{
           <TouchableOpacity onPress={toggleSearchModal} ><Text style={styles.SelectionTitle}>취소</Text></TouchableOpacity>
           
         </Modal>
-
-    </SafeAreaView>
+        <Modal
+        isVisible={isTimeModalVisible}
+        backdropColor="white"
+        style={{marginVertical:height*0.1}}
+        backdropOpacity={1}
+        >
+          <View  style={{marginHorizontal:10,height:height*0.7,width:width*0.8,
+            marginVertical:height*0.01,alignItems:'center',
+            justifyContent:'center'
+            }}>
+           
+            <FlatList
+            
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        extraData={selectedId}
     
+      />
+          </View>
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#3262d4', alignItems: 'center',
+              borderRadius: 10, paddingVertical: 15, paddingHorizontal: 15, marginRight: 15
+            }}
+            onPress={toggleTimeModal}
+          >
+            <Text style={{ fontSize: 18, color: 'white' }}>완료</Text>
+          </TouchableOpacity>
+       
+          </Modal>
+    </SafeAreaView>
+ 
   );
 }
 
@@ -1001,8 +1044,9 @@ const styles = StyleSheet.create({
     height: 40,
   },
   text3: {
-    fontSize: 18,
-    margin: 5,
+    fontSize: 23,
+    marginVertical: 10,
+    fontWeight:'bold'
   },
   text4: {
     fontSize: 25,
