@@ -154,7 +154,7 @@ export default function App() {
     updateDoc(docRef, docData)
         // Handling Promises
         .then(() => {
-            alert("allocation 변경!")
+            //alert("allocation 변경!")
         })
         .catch((error) => {
             alert(error.message)
