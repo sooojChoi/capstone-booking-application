@@ -2,8 +2,8 @@
 // 시설 예약(사용자) -> 혜림
 import { StatusBar } from 'expo-status-bar';
 import {
-  StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput,TouchableWithoutFeedback,
-   Button, Alert
+  StyleSheet, Text, View, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList, TextInput, TouchableWithoutFeedback,
+  Button, Alert
 } from 'react-native';
 import React, { useState, useEffect } from "react";
 import { Dimensions } from 'react-native';
@@ -15,7 +15,7 @@ import {
   doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt,
   onSnapshot, updateDoc, where
 } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { db, auth } from '../Core/Config';
 import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import { Linking, Platform } from 'react-native'
@@ -33,6 +33,7 @@ import BookingFacilityDetail from './BookingFacilityDetail'
 const { height, width } = Dimensions.get("window");
 
 
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -42,17 +43,20 @@ Notifications.setNotificationHandler({
 });
 
 
-function BookingFacilityHome({ navigation, route }) {
+export default function BookingFacilityHome({ navigation, route }) {
 
-
+  // User
+  const currentUser = auth.currentUser // 현재 접속한 user
+  const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
+  const {adminId}=route.params;
   useEffect(() => {
     if (route.params?.selectedIdlist) {
       setSelectedId(route.params?.selectedIdlist)
     }
   }, [route.params?.selectedIdlist]);
-//console.log(selectedId)
+  //console.log(selectedId)
 
-  const [adminId, setAdminId] = useState('test1234')
+  //const [adminId, setAdminId] = useState('test1234');
   const [facility, setFacility] = useState(adminId);
 
 
@@ -74,6 +78,7 @@ function BookingFacilityHome({ navigation, route }) {
             .then((url) => {
               //console.log(url);
               setImagedata((img) => { return [...img, url] })
+
             })
             .catch((error) => {
               console.log(error)
@@ -100,6 +105,7 @@ function BookingFacilityHome({ navigation, route }) {
         //console.log(snapshot.data())
         result = snapshot.data()
         setExplain(result.explain)
+
         if (result.explain.length > 150) {
           // 시설 설명이 150자를 넘어가면 다 보여주지 않는다.
           setShowingExplain(result.explain.substring(0, 150) + '...');
@@ -158,7 +164,7 @@ function BookingFacilityHome({ navigation, route }) {
   //const currentUserId="sjc1234";//현재 user의 id(임시) grade:1
   //const currentUserId="psb123";//현재 user의 id(임시) grade:2
   //const currentUserId = "hrn135";//현재 user의 id(임시) grade :0
-  const currentUserId = "test111";//현재 user의 id(임시) grade :0
+  // const currentUserId = "test111";//현재 user의 id(임시) grade :0
 
 
   /*userTable의 정보를 가져옴*/
@@ -169,11 +175,12 @@ function BookingFacilityHome({ navigation, route }) {
   /*facilityTable의 정보를 받아옴*/
   let facilityArray = [];
   useEffect(() => {
+    ReadUser(currentUserId);//user의정보를 받아와서 출력함
     downImage();
     ReadEntireFacility();
     QueryPermission(currentUserId);
     ReadFacilityList();
-    ReadUser(currentUserId);//user의정보를 받아와서 출력함
+
 
   }, []);
 
@@ -237,9 +244,11 @@ function BookingFacilityHome({ navigation, route }) {
     onSnapshot(docRef,
       (snapshot) => {
         result = snapshot.data()
+
         onChangePhoneNumber(result.phone);
         setName(result.name)
         setAllowDate(result.allowDate)
+        console.log(result)
       }, (error) => {
         // MARK : Failure
         alert(error.message)
@@ -295,10 +304,10 @@ function BookingFacilityHome({ navigation, route }) {
   const [cost1, setCost1] = useState();
   const [cost2, setCost2] = useState();
   const [cost3, setCost3] = useState();
-  const [limit,setLimit]=useState();
+  const [limit, setLimit] = useState();
 
   let selectedDetailedFacility = null;
-  
+
   let gradeCost = 0;
   let openTime, unitTime, closeTime, booking1, booking2, booking3 = null;
   //let limit=0;
@@ -353,10 +362,10 @@ function BookingFacilityHome({ navigation, route }) {
     //등급제도를 이용하지 않는 경우 등급에 상관없이 가격과 limit은 동일하다.
     //setLimit(selectedDetailedFacility.booking3)
     gradeCost = cost3;
-    console.log("limit in setinfo",selectedDetailedFacility.booking3)
-    if (grade === 0) { gradeCost = selectedDetailedFacility.cost1; setLimit(selectedDetailedFacility.booking1)}
+    console.log("limit in setinfo", selectedDetailedFacility.booking3)
+    if (grade === 0) { gradeCost = selectedDetailedFacility.cost1; setLimit(selectedDetailedFacility.booking1) }
     else if (grade === 1) { gradeCost = selectedDetailedFacility.cost2; setLimit(selectedDetailedFacility.booking2) }
-    else if (grade === 2) { gradeCost = selectedDetailedFacility.cost3; setLimit(selectedDetailedFacility.booking3)}
+    else if (grade === 2) { gradeCost = selectedDetailedFacility.cost3; setLimit(selectedDetailedFacility.booking3) }
 
   }
 
@@ -370,7 +379,7 @@ function BookingFacilityHome({ navigation, route }) {
   var bookinglimit = new Date(now.setDate(now.getDate() + limit));
   const maxDate = new Date(bookinglimit);
 
-  console.log(bookinglimit,"thisis bookinglimit")
+  console.log(bookinglimit, "thisis bookinglimit")
 
 
   //날짜 선택했는지 안했는지 확인하는 부분
@@ -411,7 +420,7 @@ function BookingFacilityHome({ navigation, route }) {
 
       });
 
-      makeAllocationTime(selectedAllo).then(function(resolvedData) {
+      makeAllocationTime(selectedAllo).then(function (resolvedData) {
         // if(showTimeSelect){
         //   navigation.navigate('BookingfacilityDetail',{timeArray:resolvedData,maxPlayers:maxPlayers,minPlayers:minPlayers})
 
@@ -433,7 +442,7 @@ function BookingFacilityHome({ navigation, route }) {
 
 
 
-   const [selectedId, setSelectedId] = useState([]);
+  const [selectedId, setSelectedId] = useState([]);
 
 
 
@@ -456,18 +465,18 @@ function BookingFacilityHome({ navigation, route }) {
 
       if (elem.available === true) {//선택된 날짜에 개설된 시간들중에 available이 true인거
 
-        if (dcList.length==0){//할인되는 시간이 없을경우
-          calcCost=gradeCost;
-        }else{
-        dcList.map((e) => {
-          if (e.time == elem.usingTime.split('T')[1]) {//할인되는 시간
-            calcCost = gradeCost * e.rate;
-          }
-          else {//할인 안되는 시간
-            calcCost = gradeCost;
-          }
-        })
-      }
+        if (dcList.length == 0) {//할인되는 시간이 없을경우
+          calcCost = gradeCost;
+        } else {
+          dcList.map((e) => {
+            if (e.time == elem.usingTime.split('T')[1]) {//할인되는 시간
+              calcCost = gradeCost * e.rate;
+            }
+            else {//할인 안되는 시간
+              calcCost = gradeCost;
+            }
+          })
+        }
 
 
 
@@ -477,14 +486,14 @@ function BookingFacilityHome({ navigation, route }) {
       }
 
     })
-    
-    
+
+
     setData(tempData);//data오름차순 정렬
-   
-  return new Promise(function(resolve, reject) {
-  
-    resolve(tempData);
-  });
+
+    return new Promise(function (resolve, reject) {
+
+      resolve(tempData);
+    });
 
   }
 
@@ -524,10 +533,12 @@ function BookingFacilityHome({ navigation, route }) {
       "예약이 완료되었습니다.",
       "결제는 오셔서 하시면 됩니다.",
       [
-        { text: "예약 확인", onPress: () =>{ 
-          navigation.navigate('Bookingfin')
-          console.log("goto main")
-        } }
+        {
+          text: "예약 확인", onPress: () => {
+            navigation.navigate('Home')
+            console.log("goto main")
+          }
+        }
       ]
     );
 
@@ -574,28 +585,28 @@ function BookingFacilityHome({ navigation, route }) {
       .then(() => {
         // MARK : Success
 
-    //    alert("Document Created!")
+        //    alert("Document Created!")
 
         // 관리자에게 예약되었다는 푸시 알림을 보낸다.
         const docRef = doc(db, "Facility", adminId)
 
         getDoc(docRef)
-            // Handling Promises
-            .then((snapshot) => {
-                // MARK : Success
-                if (snapshot.exists) {
-                    const result = snapshot.data().token
-                    sendNotification(result)
-                    console.log(result)
-                }
-                else {
-                    alert("No Doc Found")
-                }
-            })
-            .catch((error) => {
-                // MARK : Failure
-                alert(error.message)
-            })
+          // Handling Promises
+          .then((snapshot) => {
+            // MARK : Success
+            if (snapshot.exists) {
+              const result = snapshot.data().token
+              sendNotification(result)
+              console.log(result)
+            }
+            else {
+              alert("No Doc Found")
+            }
+          })
+          .catch((error) => {
+            // MARK : Failure
+            alert(error.message)
+          })
 
 
       })
@@ -606,13 +617,13 @@ function BookingFacilityHome({ navigation, route }) {
   }
 
 
-  const sendNotification = async(token) =>{
+  const sendNotification = async (token) => {
     const message = {
       to: token,
       sound: 'default',
       title: '시설이 예약되었습니다. ',
       body: '예약 내역을 확인해주십시오. ',
-      data: {data: 'goes here'},
+      data: { data: 'goes here' },
     };
 
     await fetch('https://exp.host/--/api/v2/push/send', {
@@ -655,10 +666,10 @@ function BookingFacilityHome({ navigation, route }) {
           modifyAllocation(elem.id);
           AddBooking(nowFormat, totalCost, count, elem.data.usingTime);
         })
- 
+
         toggleModal();
         reservedAlert();//예약완료 alert
-     
+
       })
       .catch((error) => {
         alert(error.message);
@@ -688,20 +699,20 @@ function BookingFacilityHome({ navigation, route }) {
 
     // 두 번째 방법
     if (Platform.OS !== 'android') {
-      const url = 'telprompt:'+tel
+      const url = 'telprompt:' + tel
       Linking.openURL(url)
-      .then((supported) => {
-        if(!supported) {
-          console.log("Can not handle url: "+url)
-        }else{
-          return Linking.openURL(url)
-          .then((data) => console.error("then", data))
-          .catch((err)=> { console.log(err)})
-        }
-      })
+        .then((supported) => {
+          if (!supported) {
+            console.log("Can not handle url: " + url)
+          } else {
+            return Linking.openURL(url)
+              .then((data) => console.error("then", data))
+              .catch((err) => { console.log(err) })
+          }
+        })
     }
     else {
-      Linking.openURL('tel:'+tel)
+      Linking.openURL('tel:' + tel)
     }
 
     // 첫 번째 두 번째 방법 모두 android에서만 동작함. ios는 뭔가 더 추가해야하는데 아직 구현 못함..
@@ -737,8 +748,8 @@ function BookingFacilityHome({ navigation, route }) {
 
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView bounces={false} style={{width:"100%"}} nestedScrollEnabled={true}>
-    
+        <ScrollView bounces={false} style={{ width: "100%" }} nestedScrollEnabled={true}>
+
           {/*시설 이미지*/}
 
           <View>
@@ -885,14 +896,14 @@ function BookingFacilityHome({ navigation, route }) {
             height: showTimeSelect ? (ScrollView.height) : 0, width: showTimeSelect ? 400 : 0, marginTop: 20,
             marginBottom: showTimeSelect ? 40 : 0
           }}>
-            
-          <View style={{flexDirection:'row',alignItems:'center'}}>
-            <Text style={styles.SelectionTitle}>시간 선택</Text>
 
-            <TouchableOpacity
-            style={{marginStart:20}}
-            onPress={()=>{navigation.navigate('BookingfacilityDetail',{timeArray:data,maxPlayers:maxPlayers,minPlayers:minPlayers})}}
-            ><Text style={{color:'blue'}}>  {'>'} </Text></TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.SelectionTitle}>시간 선택</Text>
+
+              <TouchableOpacity
+                style={{ marginStart: 20 }}
+                onPress={() => { navigation.navigate('BookingfacilityDetail', { timeArray: data, maxPlayers: maxPlayers, minPlayers: minPlayers }) }}
+              ><Text style={{ color: 'blue' }}>  {'>'} </Text></TouchableOpacity>
 
             </View>
 
@@ -917,7 +928,7 @@ function BookingFacilityHome({ navigation, route }) {
               <TouchableOpacity onPress={() => { if (count < maxPlayers) setCount(count + 1) }}>
                 <AntDesign name="plus" size={20} color="#1789fe" />
               </TouchableOpacity>
-           
+
             </View>
 
           </View>
@@ -945,9 +956,9 @@ function BookingFacilityHome({ navigation, route }) {
 
           </Modal>
 
-          
+
         </ScrollView>
-      
+
         <View style={{
           backgroundColor: 'white', height: height * 0.1, justifyContent: 'space-between',
           borderTopWidth: 1, borderColor: 'grey', flexDirection: 'row', alignItems: 'center'
@@ -960,10 +971,10 @@ function BookingFacilityHome({ navigation, route }) {
             style={{
               backgroundColor: '#3262d4', alignItems: 'center',
               borderRadius: 10, paddingVertical: 15, paddingHorizontal: 15, marginRight: 15
-              
+
             }}
             onPress={toggleModal}
-            disabled={!(value&&selectedStartDate&&(selectedId.length!=0))}
+            disabled={!(value && selectedStartDate && (selectedId.length != 0))}
           >
             <Text style={{ fontSize: 18, color: 'white' }}>예약하기</Text>
           </TouchableOpacity>
@@ -976,31 +987,6 @@ function BookingFacilityHome({ navigation, route }) {
 }
 
 
-// 앱이 각 화면이 전환될 수 있는 기본 틀을 제공한다.
-const Stack = createStackNavigator();
-
-export default function BookingFacility(){
-  return (
-    //네비게이션의 트리를 관리해주는 컴포넌트
-    <NavigationContainer independent={true} >
-      {/* 네비게이션 기본틀의 스택을 생성 */}
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* 해당스택에 들어갈 화면 요소를 넣어준다. */}
-        <Stack.Screen name="BookingFacilityHome" component={BookingFacilityHome}/>
-        <Stack.Screen name="BookingfacilityDetail" component={BookingFacilityDetail}/>
-        <Stack.Screen name="Bookingfin" component={Bookingfin}/>
-
-      </Stack.Navigator>
-    </NavigationContainer>
-  )
-}
-function Bookingfin({navigation}){
-  return(
-    <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
-      <Text style={{fontSize:30}}>완료되었습니다.</Text>
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
 
