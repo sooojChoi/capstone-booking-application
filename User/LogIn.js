@@ -32,6 +32,11 @@ export default function LogIn({ navigation }) {
     setPw("")
   }, [])
 
+  const changeIdText = (value) =>{
+    setId(value.toLowerCase())
+    
+  }
+
   return (
     <View style={styles.container}>
       {/* 로고 터치하면 키보드 내려감(iOS) */}
@@ -42,7 +47,8 @@ export default function LogIn({ navigation }) {
           </View>
           <View style={styles.loginForm}>
             <View style={styles.loginInput}>
-              <TextInput style={styles.textInput} placeholder="아이디" onChangeText={setId} value={id}></TextInput>
+              <TextInput style={styles.textInput} placeholder="아이디"
+                onChangeText={(value) => changeIdText(value)} value={id}></TextInput>
             </View>
             <View style={styles.loginInput}>
               <TextInput style={styles.textInput} placeholder="비밀번호" onChangeText={setPw} value={pw} secureTextEntry={true}></TextInput>
