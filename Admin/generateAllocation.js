@@ -1,21 +1,17 @@
-//관리자가 버튼 누르면 allocation 생성화면 고친버전
+// Allocation 생성(관리자) -> 유진, 혜림
 
-import {
-  StyleSheet, Text, View, Dimensions, TextInput,
-  TouchableOpacity, Pressable, SafeAreaView, ScrollView, FlatList, Alert
-} from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, FlatList, Alert } from 'react-native';
 import React, { useState, useEffect } from "react";
-import { allocation, discountRate } from '../Category';
 import { AllocationTable } from '../Table/AllocationTable';
 import { FacilityTable } from '../Table/FacilityTable';
 import Modal from "react-native-modal";
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
-//data 바로 적용안됨
+import { collection, getDocs, query } from 'firebase/firestore';
 
-const { height, width } = Dimensions.get("window");
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
 //그 시설의 allocation만 보여준다.
-
 const Item = ({ item, onPress }) => (
   <TouchableOpacity onPress={onPress}>
     <View style={{ marginVertical: 5 }}>
@@ -23,6 +19,7 @@ const Item = ({ item, onPress }) => (
     </View>
   </TouchableOpacity>
 );
+
 const MItem = ({ item, onLongPress }) => (
   <TouchableOpacity onLongPress={onLongPress}>
     <View style={{ marginVertical: 5 }}>
@@ -31,12 +28,10 @@ const MItem = ({ item, onLongPress }) => (
   </TouchableOpacity>
 );
 
-
-
 export default function GenerateAllocation() {
   // Admin
-const currentAdmin = auth.currentUser // 현재 접속한 admin
-const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const now = new Date();
   const temp = new Date(now.setDate(now.getDate() + 21));
@@ -110,13 +105,13 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
       //  t.push({"time":ThatDay+"T"+(k)+":00","available":true})
       //      j++;
       //  }
- 
+
 
       while (openTime + j * unitTime < closeTime) { //오픈시간부터 unitTime더해서 클로즈시간될때까지 반복
         //openTime+j*unitTime>9?(k=+openTime+j*unitTime):(k="0"+openTime+j*unitTime)
         //unitTimeMin이 0이면 unitTimeMin은 00으로 unitTimeMin이 0이 아니면 unitTimeHour 소수점 떼기
         //console.log("unitTime",unitTime,"정수로 바꾸면",Math.floor(unitTime))
-        openTime+j*unitTime>=10?(k=parseInt(openTime+j*unitTime)):(k='0'+parseInt(openTime+(j*unitTime)))//08과 같이 앞에 0붙이기
+        openTime + j * unitTime >= 10 ? (k = parseInt(openTime + j * unitTime)) : (k = '0' + parseInt(openTime + (j * unitTime)))//08과 같이 앞에 0붙이기
         unitTimeMin == 0 ? (unitTimeMin = "00") : (j == 0 ? (unitTimeMin = "00") : (((unitTimeMin * j) % 60 == 0) ? unitTimeMin = "00" : unitTimeMin = (unitTimeMin * j) % 60))
         t.push({ "time": ThatDay + "T" + k + ":" + unitTimeMin, "available": true })
         j++;
@@ -124,7 +119,7 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
       }
       return ({ id: elem.name, time: t });//timeArray객체는 id와 time이 있다.(time은 time과 available이 있음)
     });
-    console.log("타임",timeArray)
+    console.log("타임", timeArray)
     return timeArray
   }
 
@@ -186,7 +181,7 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
   // }
 
   const makeAlert = () => {
-   
+
     Alert.alert(
       "예약되었습니다.",
       " allocation 생성됨",
@@ -196,7 +191,7 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
           onPress: () => console.log("Cancel Pressed"),
           style: "cancel"
         },
-        { text: "OK", onPress: ()=>{toggleModal()} }
+        { text: "OK", onPress: () => { toggleModal() } }
       ]
     );
   }
@@ -229,7 +224,7 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
     makeAlert();
 
   }
-   
+
 
   const renderItem = ({ item }) => {
     return (
@@ -322,7 +317,7 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
   }, [selectedId]) //시설 선택했을 때
 
 
-// 호출이 안됨
+  // 호출이 안됨
   useEffect(() => {
     console.log("데이터바뀌었을때", data)
   }, [data])
@@ -361,26 +356,23 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
   // console.log("변경전--------------------",allocationTable.allocations)
 
   return (
-    <View style={{ marginTop: 50, alignItems: 'center', flex: 1 }}>
-
-      {/* <Text style={{ fontSize: 20, marginVertical: height * 0.02 }}>{ThatDay + "\n"}시설별로 예약 생성</Text> */}
-      <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: 24}}>{ThatDay}</Text>
-            <Text style={{ fontSize: 18,}}>시설별로 선택하여 예약 생성</Text>
-            <View style={{ height: height * 0.03 }}></View>
-          </View>
+    <View style={{ alignItems: 'center', flex: 1, backgroundColor: 'white' }}>
+      {/* <Text style={{ fontSize: 20, marginVertical: SCREEN_HEIGHT * 0.02 }}>{ThatDay + "\n"}시설별로 예약 생성</Text> */}
+      <View style={{ marginTop: 50, alignItems: 'center' }}>
+        <Text style={{ fontSize: 24 }}>{ThatDay}</Text>
+        <Text style={{ fontSize: 18, }}>시설별로 선택하여 예약 생성</Text>
+        <View style={{ height: SCREEN_HEIGHT * 0.03 }}></View>
+      </View>
       <FlatList
         data={facility}
         renderItem={renderItem}
         keyExtractor={(item) => item.name}
         extraData={selectedId}
       />
-
-
       <Modal
         isVisible={isModalVisible}
         backdropColor="white"
-        style={{ marginVertical: height * 0.1 }}
+        style={{ marginVertical: SCREEN_HEIGHT * 0.1 }}
         backdropOpacity={1}
       >
         <Text style={styles.title}>아래 예약목록이 생성됩니다.</Text>
@@ -394,33 +386,23 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
           <TouchableOpacity onPress={toggleModal} ><Text style={styles.SelectionTitle}>취소</Text></TouchableOpacity>
           <TouchableOpacity onPress={generateAllo} ><Text style={styles.SelectionTitle}>생성</Text></TouchableOpacity>
-
         </View>
       </Modal>
-
-
-
-
-
     </View>
-
-
-
-
   );
-}
+};
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   item: {
     padding: 20,
     marginVertical: 8,
     marginHorizontal: 16,
   },
+
   title: {
     fontSize: 20,
   },
+
   SelectionTitle: {
     paddingVertical: 15,
     paddingHorizontal: 20,

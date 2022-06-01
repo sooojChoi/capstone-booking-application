@@ -84,23 +84,18 @@ export default function DetailAdminSignUp({ navigation, route }) {
     hideTimePicker();
   };
 
-
   const goToPreScreen = (name) => {
     // 입력된 모든 정보를 함께 넘겨준다. 일단은 이름만..
     // 시설 리스트 보는 화면에서 최종 확인하면 그때 테이블에 추가함.
 
     // 인원 예약 단위에서 최대인원이 최소인원보다 작으면 toast를 띄우고 return 한다.
     // 아직 구현 못함.
-
-
-
     console.log("추가해라")
     const unitTime = (Number(unitHour) * 60) + Number(unitMin)
     const openHour = Number(openTime.substring(0, 2)) * 60
     const openMin = Number(openTime.substring(4, 6))
     const closeHour = Number(closeTime.substring(0, 2)) * 60
     const closeMin = Number(closeTime.substring(4, 6))
-
 
     var Facility = {}
     if (gradeSetting === false) {
@@ -136,12 +131,8 @@ export default function DetailAdminSignUp({ navigation, route }) {
       })
     }
 
-
     console.log(Facility)
     navigation.navigate('AdminSignUpAndAddFacility', { facility: Facility, allocation: resultAllocation });
-
-
-
   }
 
   // // 내부 시설이 하나인 경우 (시설 입력이 최종 완료된 개념일 때)
@@ -345,12 +336,10 @@ export default function DetailAdminSignUp({ navigation, route }) {
       setBooking("")
       setAllGradeSameValue(false);
     }
-
   }
 
   // allocation을 생성함.
   const makeAllocation = () => {
-
     const unitTime = (Number(unitHour) * 60) + Number(unitMin)
     const openHour = Number(openTime.substring(0, 2)) * 60
     const openMin = Number(openTime.substring(4, 6))
@@ -434,12 +423,10 @@ export default function DetailAdminSignUp({ navigation, route }) {
           <Text style={{ fontSize: 15, marginRight: 10 }}>할인율 {item.discountRate} %</Text>
         </TouchableOpacity>
       )
-
     );
   };
 
   const changeDiscountRate = (time) => {
-
     if (discountRate !== "") {
       const temp = [...allocation]
       temp.map((value) => {
@@ -453,7 +440,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
 
   const showModal = () => {
     toggleModalForShowing();
-
   }
 
   const showModalForNewDiscount = () => {
@@ -461,7 +447,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
     toggleModal();
     setDiscountNotice("")
   }
-
 
   const [discountRate, setDiscountRate] = useState("");
   const [discountNotice, setDiscountNotice] = useState("");
@@ -525,7 +510,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
     </View>
 
     <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-
       <KeyboardAwareScrollView>
         <View style={{ alignItems: 'flex-start', marginTop: 10, }}>
           <View style={{ ...styles.borderBottomStyle }}>{
@@ -557,9 +541,7 @@ export default function DetailAdminSignUp({ navigation, route }) {
             )}
           </View>
 
-
           <View style={{ ...styles.borderBottomStyle }}>
-
             <Text style={{ ...styles.titleText, }}>시설 운영 시간</Text>
             <View style={{ flexDirection: 'row', marginTop: 10, justifyContent: 'center' }}>
               <View style={{ alignItems: 'center', }}>
@@ -573,7 +555,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
                       <Text style={{ ...styles.normalText }}>{openTime.substring(0, 2) + "시 " + openTime.substring(2, 4) + "분"}</Text>
                     )
                   }
-
                 </TouchableOpacity>
                 <DateTimePickerModal
                   isVisible={isTimePickerVisible}
@@ -657,7 +638,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
               )}
           </View>
 
-
           <View style={{ ...styles.borderBottomStyle }}>
             <Text style={{ ...styles.titleText, }}>인원 예약 단위</Text>
             <View style={{ flexDirection: 'row', marginTop: 10 }}>
@@ -713,7 +693,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
               )
             }
 
-
             {
               gradeSetting === false ? (
                 <TouchableOpacity style={{ marginTop: 20, }} onPress={() => setGradeSetting(true)}>
@@ -766,7 +745,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
                         </View>
 
                         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
-
                           <TouchableOpacity style={{ marginTop: 10, marginRight: 10 }} onPress={() => allGradeButtonClicked('ok')}>
                             <Text style={{ fontSize: 14, color: "#1789fe", textDecorationLine: 'underline' }}>
                               확인
@@ -778,18 +756,11 @@ export default function DetailAdminSignUp({ navigation, route }) {
                             </Text>
                           </TouchableOpacity>
                         </View>
-
-
                       </View>
                     )
                   }
 
-                  {
-
-                  }
-
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-
                     <View style={{ flexDirection: 'column' }}>
                       <View style={{ marginTop: 15, marginLeft: 15, alignItems: 'center' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -839,12 +810,11 @@ export default function DetailAdminSignUp({ navigation, route }) {
                         </View>
                       </View>
                     </View>
+
                     <View>
                       <View style={{ marginBottom: 0 }}>
-
                         <View style={{ marginTop: 15, marginLeft: 15, alignItems: 'center' }}>
                           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-
                             <TextInput
                               style={{ ...styles.textinput, marginBottom: 0, width: SCREEN_WIDTH * 0.2 }}
                               onChangeText={setCost1}
@@ -887,29 +857,18 @@ export default function DetailAdminSignUp({ navigation, route }) {
                             <Text style={{ ...styles.normalTextBlack, marginLeft: 5 }}>원</Text>
                           </View>
                         </View>
-
                       </View>
                     </View>
-
                   </View>
-
-
-
-
-
                 </View>
-
               )
             }
-
           </View>
 
           <View style={{
             ...styles.borderBottomStyle, borderTopColor: "#bebebe",
             borderTopWidth: 1, borderBottomWidth: 0, marginBottom: 30, paddingTop: 10
           }}>
-
-
             <View>
               <Text style={{ ...styles.titleText, marginTop: 5 }}>시설 소개 및 설명</Text>
               <TextInput
@@ -922,16 +881,10 @@ export default function DetailAdminSignUp({ navigation, route }) {
                 autoCorrect={false}
                 numberOfLines={3}
                 multiline={true}
-
               ></TextInput>
             </View>
-
-
           </View>
-
-
         </View>
-
       </KeyboardAwareScrollView>
     </ScrollView>
 
@@ -949,7 +902,6 @@ export default function DetailAdminSignUp({ navigation, route }) {
             <Text style={{ fontSize: 16, color: 'white' }}>입력 완료</Text>
           </TouchableOpacity>
         </View>
-
       ) : (
         <TouchableOpacity
           style={{
@@ -972,8 +924,8 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.8,
     padding: 7,
     marginBottom: 20,
-
   },
+
   smallButtonStyle: {
     backgroundColor: '#3262d4',
     justifyContent: 'center',
@@ -982,28 +934,31 @@ const styles = StyleSheet.create({
     padding: 8,
     paddingLeft: 20,
     paddingRight: 20,
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   scrollView: {
     backgroundColor: 'white',
     //paddingHorizontal: 30,
-
   },
+
   titleText: {
     fontSize: 16,
     marginBottom: 10,
     marginTop: 20,
-    color: "#191919"
+    color: "#191919",
   },
+
   normalText: {
     fontSize: 14,
-    color: 'white'
+    color: 'white',
   },
+
   normalTextBlack: {
     fontSize: 14,
-    color: '#464646'
+    color: '#464646',
   },
+
   imageViewContainer: {
     borderColor: '#a0a0a0',
     borderWidth: 1,
@@ -1012,6 +967,7 @@ const styles = StyleSheet.create({
     height: SCREEN_WIDTH * 0.15,
     marginRight: 10,
   },
+
   selectSortBtnStyle: {
     width: SCREEN_WIDTH * 0.7,
     paddingTop: 12,
@@ -1021,6 +977,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3262d4',
     borderRadius: 8,
   },
+
   borderBottomStyle: {
     borderBottomColor: "#bebebe",
     borderBottomWidth: 1,
@@ -1028,8 +985,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     width: SCREEN_WIDTH,
   },
+
   textinputStyle2: {
-    borderBottomColor: '#a0a0a0', borderBottomWidth: 1,
-    width: 30, fontSize: 15, padding: 3, marginRight: 5
+    borderBottomColor: '#a0a0a0',
+    borderBottomWidth: 1,
+    width: 30,
+    fontSize: 15,
+    padding: 3,
+    marginRight: 5,
   }
 });

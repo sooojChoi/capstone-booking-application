@@ -5,9 +5,9 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-easy-toast';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { auth, db, storageDb } from '../Core/Config';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { ref, listAll, deleteObject, uploadBytes } from 'firebase/storage';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;

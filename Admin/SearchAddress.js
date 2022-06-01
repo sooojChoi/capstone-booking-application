@@ -4,7 +4,6 @@ import Postcode from '@actbase/react-daum-postcode';
 
 export default function SearchAddress({ route, navigation }) {
   const addressIsClicked = (data) => {
-    //JSON.stringify(data)
     console.log(data.address)
     const address = data.address
     if (route.params === undefined) // 시설 등록 화면

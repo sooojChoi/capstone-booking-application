@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, FlatList, SafeAreaView } from 'react-native';
 import { Dimensions } from 'react-native';
-import { auth } from '../Core/Config';
+import { auth, db } from '../Core/Config';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;

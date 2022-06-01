@@ -5,10 +5,9 @@ import React, { useState, useRef, useCallback } from "react";
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import Toast from 'react-native-easy-toast';
 import { AntDesign } from '@expo/vector-icons';
+import { auth, db } from '../Core/Config';
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { auth } from '../Core/Config';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -135,6 +134,7 @@ export default function DeleteAccount({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
 
   title: {
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   text: {
     marginLeft: 20,
     fontSize: 15,
-    color: "#141414"
+    color: "#141414",
   },
 
   line: {

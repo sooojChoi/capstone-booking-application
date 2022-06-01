@@ -4,10 +4,9 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Dimens
 import React, { useState, useEffect } from "react";
 import { Feather } from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { auth, db } from '../Core/Config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../Core/Config';
 import { doc, collection, getDocs, setDoc, query } from 'firebase/firestore';
-import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;

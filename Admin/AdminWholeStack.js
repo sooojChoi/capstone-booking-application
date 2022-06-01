@@ -58,5 +58,5 @@ export default function AdminWholeStack() {
         />
       </Stack.Navigator>
     </NavigationContainer>
-  )
-}
+  );
+};

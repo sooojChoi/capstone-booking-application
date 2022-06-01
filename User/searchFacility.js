@@ -1,7 +1,7 @@
 // 회원가입(사용자) -> 수빈, 혜림
 
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, Dimensions, SafeAreaView, FlatList } from 'react-native';
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState } from "react";
 import { Feather } from '@expo/vector-icons';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { collection, getDocs, query } from 'firebase/firestore';

@@ -1,10 +1,9 @@
 // 시설 관리(관리자) -> 수빈
 
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
+import { collection, getDocs, query } from 'firebase/firestore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;

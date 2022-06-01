@@ -3,10 +3,9 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Dimensions, Alert, SafeAreaView } from 'react-native';
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import Toast from 'react-native-easy-toast';
+import { auth, db } from '../Core/Config';
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
-import { auth } from '../Core/Config';
 import { doc, collection, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
-import { db } from '../Core/Config';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -333,6 +332,7 @@ export default function MyInfoManagement({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
 
   title: {

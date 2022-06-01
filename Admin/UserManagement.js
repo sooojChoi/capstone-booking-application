@@ -6,13 +6,10 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView, Text, View, Dimensions, Keyboard, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import React, { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import DetailUserManagement from './DetailUserManagement.js';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
-import { onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
+import { onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -20,11 +17,8 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const grade = ["A등급", "B등급", "C등급"]; // grade가 바뀌면 gradeRadioProps도 수정해야됨
 
 export default function UserManagement({ navigation }) {
-  // const myFacilityId = "AdminTestId"
-
   const currentAdmin = auth.currentUser // 현재 접속한 admin
-  // const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
-  const myFacilityId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const [users, setUsers] = useState([]);
   const tempUsersArray = []  // users 값을 바꾸기 위해 이용하는 전역 변수
@@ -32,8 +26,8 @@ export default function UserManagement({ navigation }) {
   const [userInfoForModal, setUserInfoForModal] = useState({});  // 수정되기 위해 모달에 띄워지는 사용자 정보 (한 명의 정보)
   const [searchUserText, setSearchUserText] = useState("")  // 사용자 검색
 
-  useEffect(()=>{
-    const q = query(collection(db, "Permission"), where("facilityId", "==", myFacilityId))
+  useEffect(() => {
+    const q = query(collection(db, "Permission"), where("facilityId", "==", currentAdminId))
     onSnapshot(q, (snapshot) => {
       var refresh = 0
       snapshot.forEach((doc) => {
@@ -52,16 +46,16 @@ export default function UserManagement({ navigation }) {
         //       value.grade = changeData.grade
         //     }
         //   })
-  
+
         // }
       })
-  
-      if(refresh === 1){
+
+      if (refresh === 1) {
         refresh = 0;
         getUsersFromTable();
       }
     });
-  
+
     const userQ = query(collection(db, "User"));
     onSnapshot(userQ, (snapshot) => {
       var refresh = 0;
@@ -75,31 +69,31 @@ export default function UserManagement({ navigation }) {
         //   console.log("-------------------------------------")
         //   console.log("Modified User: ", change.doc.data());
         //   const changeData = change.doc.data()
-  
+
         //   let temp = [...users];
         //   temp.map((value) => {
         //     if (value.id === changeData.id) {
-  
+
         //       value.phone = changeData.phone
         //       value.allowDate = changeData.allowDate
         //       value.name = changeData.name
         //     }
         //   })
-  
+
         //   setUsers(temp)
         // }
         // if (change.type === "removed") {
         //     console.log("Removed User: ", change.doc.data());
         // }
-        
+
       });
-      if(refresh === 1){
+      if (refresh === 1) {
         refresh = 0;
         getUsersFromTable();
       }
     });
-  },[])
-  
+  }, [])
+
 
 
 
@@ -129,7 +123,7 @@ export default function UserManagement({ navigation }) {
 
       // db에서 읽어온다.
       const ref = collection(db, "Permission")
-      const data = query(ref, where("facilityId", "==", myFacilityId))
+      const data = query(ref, where("facilityId", "==", currentAdminId))
 
       getDocs(data)
         // Handling Promises
@@ -203,7 +197,7 @@ export default function UserManagement({ navigation }) {
 
     // db에서 읽어온다.
     const ref = collection(db, "Permission")
-    const data = query(ref, where("facilityId", "==", myFacilityId))
+    const data = query(ref, where("facilityId", "==", currentAdminId))
 
     getDocs(data)
       // Handling Promises

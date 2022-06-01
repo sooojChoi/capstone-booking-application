@@ -3,8 +3,8 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, Dimensions, SafeAreaView } from 'react-native';
 import React, { useEffect, useState } from "react";
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../Core/Config';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -32,9 +32,8 @@ export default function LogIn({ navigation }) {
     setPw("")
   }, [])
 
-  const changeIdText = (value) =>{
+  const changeIdText = (value) => {
     setId(value.toLowerCase())
-    
   }
 
   return (
