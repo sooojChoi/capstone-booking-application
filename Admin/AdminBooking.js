@@ -9,7 +9,7 @@ import CalendarPicker from 'react-native-calendar-picker';
 import Modal from "react-native-modal";
 import { Feather } from '@expo/vector-icons';
 import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where,onSnapshot } from 'firebase/firestore';
-import { db } from '../Core/Config';
+import { db,auth} from '../Core/Config';
 import * as Notifications from 'expo-notifications'
 
 
@@ -26,8 +26,11 @@ const {height,width}=Dimensions.get("window");
 
 
 export default function AdminBooking({navigation}) {
+    // Admin
+  const currentAdmin = auth.currentUser // 현재 접속한 admin
+  const adminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
-  const [adminId,setAdminId]=useState('test1234')//현재 관리자의 id(문서이름)
+ // const [adminId,setAdminId]=useState('test1234')//현재 관리자의 id(문서이름)
   const [facility,setFacility]=useState(adminId);
 
 
@@ -632,7 +635,8 @@ Alert.alert(
       text: "예약 확인",
       onPress: () => {
         navigation.navigate('Home')
-        console.log("goto 관리자 예약내역")},
+        setSelectedId([]);
+       },
     },
  
   ]
