@@ -39,7 +39,7 @@ const currentAdmin = auth.currentUser // 현재 접속한 admin
 const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const now = new Date();
-  const temp = new Date(now.setDate(now.getDate() + 22));
+  const temp = new Date(now.setDate(now.getDate() + 24));
   //2022-06-03의 포맷
   const ThatDay = temp.getFullYear() + "-" + ((temp.getMonth() + 1) > 9 ? (temp.getMonth() + 1).toString() : "0" + (temp.getMonth() + 1)) + "-" + (temp.getDate() > 9 ? temp.getDate().toString() : "0" + temp.getDate().toString());
   //console.log(ThatDay)
@@ -184,6 +184,22 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
 
   // }
 
+  const makeAlert = () => {
+   
+    Alert.alert(
+      "예약되었습니다.",
+      " allocation 생성됨",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "OK", onPress: ()=>{toggleModal()} }
+      ]
+    );
+  }
+
   //db에 allocation 데이터 추가하기 - 됨
   const generateAllo = () => {
     // doc(db, 컬렉션 이름, 문서 Custom ID) -> 문서 위치 지정
@@ -199,20 +215,20 @@ const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admi
         usingTime: elem.usingTime
       }
       //console.log(docData,"데이터")
-      addDoc(docRef, docData)
-        // Handling Promises
-        .then(() => {
-          //alert("Document Created!")
-          console.log("데이터추가 성공")
-        })
-        .catch((error) => {
-          alert(error.message)
-        })
+      // addDoc(docRef, docData)
+      //   // Handling Promises
+      //   .then(() => {
+      //     //alert("Document Created!")
+      //     console.log("데이터추가 성공")
+      //   })
+      //   .catch((error) => {
+      //     alert(error.message)
+      //   })
     })
-    alert("예약 목록을 추가하였습니다")
+    makeAlert();
 
   }
-
+   
 
   const renderItem = ({ item }) => {
     return (
