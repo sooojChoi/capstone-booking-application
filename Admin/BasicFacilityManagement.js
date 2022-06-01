@@ -31,10 +31,8 @@ export default function BasicFacilityManagement({ route, navigation }) {
   const [pwLen, setPwLen] = useState(false) // 새 비밀번호의 길이가 8자 이상인지 여부
   const [correctedNewPw, setNewCorrect] = useState(false) // 변경할 PW와 재입력 된 PW 일치 여부
 
-  const [imgCheck, setImgCheck] = useState(false) // 이미지 배열 변경 여부 확인
+  const [imgMode, setImgMode] = useState(false) // 이미지 등록 여부 확인
   const [images, setImages] = useState([]) // 화면 출력용 이미지 배열
-  const [oldImgUri, setOldImgUri] = useState([]) // 기존 이미지 uri 배열
-  const [imageUri, setImageUri] = useState([]) // 업로드용 이미지 uri 배열
 
   // 토스트 메시지 출력
   const toastRef = useRef() // toast ref 생성
@@ -66,7 +64,6 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
   useEffect(() => {
     getFacInfo()
-    getImage()
   }, [])
 
   // userPw를 입력하는 textInput의 onChangeText에 등록된 함수
@@ -99,39 +96,8 @@ export default function BasicFacilityManagement({ route, navigation }) {
   // 주소 찾기 후 돌아오면 호출됨
   useEffect(() => {
     const address = route.params?.address
-    console.log(address)
     setAddress(address)
   }, [route.params?.address])
-
-  // 시설 사진 가져오기
-  const getImage = () => {
-    const storageRef = ref(storageDb, '/' + 'test') // test -> currentAdminId
-    const temp = [...images]
-    const uriArray = [...imageUri]
-
-    listAll(storageRef)
-      .then((result) => {
-        result.items.forEach((itemRef) => {
-          getDownloadURL(itemRef)
-            .then((url) => {
-              const item = {
-                id: url,
-                uri: url
-              }
-              temp.unshift(item)
-              setImages(temp)
-              uriArray.push(url)
-              setOldImgUri(uriArray)
-              setImageUri(uriArray)
-            })
-            .catch((error) => {
-              console.log(error)
-            })
-        })
-      }).catch((error) => {
-        console.log(error)
-      })
-  }
 
   // 시설 사진 변경
   const pickImage = async () => {
@@ -140,36 +106,25 @@ export default function BasicFacilityManagement({ route, navigation }) {
       allowsEditing: true,
       aspect: [640, 480],
       quality: 1,
-    });
+    })
 
     if (!result.cancelled) {
       const temp = [...images]
       const selectedName = result.uri
-      console.log('image uri: ' + selectedName)
 
       const findImage = temp.find((element) => {
-        if (element.id === selectedName) {
+        if (element.id === selectedName)
           return true
-        }
       })
 
       if (findImage === undefined) {
-        console.log("can't find image")
         const item = {
           id: result.uri,
           uri: result.uri
         }
         temp.unshift(item)
         setImages(temp)
-
-        const uriArray = [...imageUri]
-        uriArray.push(result.uri)
-        setImageUri(uriArray)
-      } else {
-        console.log("there is same image")
       }
-
-      setImgCheck(true)
     }
   }
 
@@ -179,13 +134,12 @@ export default function BasicFacilityManagement({ route, navigation }) {
       text: "삭제", onPress: () => {
         const temp = images.filter((value) => (value.uri) !== (uri))
         setImages(temp)
-        setImgCheck(true)
-        console.log('temp.length: ' + temp.length)
       }
     }
     ])
   }
 
+  // 이미지 Flatlist
   const renderItem = ({ item }) => {
     return (
       <TouchableOpacity onLongPress={() => deleteImage(item.uri)}
@@ -201,20 +155,29 @@ export default function BasicFacilityManagement({ route, navigation }) {
   }
 
   // Storage 이미지 삭제
-  const delStorage = async (name) => {
-    const imgRef = ref(storageDb, 'test' + '/image' + name + '.png') // test -> currentAdminId
+  const delStorage = () => {
+    const storageRef = ref(storageDb, '/' + currentAdminId)
 
-    await deleteObject(imgRef)
+    listAll(storageRef)
+      .then((result) => {
+        result.items.forEach((itemRef) => {
+          const imgRef = ref(storageDb, currentAdminId + '/' + itemRef.name)
+          deleteObject(imgRef)
+        })
+      }).catch((error) => {
+        console.log(error)
+      })
   }
 
   // Storage 이미지 업로드
   const uploadImage = async (value, name) => {
-    const imgRef = ref(storageDb, 'test' + '/image' + name + '.png') // test -> currentAdminId
+    const imgRef = ref(storageDb, currentAdminId + '/image' + name + '.png')
 
     const img = await fetch(value)
     const bytes = await img.blob()
 
     await uploadBytes(imgRef, bytes)
+    console.log("업로드 ~" + value)
   }
 
   // 시설 정보 수정
@@ -236,39 +199,32 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
     updateDoc(docRef, docData)
       .then(() => {
-        if (pwMode === true) {
-          updatePassword(currentAdmin, inputNewPw)
-            .then(() => {
-              navigation.goBack()
-            })
-            .catch((error) => {
-              alert(error.message)
-            })
-        }
+        navigation.goBack()
       })
       .catch((error) => {
         alert(error.message)
       })
 
+    // 비밀번호 변경
+    if (pwMode === true) {
+      updatePassword(currentAdmin, inputNewPw)
+        .then(() => {
+          console.log(currentAdmin + " 비밀번호 변경")
+        })
+        .catch((error) => {
+          alert(error.message)
+        })
+    }
+
     // 사진 업로드
-    // if (imgCheck) {
-    console.log("변경했엉!")
-    let num = 1
-    console.log(oldImgUri)
-    oldImgUri.forEach(() => {
-      console.log("delete" + num)
-      delStorage(num)
-      num++
-    })
-    num = 1
-    console.log("업로드하잣!")
-    imageUri.forEach((value) => {
-      console.log(num)
-      console.log(value)
-      uploadImage(value, num)
-      num++
-    })
-    // }
+    if (imgMode) {
+      // delStorage()
+      let num = 1
+      images.forEach((value) => {
+        uploadImage(value.uri, num)
+        num++
+      })
+    }
   }
 
   // 비밀번호 변경 후 수정 버튼 선택
@@ -358,26 +314,37 @@ export default function BasicFacilityManagement({ route, navigation }) {
           <TextInput style={{ ...styles.textInput, width: SCREEN_WIDTH * 0.95 }}
             placeholder='주소 찾기를 클릭하세요' onChangeText={setAddress}>{address}</TextInput>
           <TextInput style={styles.textInput} placeholder='상세 주소' onChangeText={setDetailAddress}>{detailAddress}</TextInput>
-          <Text style={styles.titleText}>시설 사진</Text>
-          <View style={{ flexDirection: 'row', marginBottom: 10, height: SCREEN_WIDTH * 0.22 }}>
-            <TouchableOpacity style={styles.imageViewContainer} onPress={pickImage}>
-              <AntDesign name="pluscircleo" size={28} color="grey" style={{ color: '#787878' }} />
-            </TouchableOpacity>{
-              images.length !== 0 ? (
-                <View style={styles.imageBox}>
-                  <FlatList
-                    data={images}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    horizontal={true}
-                  />
+          <Text style={styles.titleText}>시설 사진</Text>{
+            imgMode === false ? (
+              <TouchableOpacity onPress={() => setImgMode(true)}>
+                <Text style={{ color: '#1789fe', textDecorationLine: 'underline', marginBottom: 10 }}>새로운 시설 사진 등록하기</Text>
+              </TouchableOpacity>
+            ) : (
+              <View>
+                <TouchableOpacity onPress={() => setImgMode(false)}>
+                  <Text style={{ color: '#1789fe', textDecorationLine: 'underline', marginBottom: 10 }}>기존 시설 사진 사용하기</Text>
+                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', marginBottom: 10, height: SCREEN_WIDTH * 0.22 }}>
+                  <TouchableOpacity style={styles.imageViewContainer} onPress={pickImage}>
+                    <AntDesign name="pluscircleo" size={28} color="grey" style={{ color: '#787878' }} />
+                  </TouchableOpacity>{
+                    images.length !== 0 ? (
+                      <View style={styles.imageBox}>
+                        <FlatList
+                          data={images}
+                          renderItem={renderItem}
+                          keyExtractor={(item) => item.id}
+                          horizontal={true}
+                        />
+                      </View>
+                    ) : (
+                      <View style={{ ...styles.imageBox, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ color: 'grey' }}>등록된 사진이 없습니다.</Text>
+                      </View>
+                    )}
                 </View>
-              ) : (
-                <View style={{ ...styles.imageBox, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: 'grey' }}>등록된 사진이 없습니다.</Text>
-                </View>
-              )}
-          </View>
+              </View>
+            )}
           <Text style={styles.titleText}>시설 설명</Text>
           <TextInput style={styles.explain} multiline={true} placeholder='시설 설명' onChangeText={setExplain}>{explain}</TextInput>
         </View>
