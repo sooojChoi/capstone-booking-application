@@ -52,7 +52,7 @@ function BookingFacilityHome({ navigation, route }) {
   }, [route.params?.selectedIdlist]);
 //console.log(selectedId)
 
-  const [adminId, setAdminId] = useState('AdminTestId')
+  const [adminId, setAdminId] = useState('test1234')
   const [facility, setFacility] = useState(adminId);
 
 
@@ -158,7 +158,7 @@ function BookingFacilityHome({ navigation, route }) {
   //const currentUserId="sjc1234";//현재 user의 id(임시) grade:1
   //const currentUserId="psb123";//현재 user의 id(임시) grade:2
   //const currentUserId = "hrn135";//현재 user의 id(임시) grade :0
-  const currentUserId = "yjb123";//현재 user의 id(임시) grade :0
+  const currentUserId = "test111";//현재 user의 id(임시) grade :0
 
 
   /*userTable의 정보를 가져옴*/
@@ -456,7 +456,9 @@ function BookingFacilityHome({ navigation, route }) {
 
       if (elem.available === true) {//선택된 날짜에 개설된 시간들중에 available이 true인거
 
-
+        if (dcList.length==0){//할인되는 시간이 없을경우
+          calcCost=gradeCost;
+        }else{
         dcList.map((e) => {
           if (e.time == elem.usingTime.split('T')[1]) {//할인되는 시간
             calcCost = gradeCost * e.rate;
@@ -465,6 +467,7 @@ function BookingFacilityHome({ navigation, route }) {
             calcCost = gradeCost;
           }
         })
+      }
 
 
 
@@ -873,9 +876,7 @@ function BookingFacilityHome({ navigation, route }) {
             )
           }
 
-<Button onPress={()=>{
-          navigation.navigate('Bookingfin')
-}} title="hello"></Button>
+
 
           {/*  <Text>SELECTED DATE:{ startDate }</Text>*/}
 
