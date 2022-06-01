@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "bookingApp",
-    "slug": "bookingApp",
+    "slug": "BBooking",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,12 +17,16 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.bbooking.bbooking",
+      "buildNumber": "1.0.0",
       "supportsTablet": true,
       "infoPlist": {
         "LSApplicationQueriesSchemes": ["tel", "telprompt"]
       }
     },
     "android": {
+      "package": "com.bbooking.bbooking",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
