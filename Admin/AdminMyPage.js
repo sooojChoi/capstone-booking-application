@@ -1,4 +1,4 @@
-// 시설 관리 & 예약일 생성(관리자) -> 수빈, 수진
+// 시설 관리 & 예약일 생성(관리자) -> 수진
 
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity } from 'react-native';
 import { auth } from '../Core/Config';

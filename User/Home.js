@@ -1,14 +1,14 @@
-// 예약 내역(사용자) -> 유진
+// 예약 내역(사용자) -> 수진, 유진
 
 import React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity } from 'react-native';
 import { Dimensions } from 'react-native';
-import { useEffect, useState, useRef, useCallback } from "react";
-import * as Notifications from 'expo-notifications'
-import * as Permissions from 'expo-permissions'
-import * as Device from 'expo-device'
-import { doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc } from 'firebase/firestore';
-import { db, auth } from '../Core/Config';
+import { useEffect, useState, useRef } from "react";
+import * as Notifications from 'expo-notifications';
+import * as Permissions from 'expo-permissions';
+import * as Device from 'expo-device';
+import { auth, db } from '../Core/Config';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,15 +18,12 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function Home({ navigation, route }) {
-  const { height, width } = Dimensions.get("window");
-  // User
   const currentUser = auth.currentUser // 현재 접속한 user
   const myId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
-  // const myId = "pushnotificationuser"  // 임시로 저장해놓은 유저 아이디
-  //const myId = "chmsoo"  // 임시로 저장해놓은 유저 아이디
-
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
@@ -148,94 +145,35 @@ export default function Home({ navigation, route }) {
       <View>
         <View style={{ padding: 10, margin: 8 }}>
           <View style={{ alignItems: 'center' }}>
-            <Text style={styles.text1}>BBOOKING</Text>
+            <Text style={styles.title}>BBOOKING</Text>
           </View>
-          <View style={{ height: height * 0.13 }}>
-            <Text style={{ paddingHorizontal: 10, fontSize: 16, alignSelf: 'center' }}>
-              {allowDateNotice}
-            </Text>
+          <View style={{ height: SCREEN_HEIGHT * 0.13 }}>
+            <Text style={{ paddingHorizontal: 10, fontSize: 16, alignSelf: 'center' }}>{allowDateNotice}</Text>
           </View>
-          <View style={{ flexDirection: 'row' }}>
-            {
-              allowDateNotice === "" ? (
-                <TouchableOpacity style={{
-                  backgroundColor: '#3262d4',
-                  alignSelf: 'center',
-                  width: width * 0.3,
-                  height: height * 0.2,
-                  borderRadius: 8,
-                  padding: 5,
-                  paddingLeft: 10,
-                  paddingRight: 10,
-                  marginBottom: 5,
-                  marginLeft: width * 0.1
-                }} onPress={() => { navigation.navigate('BookingFacilityHome', { adminId: facility }) }}>
-                  <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', marginTop: height * 0.075, }}>예약하기</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity style={{
-                  backgroundColor: 'grey',
-                  alignSelf: 'center',
-                  width: width * 0.3,
-                  height: height * 0.2,
-                  borderRadius: 8,
-                  padding: 5,
-                  paddingLeft: 10,
-                  paddingRight: 10,
-                  marginBottom: 5,
-                  marginLeft: width * 0.1
-                }}>
-                  <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', marginTop: height * 0.075, }}>예약하기</Text>
-                </TouchableOpacity>
-              )
-            }
-
-            <TouchableOpacity style={{
-              backgroundColor: '#3262d4',
-              alignSelf: 'center',
-              width: width * 0.3,
-              height: height * 0.2,
-              borderRadius: 8,
-              padding: 5,
-              paddingLeft: 10,
-              paddingRight: 10,
-              marginBottom: 5,
-              marginLeft: width * 0.1
-            }} onPress={() => { navigation.navigate('MyBookingList') }}>
-              <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', marginTop: height * 0.065, }}>예약 내역</Text>
-              <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', }}>취소 내역</Text>
+          <View style={{ flexDirection: 'row' }}>{
+            allowDateNotice === "" ? (
+              <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('BookingFacilityHome', { adminId: facility }) }}>
+                <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.075 }}>예약하기</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={{ ...styles.btn, backgroundColor: 'grey' }}>
+                <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.075 }}>예약하기</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyBookingList') }}>
+              <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>예약 내역</Text>
+              <Text style={styles.text}>취소 내역</Text>
             </TouchableOpacity>
           </View>
-          <View style={{ height: height * 0.03 }}></View>
+          <View style={{ height: SCREEN_HEIGHT * 0.03 }}></View>
           <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={{
-              backgroundColor: '#3262d4',
-              alignSelf: 'center',
-              width: width * 0.3,
-              height: height * 0.2,
-              borderRadius: 8,
-              padding: 5,
-              paddingLeft: 10,
-              paddingRight: 10,
-              marginBottom: 5,
-              marginLeft: width * 0.1
-            }} onPress={() => { navigation.navigate('MyInfoManagement') }}>
-              <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', marginTop: height * 0.075, }}>내 정보 수정</Text>
+            <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyInfoManagement') }}>
+              <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
+              <Text style={styles.text}>수정</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{
-              backgroundColor: '#3262d4',
-              alignSelf: 'center',
-              width: width * 0.3,
-              height: height * 0.2,
-              borderRadius: 8,
-              padding: 5,
-              paddingLeft: 10,
-              paddingRight: 10,
-              marginBottom: 5,
-              marginLeft: width * 0.1
-            }} onPress={() => { navigation.navigate('MyLastBookingList') }}>
-              <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', marginTop: height * 0.065, }}>지난</Text>
-              <Text style={{ fontSize: 18, color: 'white', alignSelf: 'center', }}>예약 내역</Text>
+            <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyLastBookingList') }}>
+              <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>지난</Text>
+              <Text style={styles.text}>예약 내역</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -245,27 +183,31 @@ export default function Home({ navigation, route }) {
 };
 
 const styles = StyleSheet.create({
-  text1: {
+  title: {
     fontSize: 36,
     margin: 20,
     color: '#3262d4',
   },
-  text2: {
-    fontSize: 30,
-    margin: 5,
-    height: 40,
+
+  text: {
+    fontSize: 18,
+    color: 'white',
+    alignSelf: 'center',
   },
-  text3: {
-    fontSize: 15,
-    margin: 5,
-  },
-  text4: {
-    fontSize: 15,
-    margin: 5,
-    color: '#999',
+
+  btn: {
+    backgroundColor: '#3262d4',
+    alignSelf: 'center',
+    width: SCREEN_WIDTH * 0.3,
+    height: SCREEN_HEIGHT * 0.2,
+    borderRadius: 8,
+    padding: 5,
+    paddingLeft: 10,
+    paddingRight: 10,
+    marginBottom: 5,
+    marginLeft: SCREEN_WIDTH * 0.1,
   },
 });
-
 
 async function registerForPushNotificationsAsync() {
   let token;

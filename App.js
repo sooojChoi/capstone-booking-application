@@ -1,7 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { LogBox } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import AdminBooking from './Admin/AdminBooking';
 import AdminLogIn from './Admin/AdminLogIn';
 import AdminSignUp from './Admin/AdminSignUp';
 import AdminSignUpAndAddFacility from './Admin/AdminSignUpAndAddFacility';
@@ -11,11 +10,9 @@ import DetailAdminSignUp from './Admin/DetailAdminSignUp';
 import DetailBookingManagement from './Admin/DetailBookingManagement';
 import DetailFacilityManagement from './Admin/DetailFacilityManagement';
 import DetailUserManagement from './Admin/DetailUserManagement';
-import DetailUserDeny from './Admin/DetailUserDeny';
 import FacilityManagement from './Admin/FacilityManagement';
 import SearchAddress from './Admin/SearchAddress';
 import GenerateAllocation from './Admin/generateAllocation';
-import BookingFacility from './User/BookingFacility';
 import BookingFacilityHome from './User/BookingFacility';
 import BookingFacilityDetail from './User/BookingFacilityDetail';
 import ChooseMode from './User/ChooseMode';
@@ -27,23 +24,18 @@ import MyInfoManagement from './User/MyInfoManagement';
 import MyLastBookingList from './User/MyLastBookingList';
 import SearchFacility from './User/searchFacility';
 import SignIn from './User/SignIn';
-import CloudFirestore from './CloudFirestore';
 import AdminHomeNavigation from './Admin/AdminHome';
-import AdminWholeStack from './Admin/AdminWholeStack';
 
+LogBox.ignoreAllLogs();
 const Stack = createStackNavigator();
 
-// Test Auth
-// User  | ID : yjb123 / PW : 123456
-// User  | ID : test111 / PW : 12341234
-// Admin | ID : admintestid / PW : 123456
-// Admin | ID : test1234 / PW : 12341234
 export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="ChooseMode">
+        {/* 사용자 선택 UI */}
         <Stack.Screen name="ChooseMode" component={ChooseMode} options={{ headerShown: false }} />
-        {/* 사용자(User) UI */}
+        {/* 예약자(User) UI */}
         <Stack.Screen name="LogIn" component={LogIn} options={{ headerShown: false }} />
         <Stack.Screen name="SignIn" component={SignIn} options={{ title: '회원 가입', headerBackTitle: '로그인' }} />
         <Stack.Screen name="SearchFacility" component={SearchFacility} options={{ title: '시설 검색' }} />
@@ -71,57 +63,4 @@ export default function App() {
       </Stack.Navigator>
     </NavigationContainer>
   )
-
-  ////////// 역할 선택 & 홈 UI (User 폴더에 위치함)
-  //return (<Home></Home>) // 홈(유진)
-
-
-  ////////// 관리자(Admin) UI
-
-  // return (<AdminWholeStack></AdminWholeStack>) // 관리자 홈 화면
-
-  //return (<AdminBooking></AdminBooking>) // 대리 예약(유진)
-
-  //return (<GenerateAllocation></GenerateAllocation>) // 관리자 allocation 생성(혜림)
-
-  // return (<UserManagementNavigation></UserManagementNavigation>) // 사용자 관리(수진)
-
-  //return (<AdminLogIn></AdminLogIn>) // 관리자 로그인(수빈)
-
-  //return (<AdminSignUp></AdminSignUp>)  // 관리자 회원가입 화면 (수진)
-  //return (<SelectFacilitySort></SelectFacilitySort>)  // 관리자 회원가입 화면2 -> 세부시설로 등록할지 선택하는 화면(수진)
-  //return (<DetailAdminSignUp></DetailAdminSignUp>)  // 관리자 회원가입 화면3 -> 세부 시설 정보 입력(수진)
-  //return (<AdminSignUpAndAddFacility></AdminSignUpAndAddFacility>)  // 관리자 회원가입 화면4 -> 세부시설 추가 (수진)
-
-  //return (<UserPermissionNavigation></UserPermissionNavigation>)  // 사용자 승인(수진)
-  //return (<DetailUserDeny></DetailUserDeny>)  // 사용자 거절 사유 입력 화면(수진) -> 사용안함. 거절 기능 삭제.
-
-  ////////// 사용자(User) UI
-
-  //return (<BookingFacility></BookingFacility>) // 시설 예약(혜림)
-
-  //return (<DeleteAccount></DeleteAccount>) // 회원 탈퇴(혜림)
-  //return (<LogIn></LogIn>) // 로그인(수빈, 혜림)
-
-  //return <MyBookingList></MyBookingList> // 예약 내역(유진)
-  //return <MyLastBookingList></MyLastBookingList> // 지난 예약 내역(유진)
-
-  //return (<MyInfoManagement></MyInfoManagement>) // 회원 정보 수정(혜림)
-
-  //return (<SearchFacility></SearchFacility>)  // 회원가입 -> 시설 검색(수진)
-
-  //return (<SignUpNavigation></SignUpNavigation>)  // 회원가입(수진, 혜림)
-
-  //return (<CloudFirestore></CloudFirestore>) // Cloud Firestore 예제
-
-  return (<View></View>) // 에러 방지 View
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

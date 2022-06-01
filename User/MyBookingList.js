@@ -3,10 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, FlatList, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Dimensions } from 'react-native';
-import { auth } from '../Core/Config';
-import { doc, collection, getDocs, query, updateDoc, where, getDoc } from 'firebase/firestore';
-import { db } from '../Core/Config';
-import * as Notifications from 'expo-notifications'
+import { auth, db } from '../Core/Config';
+import { doc, collection, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import * as Notifications from 'expo-notifications';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -60,7 +59,7 @@ export default function App() {
       getDocs(bookingData)
         .then((snapshot) => {
           snapshot.forEach((doc) => {
-            setBookingId(doc.id) // 즉각 반영 X -> 실행 후 수정해보기~~~
+            setBookingId(doc.id)
             console.log(bookingId)
             console.log(doc.id)
             adminId = doc.adminId
@@ -111,43 +110,38 @@ export default function App() {
         })
     }
 
-      // 예약취소하면 db allocation 바꿔주기
-  const UpdateAlloCancel = (merge) => {
-    // doc(db, 컬렉션 이름, 문서 ID)
-    // 변경할 allocation 문서 ID가져오기
-    const allocationRef = collection(db, "Allocation")
-    const allocationData = query(allocationRef, where("usingTime", "==", itemData.item.usingTime), where("facilityId", "==", itemData.item.facilityId))
+    // 예약취소하면 db allocation 바꿔주기
+    const UpdateAlloCancel = (merge) => {
+      // 변경할 allocation 문서 ID 가져오기
+      const allocationRef = collection(db, "Allocation")
+      const allocationData = query(allocationRef, where("usingTime", "==", itemData.item.usingTime), where("facilityId", "==", itemData.item.facilityId))
 
-    getDocs(allocationData)
-    .then((snapshot) => {
-      snapshot.forEach((doc) =>{
-        UpdateAllo(doc.id)
-      })
-    })
-    .catch((error) => {
-      alert(error.message)
-    })
-
-    const UpdateAllo = (id) => {
-      const docRef = doc(db, "Allocation", id)
-
-      const docData = {
-        available: true
-    } // 문서에 담을 필드 데이터
-
-    updateDoc(docRef, docData)
-        // Handling Promises
-        .then(() => {
-            //alert("allocation 변경!")
+      getDocs(allocationData)
+        .then((snapshot) => {
+          snapshot.forEach((doc) => {
+            UpdateAllo(doc.id)
+          })
         })
         .catch((error) => {
-            alert(error.message)
+          alert(error.message)
         })
+
+      const UpdateAllo = (id) => {
+        const docRef = doc(db, "Allocation", id)
+
+        const docData = {
+          available: true
+        }
+
+        updateDoc(docRef, docData)
+          .then(() => {
+            //alert("allocation 변경")
+          })
+          .catch((error) => {
+            alert(error.message)
+          })
+      }
     }
-}
-
-
-   
 
     const facilitieName = itemData.item.facilityId
     // usingTime에서 날짜와 시간 가져오기
@@ -160,31 +154,31 @@ export default function App() {
         <Text style={styles.text}>{itemData.item.cost}W 인원{itemData.item.usedPlayer}명</Text>
       </View>
       <TouchableOpacity style={{
-          backgroundColor: '#3262d4',
-          alignSelf: 'flex-start',
-          borderRadius: 8,
-          padding: 5,
-          paddingLeft: 10,
-          paddingRight: 10,
-          marginBottom: 5,
-          marginLeft: SCREEN_WIDTH * 0.64
-        }} onPress={() => Alert.alert(
-          "주의", "예약을 취소하시겠습니까?", [
-          { text: "취소", onPress: () => console.log("예약 취소하지 않음"), style: "cancel" },
-          { text: "확인", onPress: () => { cancelBooking(true); UpdateAlloCancel(true); } },
-        ], { cancelable: false })}>
-          <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
-        </TouchableOpacity>
+        backgroundColor: '#3262d4',
+        alignSelf: 'flex-start',
+        borderRadius: 8,
+        padding: 5,
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginBottom: 5,
+        marginLeft: SCREEN_WIDTH * 0.64
+      }} onPress={() => Alert.alert(
+        "주의", "예약을 취소하시겠습니까?", [
+        { text: "취소", onPress: () => console.log("예약 취소하지 않음"), style: "cancel" },
+        { text: "확인", onPress: () => { cancelBooking(true); UpdateAlloCancel(true); } },
+      ], { cancelable: false })}>
+        <Text style={{ fontSize: 14, color: 'white' }}>예약취소</Text>
+      </TouchableOpacity>
     </View>
   }
 
-  const sendNotification = async(token, facName, userName) =>{
+  const sendNotification = async (token, facName, userName) => {
     const message = {
       to: token,
       sound: 'default',
       title: '시설 예약이 취소되었습니다. ',
-      body: '시설 '+facName+'의 예약을 '+userName+'님이 취소하였습니다. ',
-      data: {data: 'goes here'},
+      body: '시설 ' + facName + '의 예약을 ' + userName + '님이 취소하였습니다.',
+      data: { data: 'goes here' },
     };
 
     await fetch('https://exp.host/--/api/v2/push/send', {
@@ -200,11 +194,11 @@ export default function App() {
   }
 
   useEffect(() => {
-    let timer = setTimeout(()=>{readBookingList(); readCancelList()},100)
-     // 예약 내역 가져오기
-     return () => clearTimeout(timer)
+    let timer = setTimeout(() => { readBookingList(); readCancelList() }, 100)
+    // 예약 내역 가져오기
+    return () => clearTimeout(timer)
   }, [booking, bookingCancel])
-  
+
   // useEffect(() => {
   //   let timer = setTimeout(()=>{readCancelList()},100)
   //   //readCancelList() // 취소 내역 가져오기

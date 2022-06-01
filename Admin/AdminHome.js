@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Dimensions } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -16,8 +15,8 @@ import { useEffect, useRef } from "react";
 import * as Notifications from 'expo-notifications';
 import * as Permissions from 'expo-permissions';
 import * as Device from 'expo-device';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -27,19 +26,11 @@ Notifications.setNotificationHandler({
   }),
 });
 
-//const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 export default function AdminHomeNavigation() {
- // const myId = "AdminTestId"  // 임시로 저장해놓은 관리자 아이디
   const currentAdmin = auth.currentUser // 현재 접속한 admin
-  // const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
-  const myId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
-
-  // const currentAdmin = auth.currentUser // 현재 접속한 admin
-  //   // const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
-  // const myId = currentAdmin.email.split('@')[0] // 현재 접속한 user의 id
-  // console.log("adminHome : " + myId)
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
@@ -48,8 +39,7 @@ export default function AdminHomeNavigation() {
 
   // 혹시 다른 기기로 다시 로그인했을 수도 있기 때문에, home화면에
   const UpdateAdmin = (token) => {
-
-    const docRef = doc(db, "Facility", myId)
+    const docRef = doc(db, "Facility", currentAdminId)
 
     getDoc(docRef)
       .then((snapshot) => {
@@ -148,7 +138,6 @@ export default function AdminHomeNavigation() {
   );
 };
 
-
 // function AdminHome({navigation, route}) {
 //     const SCREEN_HEIGHT = Dimensions.get('window').height;
 //     const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -224,17 +213,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#3262d4",
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 15
+    paddingHorizontal: 15,
   },
 
   buttonFontStyle: {
     fontSize: 15,
-    color: 'white'
+    color: 'white',
   },
 
   titleStyle: {
     fontSize: 20,
-    color: "#191919"
+    color: "#191919",
   }
 });
 

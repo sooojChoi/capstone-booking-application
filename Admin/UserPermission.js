@@ -1,7 +1,7 @@
 // 사용자 승인(관리자) -> 수진
 // 일단 USER를 '승인 요청한 사용자 목록' 이라고 가정하고 코드 구현하였음
 
-import { StyleSheet, Text, View, Dimensions, FlatList,TouchableOpacity, StatusBar, Alert, SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, FlatList, TouchableOpacity, StatusBar, Alert, SafeAreaView, Platform } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
@@ -10,19 +10,11 @@ import RadioForm, { RadioButton, RadioButtonInput, RadioButtonLabel } from 'reac
 import Toast, { DURATION } from 'react-native-easy-toast';
 import { UserTable } from '../Table/UserTable';
 import { PermissionTable } from '../Table/PermissionTable';
-
-import { permission } from '../Category';
-import { user } from '../Category';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import DetailUserDeny from './DetailUserDeny';
-import { onSnapshot, doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt, updateDoc, where } from 'firebase/firestore';
-import { db,  auth} from '../Core/Config';
-import * as Notifications from 'expo-notifications'
-import * as Permissions from 'expo-permissions'
-import * as Device from 'expo-device'
-
-
+import { auth, db } from '../Core/Config';
+import { onSnapshot, doc, collection, addDoc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import * as Notifications from 'expo-notifications';
+import * as Permissions from 'expo-permissions';
+import * as Device from 'expo-device';
 import { async } from '@firebase/util';
 //import { getToken } from 'firebase/messaging';
 //import messaging from '@react-native-firebase/messaging';
@@ -43,18 +35,12 @@ const grade = ["A등급", "B등급", "C등급"]  // grade가 바뀌면 gradeRadi
 //const flexNotChecked = 5.5
 const flexChecked = 5
 
-const thisFacilityId = "hansung"
-
 const permissionTable = new PermissionTable();  //function안에 두면 안됨.
 const userTable = new UserTable();
 
 export default function UserPermission({ navigation, route }) {
   const currentAdmin = auth.currentUser // 현재 접속한 admin
-  // const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
-  const thisFacilityId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
-
-  // const userTable = new UserTable();
-  //const permissionTable = new PermissionTable();   
+  const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const [checkMode, setCheckMode] = useState(false);  // 체크모드(전체 모드)가 true면 ui에 체크버튼 표시됨.
   const [flexByMode, setFlexByMode] = useState(6)  // ui(flatlist)의 flex값을 조절하기 위함.(체크모드가 true이면 flex:5, false이면 flex:6)
@@ -76,27 +62,22 @@ export default function UserPermission({ navigation, route }) {
   const notificationListener = useRef();
   const responseListener = useRef();
 
-  
-  useEffect(()=>{
-    const q = query(collection(db, "User"), where("adminId", "==", thisFacilityId), where("allowDate","==",null));
-      onSnapshot(q, (snapshot) => {
+  useEffect(() => {
+    const q = query(collection(db, "User"), where("adminId", "==", currentAdminId), where("allowDate", "==", null));
+    onSnapshot(q, (snapshot) => {
       var refresh = 0
       console.log("#########snapshot#######")
-       
+
       snapshot.forEach((doc) => {
         console.log("변경 내용 출력")
         refresh = 1
       });
-      if(refresh === 1){
+      if (refresh === 1) {
         refresh = 0;
         ReadUserList();
       }
-      
     })
-  
-  },[])
-
-
+  }, [])
 
   const [fresh, setFresh] = useState(true);
 
@@ -199,11 +180,9 @@ export default function UserPermission({ navigation, route }) {
       const index = grade.length - 1
       const array = { id: 0, name: "선택된 사용자들", gradeIndex: index }
       setGradeInfo(array);
-
       toggleModalUsers();
     }
   }
-
 
   // DB 또는 특정 파일에서 승인 요청한 사용자 리스트를 가져오는 함수
   const getAllUsers = (temp) => {
@@ -213,7 +192,6 @@ export default function UserPermission({ navigation, route }) {
     var tempArray = []
     //const temp = userTable.getsAllowWithNull();
     console.log(temp)
-
 
     newUserCheck.length = 0
     temp.map((user, index) => {
@@ -227,46 +205,35 @@ export default function UserPermission({ navigation, route }) {
       const gradeIndex = grade.length - 1
       newUserCheck.push({
 
-        id: id, name : name, phone : realPhone,
-        registerDate: registerDate, allowDate : allowDate, 
-        isCheck : isCheck, 
+        id: id, name: name, phone: realPhone,
+        registerDate: registerDate, allowDate: allowDate,
+        isCheck: isCheck,
         gradeIndex: gradeIndex,   // 원래 배열에서 새로 추가한 것.
-
       })
-      
     });
     // register date(등록일)이 오래된 순서대로 정렬함.
     tempArray = newUserCheck.sort((a, b) => a.registerDate - b.registerDate)
     setUserCheck(...[tempArray]);  // 현재 체크 상태를 알기 위한 배열 userCheck가 초기화된다.
     setFresh(!fresh)  //flatlist를 리렌더링하기 위함.
-
     // console.log(tempArray)
     console.log("-------------------------")
   }
 
-
   // User 목록 가져오기
   const ReadUserList = () => {
-    // collection(db, 컬렉션 이름) -> 컬렉션 위치 지정
     const ref = collection(db, "User")
 
-
-    const data = query(ref, where("allowDate", "==", null), where("adminId", "==", thisFacilityId)) // 조건을 추가해 원하는 데이터만 가져올 수도 있음(orderBy, where 등)
+    const data = query(ref, where("allowDate", "==", null), where("adminId", "==", currentAdminId))
     let result = [] // 가져온 User 목록을 저장할 변수
 
-
     getDocs(data)
-      // Handling Promises
       .then((snapshot) => {
         snapshot.forEach((doc) => {
-          //console.log(doc.id, " => ", doc.data())
           result.push(doc.data())
-
         });
         getAllUsers(result);
       })
       .catch((error) => {
-        // MARK : Failure
         alert(error.message)
       })
     // setUserDoc(result) // 데이터 조작을 위해 useState에 데이터를 저장함(기존 동일)
@@ -302,28 +269,19 @@ export default function UserPermission({ navigation, route }) {
         console.log(tableName + ", Document Created!")
       })
       .catch((error) => {
-        // MARK : Failure
         alert(error.message)
       })
   }
 
   // 유저 정보 업데이트 하기
   const UpdateUser = (docData) => {
-    // doc(db, 컬렉션 이름, 문서 ID)
     const docRef = doc(db, "User", docData.id)
 
-    //setDoc(docRef, docData, { merge: merge })
     updateDoc(docRef, docData)
-      // Handling Promises
       .then(() => {
-        //alert("Updated Successfully!")
-        console.log("Updated Successfully!")
         // 사용자에게 승인되었다는 푸시 알림을 보낸다.
-
         getDoc(docRef)
-          // Handling Promises
           .then((snapshot) => {
-            // MARK : Success
             if (snapshot.exists) {
               const result = snapshot.data().token
               sendNotification(result)
@@ -332,19 +290,16 @@ export default function UserPermission({ navigation, route }) {
             else {
               alert("No Doc Found")
             }
-            ReadUserList();    // db에서 사용자 목록을 다시 불러옴.
+            ReadUserList(); // db에서 사용자 목록을 다시 불러옴.
           })
           .catch((error) => {
-            // MARK : Failure
             alert(error.message)
           })
-
       })
       .catch((error) => {
         alert(error.message)
       })
   }
-
 
   // '승인' 버튼을 눌러서 한 명의 사용자만 승인 또는 거절하는 함수
   const AllowOneUser = (userId, userName) => {
@@ -360,12 +315,12 @@ export default function UserPermission({ navigation, route }) {
           newUserCheck.find((userFind) => {
             if (userFind.id === userId) {
               // 승인 되었으므로 permissionTable에 추가..
-              // permissionTable.add(new permission(userId, thisFacilityId, userFind.gradeIndex))
-              // console.log("------시설 "+thisFacilityId+"의 현재 등록 인원------")
-              // console.log(permissionTable.getsByFacilityId(thisFacilityId));
+              // permissionTable.add(new permission(userId, currentAdminId, userFind.gradeIndex))
+              // console.log("------시설 "+currentAdminId+"의 현재 등록 인원------")
+              // console.log(permissionTable.getsByFacilityId(currentAdminId));
               const permissionData = {
                 userId: userId,
-                facilityId: thisFacilityId,
+                facilityId: currentAdminId,
                 grade: userFind.gradeIndex
               }
               CreateWithRandomId("Permission", permissionData)
@@ -382,11 +337,9 @@ export default function UserPermission({ navigation, route }) {
                 phone: userFind.phone,
                 registerDate: userFind.registerDate,
                 allowDate: "permission",
-                adminId: thisFacilityId
+                adminId: currentAdminId
               } // 문서에 담을 필드 데이터
               UpdateUser(userData)
-
-
             }
           })
           // 승인된 사용자는 목록에서 제외.
@@ -436,7 +389,7 @@ export default function UserPermission({ navigation, route }) {
           newUserCheck.map((userFind) => {
             if (userFind.isCheck === true) {
               // 승인 되었으므로 permissionTable에 추가..
-              //   permissionTable.add(new permission(userFind.id, thisFacilityId, userFind.gradeIndex))
+              //   permissionTable.add(new permission(userFind.id, currentAdminId, userFind.gradeIndex))
               // userTable에서 allow date를 수정 (null이면 아직 승인되지 않은 user니까)
               // userTable.modify(new user(userFind.id, userFind.name, userFind.phone, userFind.registerDate, "permission"))
               // console.log(" ")
@@ -445,7 +398,7 @@ export default function UserPermission({ navigation, route }) {
 
               const permissionData = {
                 userId: userFind.id,
-                facilityId: thisFacilityId,
+                facilityId: currentAdminId,
                 grade: userFind.gradeIndex
               }
               CreateWithRandomId("Permission", permissionData)
@@ -456,19 +409,18 @@ export default function UserPermission({ navigation, route }) {
                 phone: userFind.phone,
                 registerDate: userFind.registerDate,
                 allowDate: "permission",
-                adminId: thisFacilityId
+                adminId: currentAdminId
               } // 문서에 담을 필드 데이터
               UpdateUser(userData)
             }
           })
 
-          console.log("------시설 " + thisFacilityId + "의 현재 등록 인원------")
-          console.log(permissionTable.getsByFacilityId(thisFacilityId));
+          console.log("------시설 " + currentAdminId + "의 현재 등록 인원------")
+          console.log(permissionTable.getsByFacilityId(currentAdminId));
 
           // check값이 true인 것들은 배열에서 모두 제거한다. (승인된 사용자는 목록에서 제외)
           //  const newarray = newUserCheck.filter((value)=>value.isCheck === false)
           //  setUserCheck(newarray); // 현재 userCheck을 다시 초기화.
-
 
           //  getAllUsers();  // 테이블에서 사용자를 다시 불러옴.
           ReadUserList();  // 테이블에서 사용자를 다시 불러옴.
@@ -694,7 +646,6 @@ export default function UserPermission({ navigation, route }) {
                 </TouchableOpacity>
                 <Text style={{ fontSize: 14, color: '#373737', marginLeft: 10 }}>{year}년 {month}월{day}일</Text>
               </View>
-
             </View>
           </View>
           <View>
@@ -709,8 +660,7 @@ export default function UserPermission({ navigation, route }) {
               <AntDesign name="checkcircle" size={24} color="black"
                 style={{ marginEnd: 10 }} />
             </View>
-          )
-          }
+          )}
         </View>
       </TouchableOpacity>
     )
@@ -763,7 +713,6 @@ export default function UserPermission({ navigation, route }) {
       },
       body: JSON.stringify(message)
     })
-
   }
 
   // 거절 사유를 입력하는 화면으로 갔다가 돌아오면 불린다.
@@ -774,7 +723,6 @@ export default function UserPermission({ navigation, route }) {
       console.log("테이블에서 사용자 목록을 다시 가져옴.")
     }
     console.log(route.params?.post)
-
   }, [route.params?.post]);
 
   return (
@@ -827,15 +775,11 @@ export default function UserPermission({ navigation, route }) {
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
               <TouchableOpacity style={{ ...styles.smallButtonStyle, paddingLeft: 16, paddingRight: 16 }}
                 onPress={() => saveGradeInfoForUsers()}>
-                <Text style={{ fontSize: 14, color: 'white' }}>
-                  확인
-                </Text>
+                <Text style={{ fontSize: 14, color: 'white' }}>확인</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ ...styles.smallButtonStyle, paddingLeft: 16, paddingRight: 16 }}
                 onPress={toggleModalUsers}>
-                <Text style={{ fontSize: 14, color: 'white' }}>
-                  취소
-                </Text>
+                <Text style={{ fontSize: 14, color: 'white' }}>취소</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -923,11 +867,9 @@ export default function UserPermission({ navigation, route }) {
                   extraData={fresh}
                   numColumns={1} />
               </View>
-            )
-            }
+            )}
           </View>
-        )
-      }
+        )}
       {/* <View style={{alignSelf:'center', marginBottom:50,}}>
         <TouchableOpacity style={{backgroundColor:'grey', padding:20}}
         onPress={() => sendNotification(expoPushToken)}>
@@ -936,20 +878,20 @@ export default function UserPermission({ navigation, route }) {
       </View> */}
     </SafeAreaView>
   );
-}
+};
 
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    //   alignItems: 'center',
-    // justifyContent: 'center',
   },
+
   TitleText: {
     fontSize: 25,
-    fontWeight: "600"
+    fontWeight: "600",
   },
+
   gridItem: {
     flex: 1,
     justifyContent: 'center',
@@ -957,6 +899,7 @@ const styles = StyleSheet.create({
     height: 150,
     margin: 15,
   },
+
   facilityFlatList: {
     margin: 3,
     // paddingTop:10,
@@ -965,8 +908,9 @@ const styles = StyleSheet.create({
     //  backgroundColor:"#d5d5d5",
     // borderRadius: 10,
     borderBottomColor: '#d5d5d5',
-    borderBottomWidth: 2
+    borderBottomWidth: 2,
   },
+
   smallButtonStyle: {
     backgroundColor: '#3262d4',
     marginStart: 5,
@@ -979,6 +923,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10
   },
+
   ButtonStyle2: {
     backgroundColor: '#3262d4',
     // justifyContent:'space-around',
@@ -989,13 +934,13 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     marginBottom: 5
   },
+
   AndroidSafeArea: {
     flex: 1,
     backgroundColor: "white",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
-  }
+  },
 });
-
 
 // async function schedulePushNotification() {
 //   await Notifications.scheduleNotificationAsync({

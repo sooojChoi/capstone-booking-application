@@ -9,8 +9,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 //import * as ImagePicker from 'react-native-image-picker';
 //import MultipleImagePicker from '@baronha/react-native-multiple-image-picker';
 //import { ImageBrowser } from 'expo-image-picker-multiple';
-import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../Core/Config';
+import { collection, getDocs, query } from 'firebase/firestore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;

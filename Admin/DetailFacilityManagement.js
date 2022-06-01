@@ -1,12 +1,11 @@
 // 상세 시설 관리(관리자) -> 수빈
 
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, TextInput, FlatList, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Modal from "react-native-modal";
-import { doc, collection, addDoc, deleteDoc, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
+import { doc, collection, addDoc, deleteDoc, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;

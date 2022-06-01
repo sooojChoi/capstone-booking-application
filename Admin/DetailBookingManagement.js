@@ -3,8 +3,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
-import { doc, collection, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
 import { auth, db } from '../Core/Config';
+import { doc, collection, getDoc, getDocs, updateDoc, query, where } from 'firebase/firestore';
 import * as Notifications from 'expo-notifications';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -37,8 +37,6 @@ export default function DetailBookingManagement({ route, navigation }) {
   const [phone, setPhone] = useState()
   const [usedPlayer, setUsedPlayer] = useState()
   const [name, setName] = useState()
-
-  
 
   // 예약 목록 가져오기
   const getBookingList = () => {
@@ -116,25 +114,25 @@ export default function DetailBookingManagement({ route, navigation }) {
             const docRef = doc(db, "User", userId)
 
             getDoc(docRef)
-                // Handling Promises
-                .then((snapshot) => {
-                    // MARK : Success
-                    if (snapshot.exists) {
-                        const result = snapshot.data().token
-                        sendNotification(result)
-                    }
-                    else {
-                        alert("No Doc Found")
-                    }
+              // Handling Promises
+              .then((snapshot) => {
+                // MARK : Success
+                if (snapshot.exists) {
+                  const result = snapshot.data().token
+                  sendNotification(result)
+                }
+                else {
+                  alert("No Doc Found")
+                }
 
-                    navigation.navigate('TabNavi')
-                })
-                .catch((error) => {
-                    // MARK : Failure
-                    alert(error.message)
-                })
+                navigation.navigate('TabNavi')
+              })
+              .catch((error) => {
+                // MARK : Failure
+                alert(error.message)
+              })
 
-         
+
           })
           .catch((error) => {
             alert(error.message)
@@ -145,13 +143,13 @@ export default function DetailBookingManagement({ route, navigation }) {
       })
   }
 
-  const sendNotification = async(token) =>{
+  const sendNotification = async (token) => {
     const message = {
       to: token,
       sound: 'default',
-      title: facilityId+' 시설 예약이 취소되었습니다. ',
+      title: facilityId + ' 시설 예약이 취소되었습니다. ',
       body: '예약 취소 내역을 확인해주십시오. ',
-      data: {data: 'goes here'},
+      data: { data: 'goes here' },
     };
 
     await fetch('https://exp.host/--/api/v2/push/send', {

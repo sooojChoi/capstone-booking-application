@@ -1,4 +1,4 @@
-// 사용자 승인 요청을 관리할 때 거절 사유를 입력하는 화면 -> 수진 (사용 X)
+// 사용자 승인 요청을 관리할 때 거절 사유를 입력하는 화면 -> 수진(사용 X)
 
 import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity } from 'react-native';
 import { UserTable } from '../Table/UserTable'
@@ -25,7 +25,7 @@ export default function DetailUserDeny({ route, navigation }) {
         console.log("사용자 삭제 안됨.")
       }
     }
-    // 여려 사용자를 거절할 경우
+    // 여러 사용자를 거절할 경우
     else if (userOrUsers === "users") {
       deletedUser.map((userId) => {
         userTable.remove(userId)  // userTable에서 제거함.
@@ -49,8 +49,7 @@ export default function DetailUserDeny({ route, navigation }) {
         placeholder="거절 사유를 입력해주세요. (50자 이내)"
         value={text}
         maxLength={50}
-      ></TextInput>
-      {
+      ></TextInput>{
         text === "" ? (
           <TouchableOpacity
             style={{ ...styles.smallButtonStyle, marginTop: 30, backgroundColor: "#a0a0a0" }}
@@ -63,8 +62,7 @@ export default function DetailUserDeny({ route, navigation }) {
             disabled={false} onPress={() => removeUser()} >
             <Text style={{ color: 'white', fontSize: 14 }}>거절하기</Text>
           </TouchableOpacity>
-        )
-      }
+        )}
     </View>
   </View>
 }
@@ -86,6 +84,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     paddingLeft: 70,
-    paddingRight: 70
+    paddingRight: 70,
   },
 });

@@ -1,6 +1,5 @@
 // 사용자/관리자 선택 -> 수빈
 
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions, SafeAreaView } from 'react-native';
 import React, { useEffect } from "react";
 import { auth } from '../Core/Config';
@@ -19,7 +18,7 @@ export default function ChooseMode({ navigation }) {
                     navigation.replace("TabNavi")
             }
         })
-    })
+    }, [])
 
     return (
         <View style={styles.container}>

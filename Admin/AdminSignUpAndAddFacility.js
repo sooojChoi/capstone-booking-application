@@ -4,9 +4,9 @@ import { StyleSheet, Text, View, Dimensions, Alert, TouchableOpacity, SafeAreaVi
 import React, { useEffect, useState, } from "react";
 import { FlatList } from 'react-native-gesture-handler';
 import { AntDesign } from '@expo/vector-icons';
+import { auth, db, storageDb } from '../Core/Config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, collection, addDoc, setDoc } from 'firebase/firestore';
-import { auth, db, storageDb } from '../Core/Config';
 import { ref, uploadBytes } from "firebase/storage";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
