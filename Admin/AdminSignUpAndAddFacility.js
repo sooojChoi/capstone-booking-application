@@ -74,7 +74,7 @@ export default function AdminSignUpAndAddFacility({ navigation, route }) {
     const r = ref(storageDb, facilityBasicInfo.id + '/image' + name + '.jpg');
 
     const img = await fetch(value);
-    const bytes = await img.blob();
+    const bytes = await img.blob()
 
     await uploadBytes(r, bytes);
   }
