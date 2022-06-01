@@ -216,16 +216,16 @@ export default function App() {
   }
 
   useEffect(() => {
-    let timer = setTimeout(()=>{readBookingList()},100)
+    let timer = setTimeout(()=>{readBookingList(); readCancelList()},100)
      // 예약 내역 가져오기
      return () => clearTimeout(timer)
-  }, [booking])
+  }, [booking, bookingCancel])
   
-  useEffect(() => {
-    let timer = setTimeout(()=>{readCancelList()},100)
-    //readCancelList() // 취소 내역 가져오기
-    return () => clearTimeout(timer)
-  }, [bookingCancel])
+  // useEffect(() => {
+  //   let timer = setTimeout(()=>{readCancelList()},100)
+  //   //readCancelList() // 취소 내역 가져오기
+  //   return () => clearTimeout(timer)
+  // }, [bookingCancel])
 
   // 취소 내역 - 취소내역은 현재보다 이전 내역도 가져옴
   const readCancelList = () => {
