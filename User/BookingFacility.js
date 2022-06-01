@@ -193,48 +193,9 @@ export default function BookingFacilityHome({ navigation, route }) {
 
   //console.log("this is value----------------",value)
 
-  /*discountRateTable의 정보를 가져옴*/
-  //시간 할인되는거
-  let dc = [];
-  let time;
-  //let dcList=[];
-  const [dcList, setDclist] = useState();
-  function QueryDiscountRate() {
-    let tempDclist = [];
-    const ref = collection(db, "DiscountRate");
-    const data = query(
-      ref,
-      where("facilityId", "==", value)
-    );
-
-    onSnapshot(data, (querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        dc.push(doc.data());
-
-      });
-
-      dc.map((e) => {
-        if (Number.isInteger(e.time / 60)) {//3시인 경우
-          time = (e.time / 60) + ":00"
-        } else {//3시 45분, 3시 30분 등인경우
-          time = ((e.time / 60) - parseInt(e.time / 60)) * 60
-        }
-        tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
-
-      })
-      console.log(dc)
-      setDclist(tempDclist)
-      console.log(dcList)
 
 
-    }
-
-
-    ), (error) => {
-      alert(error.message);
-    }
-  };
-
+  
 
   // User 1명 정보 가져오기
   const ReadUser = (id) => {
@@ -379,7 +340,7 @@ export default function BookingFacilityHome({ navigation, route }) {
   var bookinglimit = new Date(now.setDate(now.getDate() + limit));
   const maxDate = new Date(bookinglimit);
 
-  console.log(bookinglimit, "thisis bookinglimit")
+ // console.log(bookinglimit, "thisis bookinglimit")
 
 
   //날짜 선택했는지 안했는지 확인하는 부분
@@ -402,43 +363,12 @@ export default function BookingFacilityHome({ navigation, route }) {
 
 
 
-  /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
-  //value가 facilityId와 같은거만 가져와야 한다.
-  function QueryAllocation() {
-    let selectedAllo = [];
-    const ref = collection(db, "Allocation");
-    const data = query(
-      ref,
-      where("facilityId", "==", value)
-    );
-    onSnapshot(data, (querySnapshot) => {
-      // alert("query Successfully!");
-      //  console.log("query-----------------------");
-      querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        selectedAllo.push(doc.data());
-
-      });
-
-      makeAllocationTime(selectedAllo).then(function (resolvedData) {
-        // if(showTimeSelect){
-        //   navigation.navigate('BookingfacilityDetail',{timeArray:resolvedData,maxPlayers:maxPlayers,minPlayers:minPlayers})
-
-        // }
-      })
-      selectedAllo.length = 0;//중간에 db에서 데이터가 변경되면, 변경된 데이터가 이 배열에 쌓이는게 아니라 교체되도록
-      //  setData(dataPush())
-    }, (error) => { alert(error.message); });
-
-  };
-
-
 
   //날짜와 시설이 바뀔때마다 QueryAllo,QueryDiscountRate
-  useEffect(() => {
-    QueryAllocation();
-    QueryDiscountRate();
-  }, [selectedStartDate, value])
+  // useEffect(() => {
+  //   QueryAllocation();
+  //   QueryDiscountRate();
+  // }, [selectedStartDate, value])
 
 
 
@@ -446,57 +376,7 @@ export default function BookingFacilityHome({ navigation, route }) {
 
 
 
-  //달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
-  function makeAllocationTime(array) {
-    let tempData = [];
-    let todayAvail = [];
-    if (array) {
-      //console.log("selectedAllo:", array)
-      array.map((elem) => {//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
-        // console.log(elem.usingTime,"-----------")
-        if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + 0 + (d.getMonth() + 1) + "-" + d.getDate()) {
-          todayAvail.push(elem)
-        }
-      });
-    }
-    //const originalCost = gradeCost
-    let calcCost;
-    todayAvail.map((elem) => {
-
-      if (elem.available === true) {//선택된 날짜에 개설된 시간들중에 available이 true인거
-
-        if (dcList.length == 0) {//할인되는 시간이 없을경우
-          calcCost = gradeCost;
-        } else {
-          dcList.map((e) => {
-            if (e.time == elem.usingTime.split('T')[1]) {//할인되는 시간
-              calcCost = gradeCost * e.rate;
-            }
-            else {//할인 안되는 시간
-              calcCost = gradeCost;
-            }
-          })
-        }
-
-
-
-        tempData.push({ id: elem.usingTime, title: " ", time: elem.usingTime, cost: calcCost })
-        console.log(elem.usingTime)
-        //---------------------------id를 usingTime 전체다 넣어줌
-      }
-
-    })
-
-
-    setData(tempData);//data오름차순 정렬
-
-    return new Promise(function (resolve, reject) {
-
-      resolve(tempData);
-    });
-
-  }
-
+  
 
   //console.log("data!!!!",data)
 
@@ -663,8 +543,12 @@ export default function BookingFacilityHome({ navigation, route }) {
         const now = new Date();
         const nowFormat = now.getFullYear() + '-' + 0 + (now.getMonth() + 1) + "-" + now.getDate() + "T" + now.getHours() + ":" + now.getMinutes()
         reserveds.map((elem) => {
+          if(elem.data.available===true){//동시예약 방지
+
           modifyAllocation(elem.id);
           AddBooking(nowFormat, totalCost, count, elem.data.usingTime);
+          }
+
         })
 
         toggleModal();
@@ -902,7 +786,7 @@ export default function BookingFacilityHome({ navigation, route }) {
 
               <TouchableOpacity
                 style={{ marginStart: 20 }}
-                onPress={() => { navigation.navigate('BookingfacilityDetail', { timeArray: data, maxPlayers: maxPlayers, minPlayers: minPlayers }) }}
+                onPress={() => { navigation.navigate('BookingfacilityDetail', {value:value,d:d,gradeCost:gradeCost,minPlayers:minPlayers,maxPlayers:maxPlayers}) }}
               ><Text style={{ color: 'blue' }}>  {'>'} </Text></TouchableOpacity>
 
             </View>

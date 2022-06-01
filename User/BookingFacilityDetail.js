@@ -5,19 +5,155 @@ import {
   } from 'react-native';
   import React, { useState, useEffect } from "react";
   import { Dimensions } from 'react-native';
-  import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import { db } from '../Core/Config';
+import {
+  doc, collection, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, startAt, endAt,
+  onSnapshot, updateDoc, where
+} from 'firebase/firestore';
 /*모바일 윈도우의 크기를 가져온다*/
 const { height, width } = Dimensions.get("window");
 
 export default function BookingFacilityDetail({route,navigation}){
-const {timeArray,minPlayers,maxPlayers}=route.params;
+  const {value,d,gradeCost,minPlayers,maxPlayers}=route.params;
 
-    if(route.params.timeArray){
-        console.log(timeArray.sort((a,b)=>new Date(a.time)-new Date(b.time)),"[-----------------]")
+  const [data,setData]=useState();
+  const [dcList, setDclist] = useState();
 
+ 
+
+    /*discountRateTable의 정보를 가져옴*/
+  //시간 할인되는거
+  let dc = [];
+  let time;
+  function QueryDiscountRate() {
+    let tempDclist = [];
+    const ref = collection(db, "DiscountRate");
+    const data = query(
+      ref,
+      where("facilityId", "==", value)
+    );
+
+    onSnapshot(data, (querySnapshot) => {
+     
+  
+      querySnapshot.forEach((doc) => {
+        console.log(doc.data(),"------------")
+        dc.push(doc.data());
+
+
+      });
+      if(dc){
+      dc.map((e) => {
+        if (Number.isInteger(e.time / 60)) {//3시인 경우
+          time = (e.time / 60) + ":00"
+        } else {//3시 45분, 3시 30분 등인경우
+          time = ((e.time / 60) - parseInt(e.time / 60)) * 60
+        }
+        tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
+
+      })
+      console.log(dc,"----------------")
+    }
+    setDclist(tempDclist)
+    QueryAllocation(tempDclist)
+
+    })
+  , (error) => {
+      alert(error.message);
+    }
+  };
+
+  /*선택된 시설에서 현재 예약 가능한 시간대만 가져오기 */
+  //value가 facilityId와 같은거만 가져와야 한다.
+  function QueryAllocation(dcList) {
+    let selectedAllo = [];
+    const ref = collection(db, "Allocation");
+    const data = query(
+      ref,
+      where("facilityId", "==", value)
+    );
+    onSnapshot(data, (querySnapshot) => {
+      // alert("query Successfully!");
+      //  console.log("query-----------------------");
+      querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        selectedAllo.push(doc.data());
+
+      });
+
+      makeAllocationTime(selectedAllo,dcList)
+      selectedAllo.length = 0;//중간에 db에서 데이터가 변경되면, 변경된 데이터가 이 배열에 쌓이는게 아니라 교체되도록
+      //  setData(dataPush())
+    }, (error) => { alert(error.message); });
+
+  };
+
+//달력에서 선택한 날짜랑 , db에 저장된 날짜랑 같은거만 가져오는 부분
+function makeAllocationTime(array,dcList) {
+  let tempData = [];
+  let todayAvail = [];
+  if (array) {
+    //console.log("selectedAllo:", array)
+    array.map((elem) => {//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
+      // console.log(elem.usingTime,"-----------")
+      if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + 0 + (d.getMonth() + 1) + "-" + d.getDate()) {
+        todayAvail.push(elem)
+      }
+    });
+  }
+  //const originalCost = gradeCost
+  let calcCost;
+  todayAvail.map((elem) => {
+
+    if (elem.available === true) {//선택된 날짜에 개설된 시간들중에 available이 true인거
+      if(dcList){
+      if (dcList.length == 0) {//할인되는 시간이 없을경우
+        calcCost = gradeCost;
+      } else {
+        dcList.map((e) => {
+          if (e.time == elem.usingTime.split('T')[1]) {//할인되는 시간
+            calcCost = gradeCost * e.rate;
+          }
+          else {//할인 안되는 시간
+            calcCost = gradeCost;
+          }
+        })
+      }
     }
 
+
+
+      tempData.push({ id: elem.usingTime, title: " ", time: elem.usingTime, cost: calcCost })
+      console.log(elem.usingTime)
+      //---------------------------id를 usingTime 전체다 넣어줌
+    }
+
+  })
+
+  console.log(tempData.sort((a,b)=>new Date(a.time)-new Date(b.time)),"[-----------------]")
+  setData(tempData);//data오름차순 정렬
+
+  return new Promise(function (resolve, reject) {
+
+    resolve(tempData);
+  });
+
+}
+
+
+
+
+useEffect(()=>{
+ 
+  QueryDiscountRate()
+    QueryAllocation()
+ 
+},[])
+
+
+
+
+  
 
 
  //시간선택
@@ -67,7 +203,7 @@ return (
                 <View style={{marginHorizontal:10,height:height*0.7,width:width*0.95,marginVertical:height*0.01}}>
                     <FlatList
                       style={{ borderWidth: 1, borderColor: '#646464', borderRadius: 5}}
-                      data={timeArray}
+                      data={data}
                       renderItem={renderItem}
                       keyExtractor={(item) => item.id}
 
