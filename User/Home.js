@@ -183,10 +183,20 @@ export default function Home({ navigation, route }) {
           </View>
           <View style={{ height: SCREEN_HEIGHT * 0.03 }}></View>
           <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyInfoManagement') }}>
-              <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
-              <Text style={styles.text}>수정</Text>
-            </TouchableOpacity>
+            {
+              allowDateNotice === "" ? (
+                <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyInfoManagement') }}>
+                <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
+                <Text style={styles.text}>수정</Text>
+              </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={{...styles.btn, backgroundColor: 'grey' }} >
+                <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
+                <Text style={styles.text}>수정</Text>
+              </TouchableOpacity>
+              )
+            }
+           
             <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyLastBookingList') }}>
               <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>지난</Text>
               <Text style={styles.text}>예약 내역</Text>
