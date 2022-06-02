@@ -50,6 +50,7 @@ export default function App() {
   // 예약 내역 Flatlist
   const bookingItem = (itemData) => {
     var adminId = ""
+
     // 예약 취소 시작
     const cancelBooking = () => {
       // 예약 취소할 문서 ID 가져오기
@@ -103,7 +104,6 @@ export default function App() {
           //         // MARK : Failure
           //         alert(error.message)
           //     })
-
         })
         .catch((error) => {
           alert(error.message)

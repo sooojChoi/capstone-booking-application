@@ -1,6 +1,5 @@
 // 상세 예약 관리(관리자) -> 수빈
 
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from "react";
 import { auth, db } from '../Core/Config';
@@ -18,11 +17,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
-
 export default function DetailBookingManagement({ route, navigation }) {
   const currentAdmin = auth.currentUser // 현재 접속한 admin
   const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
-  console.log("detailBookingManagement : " + currentAdminId)
 
   // BookingManagement에서 받은 값
   const bookingData = route.params.bookingData

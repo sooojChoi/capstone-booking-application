@@ -47,7 +47,7 @@ export default function App() {
         <Stack.Screen name="MyBookingList" component={MyBookingList} options={{ title: '예약 & 취소 내역' }} />
         <Stack.Screen name="MyLastBookingList" component={MyLastBookingList} options={{ title: '지난 예약 내역' }} />
         {/* 관리자(Admin) UI */}
-        <Stack.Screen name="AdminLogIn" component={AdminLogIn} options={{ headerShown: false }} />
+        <Stack.Screen name="AdminLogIn" component={AdminLogIn} options={{ headerShown: false, title: '로그인' }} />
         <Stack.Screen name="AdminSignUp" component={AdminSignUp} options={{ title: '시설 등록' }} />
         <Stack.Screen name="SelectFacilitySort" component={SelectFacilitySort} options={{ title: '세부 시설 선택' }} />
         <Stack.Screen name="SearchAddress" component={SearchAddress} options={{ title: '도로명 주소 검색' }} />
