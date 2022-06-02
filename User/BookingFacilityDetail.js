@@ -10,10 +10,37 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function BookingFacilityDetail({ route, navigation }) {
-  const { value, d, gradeCost, minPlayers, maxPlayers } = route.params;
-
+  const { value, d, gradeCost, minPlayers, maxPlayers,adminId } = route.params;
+  const [selectedId, setSelectedId] = useState([]);
   const [data, setData] = useState();
   const [dcList, setDclist] = useState();
+  let totalCost;
+
+  useEffect(()=>{
+    setCost();
+  },[selectedId.length]);
+
+
+  //선택된 id가 여러개이다.
+  function setCost(){
+    let SelectedTimeObject = [];//선택된 시간Object를 담는 배열
+
+    if (data) {
+      selectedId.forEach((i) => {//선택된 id각각 검색
+        SelectedTimeObject.push(data.find((elem) => { return elem.id == i }))
+  
+      });
+  
+      if (SelectedTimeObject) {
+        let temparr = [];
+        SelectedTimeObject.map(elem => { if (elem) { temparr.push(elem.cost) } })//가격만 뽑아서 배열로 반환
+        totalCost = temparr.reduce((sum, cv) => { return sum + cv }, 0);//배열의 합을 계산
+        //console.log(totalCost);
+      }
+    }
+    console.log(totalCost)
+  }
+ 
 
   // discountRateTable의 정보를 가져옴
   // 시간 할인
@@ -24,7 +51,8 @@ export default function BookingFacilityDetail({ route, navigation }) {
     const ref = collection(db, "DiscountRate");
     const data = query(
       ref,
-      where("facilityId", "==", value)
+      where("facilityId", "==", value),
+      where("adminId","==",adminId)
     );
 
     onSnapshot(data, (querySnapshot) => {
@@ -37,19 +65,19 @@ export default function BookingFacilityDetail({ route, navigation }) {
           if (Number.isInteger(e.time / 60)) { // 3시인 경우
             time = (e.time / 60) + ":00"
           } else {// 3시 45분, 3시 30분 등인경우
-            //const hour=((e.time / 60).toString())
-            //const min=((((e.time / 60) - parseInt(e.time / 60)) * 60).toString())
-            //console.log("-------------",min)
-            //time=hour+min
-           time = ((e.time / 60).toString())+((((e.time / 60) - parseInt(e.time / 60)) * 60).toString())
+            const hour=((parseInt(e.time / 60)).toString())
+            const min=((((e.time / 60) - parseInt(e.time / 60)) * 60).toString())
+          
+            time=hour+":"+min
+           //time = ((((e.time / 60) - parseInt(e.time / 60)) * 60).toString())
           }
           tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
         })
-        console.log(dc, "----thisis dc------------")
+
       }
       setDclist(tempDclist)
       QueryAllocation(tempDclist)
-      console.log(tempDclist,"tempdclist-------------")
+
     })
       , (error) => {
         alert(error.message);
@@ -70,7 +98,9 @@ export default function BookingFacilityDetail({ route, navigation }) {
         selectedAllo.push(doc.data());
       });
 
+      if(dcList){
       makeAllocationTime(selectedAllo, dcList)
+      }
       selectedAllo.length = 0;// 중간에 db에서 데이터가 변경되면, 변경된 데이터가 이 배열에 쌓이는게 아니라 교체되도록
       //  setData(dataPush())
     }, (error) => { alert(error.message); });
@@ -89,8 +119,8 @@ export default function BookingFacilityDetail({ route, navigation }) {
         month >= 10 ? (m = month) : (m = '0' + month)//08과 같이 앞에 0붙이기
         day >= 10 ? (da = day) : (da = '0' + day)//08과 같이 앞에 0붙이기
 
-        // console.log(elem.usingTime,"-----------elem.usingTime")
-         //console.log(d.getFullYear() + '-' + m + "-" + da,"----달력날짜")
+         console.log(elem.usingTime,"-----------elem.usingTime")
+         console.log(d.getFullYear() + '-' + m + "-" + da,"----달력날짜")
         if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + m + "-" + da) {
           
           todayAvail.push(elem)
@@ -101,24 +131,29 @@ export default function BookingFacilityDetail({ route, navigation }) {
     let calcCost;
     todayAvail.map((elem) => {
       if (elem.available === true) { // 선택된 날짜에 개설된 시간들중에 available이 true인거
-        if (dcList) {
+       
+      
+          console.log("here dcList=--------------",dcList)
           if (dcList.length == 0) { // 할인되는 시간이 없을경우
             calcCost = gradeCost;
           } else {
-            dcList.map((e) => {
-              if (e.time == elem.usingTime.split('T')[1]) { // 할인되는 시간
-                calcCost = gradeCost * e.rate;
-              }
-              else { // 할인 안되는 시간
-                calcCost = gradeCost;
-              }
+            const dcRate=dcList.find((e)=>{
+              return e.time == elem.usingTime.split('T')[1];
             })
+           if(dcRate){
+             calcCost = gradeCost * dcRate.rate;
+           }else{
+            calcCost = gradeCost;
+           }
+           
+           
           }
-        }
+        
         tempData.push({ id: elem.usingTime, title: " ", time: elem.usingTime, cost: calcCost })
         console.log(elem.usingTime)
         //---------------------------id를 usingTime 전체다 넣어줌
-      }
+        }
+      
     })
 
     console.log(tempData.sort((a, b) => new Date(a.time) - new Date(b.time)), "[-----------------]")
@@ -149,7 +184,7 @@ export default function BookingFacilityDetail({ route, navigation }) {
     </TouchableOpacity>
   );
 
-  const [selectedId, setSelectedId] = useState([]);
+
 
   const renderItem = ({ item }) => {
     const isSelected = selectedId.filter((i) => i === item.id).length > 0;
@@ -188,7 +223,7 @@ export default function BookingFacilityDetail({ route, navigation }) {
             // Pass and merge params back to home screen
             navigation.navigate({
               name: 'BookingFacilityHome',
-              params: { selectedIdlist: selectedId },
+              params: { selectedIdlist: selectedId ,totalCost:totalCost},
               merge: true
             });
           }}
