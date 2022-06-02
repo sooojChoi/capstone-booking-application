@@ -214,13 +214,16 @@ export default function AdminBooking({ navigation }) {
         if (Number.isInteger(e.time / 60)) {//3시인 경우
           time = (e.time / 60) + ":00"
         } else {//3시 45분, 3시 30분 등인경우
-          time = ((e.time / 60) - parseInt(e.time / 60)) * 60
+          const hour=((parseInt(e.time / 60)).toString())
+          const min=((((e.time / 60) - parseInt(e.time / 60)) * 60).toString())
+        
+          time=hour+":"+min
         }
         tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
       })
-      console.log(tempDclist, "this is dc=======================")
+     // console.log(tempDclist, "this is dc=======================")
       setDclist(tempDclist)
-      console.log(dcList)
+     // console.log(dcList)
     }
     ), (error) => {
       alert(error.message);
@@ -495,27 +498,34 @@ export default function AdminBooking({ navigation }) {
     //console.log("thisis gradeCost",gradeCost)
     let calcCost;
     todayAvail.map((elem) => {
-      if (elem.available === true) {//선택된 날짜에 개설된 시간들중에 available이 true인거
-        if (dcList.length == 0) {//할인되는 시간이 없을경우
-          calcCost = gradeCost;
-        } else {
-          dcList.map((e) => {
-            if (e.time == elem.usingTime.split('T')[1]) {//할인되는 시간
-              calcCost = gradeCost * e.rate;
-            }
-            else {//할인 안되는 시간
-              calcCost = gradeCost;
-            }
-          })
-        }
+      if (elem.available === true) { // 선택된 날짜에 개설된 시간들중에 available이 true인거
+       
+      
+          console.log("here dcList=--------------",dcList)
+          if (dcList.length == 0) { // 할인되는 시간이 없을경우
+            calcCost = gradeCost;
+          } else {
+            const dcRate=dcList.find((e)=>{
+              return e.time == elem.usingTime.split('T')[1];
+            })
+           if(dcRate){
+             calcCost = gradeCost * dcRate.rate;
+           }else{
+            calcCost = gradeCost;
+           }
+           
+           
+          }
+        
         tempData.push({ id: elem.usingTime, title: " ", time: elem.usingTime, cost: calcCost })
-        console.log(elem.calcCost, "calcCost")
+        console.log(elem.usingTime)
         //---------------------------id를 usingTime 전체다 넣어줌
-      }
+        }
+      
     })
-    //console.log(tempData)
+
     console.log(tempData.sort((a, b) => new Date(a.time) - new Date(b.time)), "[-----------------]")
-    setData(tempData)
+    setData(tempData); // data오름차순 정렬
   }
 
   //console.log(data)
