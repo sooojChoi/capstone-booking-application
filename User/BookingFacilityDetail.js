@@ -37,14 +37,19 @@ export default function BookingFacilityDetail({ route, navigation }) {
           if (Number.isInteger(e.time / 60)) { // 3시인 경우
             time = (e.time / 60) + ":00"
           } else {// 3시 45분, 3시 30분 등인경우
-            time = ((e.time / 60) - parseInt(e.time / 60)) * 60
+            //const hour=((e.time / 60).toString())
+            //const min=((((e.time / 60) - parseInt(e.time / 60)) * 60).toString())
+            //console.log("-------------",min)
+            //time=hour+min
+           time = ((e.time / 60).toString())+((((e.time / 60) - parseInt(e.time / 60)) * 60).toString())
           }
           tempDclist.push({ rate: 1 - (e.rate * 0.01), time: time })
         })
-        console.log(dc, "----------------")
+        console.log(dc, "----thisis dc------------")
       }
       setDclist(tempDclist)
       QueryAllocation(tempDclist)
+      console.log(tempDclist,"tempdclist-------------")
     })
       , (error) => {
         alert(error.message);
@@ -78,8 +83,16 @@ export default function BookingFacilityDetail({ route, navigation }) {
     if (array) {
       //console.log("selectedAllo:", array)
       array.map((elem) => {//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
-        // console.log(elem.usingTime,"-----------")
-        if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + 0 + (d.getMonth() + 1) + "-" + d.getDate()) {
+        let m,da;
+        const month=d.getMonth() + 1
+        const day=d.getDate()
+        month >= 10 ? (m = month) : (m = '0' + month)//08과 같이 앞에 0붙이기
+        day >= 10 ? (da = day) : (da = '0' + day)//08과 같이 앞에 0붙이기
+
+        // console.log(elem.usingTime,"-----------elem.usingTime")
+         //console.log(d.getFullYear() + '-' + m + "-" + da,"----달력날짜")
+        if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + m + "-" + da) {
+          
           todayAvail.push(elem)
         }
       });
