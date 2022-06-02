@@ -8,7 +8,7 @@ import * as Notifications from 'expo-notifications';
 import * as Permissions from 'expo-permissions';
 import * as Device from 'expo-device';
 import { auth, db } from '../Core/Config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, query, onSnapshot, collection,where } from 'firebase/firestore';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -32,6 +32,21 @@ export default function Home({ navigation, route }) {
   const [allowDateNotice, setAllowDateNotice] = useState("");
   const [facility, setFacility] = useState();
 
+  const q = query(collection(db, "User"), where("id", "==", myId))
+  onSnapshot(q, (snapshot) => {
+    var refresh = 0
+    snapshot.forEach((doc) => {
+      refresh = 1;
+     
+    })
+
+    if (refresh === 1) {
+      refresh = 0;
+      ReadUser();
+      console.log("Dddddd")
+    }
+  });
+
 
   //현재 user의 정보를 가져옴
   // User 1명 정보 가져오기
@@ -53,6 +68,7 @@ export default function Home({ navigation, route }) {
             console.log("today", today, "allowdate", allowDate, "기다려")
             setAllowDateNotice("예약 금지일이 부여되어 있습니다. " + result.allowDate + "까지 예약이 불가능합니다.")
           } else {
+            setAllowDateNotice("")
             console.log("정상적으로 사용")
           }
 
