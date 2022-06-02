@@ -33,12 +33,16 @@ export default function BookingFacilityHome({ navigation, route }) {
   // User
   const currentUser = auth.currentUser // 현재 접속한 user
   const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
-  const { adminId } = route.params;
+  const { adminId ,totalCost} = route.params;
+ // const [totalCost,setTotalCost]=useState();
   useEffect(() => {
     if (route.params?.selectedIdlist) {
       setSelectedId(route.params?.selectedIdlist)
     }
   }, [route.params?.selectedIdlist]);
+
+
+
   //console.log(selectedId)
 
   //const [adminId, setAdminId] = useState('test1234');
@@ -190,7 +194,7 @@ export default function BookingFacilityHome({ navigation, route }) {
   };
 
   //예약 후 총 금액
-  let totalCost = 0;
+ // let totalCost = 0;
 
   //dropdownpicker로 선택된 시설 정보 가져오는 부분
   // 세부시설의 1개 정보 가져오기
@@ -294,23 +298,7 @@ export default function BookingFacilityHome({ navigation, route }) {
 
   //console.log("data!!!!",data)
 
-  //선택된 id가 여러개이다.
-  let SelectedTimeObject = [];//선택된 시간Object를 담는 배열
-
-  if (data) {
-    selectedId.forEach((i) => {//선택된 id각각 검색
-      SelectedTimeObject.push(data.find((elem) => { return elem.id == i }))
-
-    });
-
-    if (SelectedTimeObject) {
-      let temparr = [];
-      SelectedTimeObject.map(elem => { if (elem) { temparr.push(elem.cost) } })//가격만 뽑아서 배열로 반환
-      totalCost = temparr.reduce((sum, cv) => { return sum + cv }, 0);//배열의 합을 계산
-      //console.log(totalCost);
-    }
-  }
-
+  
   useEffect(() => { setCount(minPlayers) }, [minPlayers])
 
   // 인원 선택
@@ -624,7 +612,7 @@ export default function BookingFacilityHome({ navigation, route }) {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={styles.SelectionTitle}>시간 선택</Text>
               <TouchableOpacity style={{ marginStart: 20 }}
-                onPress={() => { navigation.navigate('BookingfacilityDetail', { value: value, d: d, gradeCost: gradeCost, minPlayers: minPlayers, maxPlayers: maxPlayers }) }}>
+                onPress={() => { navigation.navigate('BookingfacilityDetail', { value: value, d: d, gradeCost: gradeCost, minPlayers: minPlayers, maxPlayers: maxPlayers,adminId:adminId }) }}>
                 <Text style={{ color: 'blue' }}>  {'>'} </Text>
               </TouchableOpacity>
             </View>
