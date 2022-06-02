@@ -59,13 +59,15 @@ export default function App() {
 
       getDocs(bookingData)
         .then((snapshot) => {
+          let id;
           snapshot.forEach((doc) => {
             setBookingId(doc.id) // 즉각 반영 X -> 실행 후 수정해보기~~~
             console.log(bookingId)
             console.log(doc.id)
             adminId = doc.adminId
-            UpdateCancel(doc.id)
+            id=doc.id;
           })
+          UpdateCancel(id)
         })
         .catch((error) => {
           alert(error.message)
