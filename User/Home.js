@@ -8,7 +8,7 @@ import * as Notifications from 'expo-notifications';
 import * as Permissions from 'expo-permissions';
 import * as Device from 'expo-device';
 import { auth, db } from '../Core/Config';
-import { doc, getDoc, updateDoc, query, onSnapshot, collection,where } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, query, onSnapshot, collection, where } from 'firebase/firestore';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -23,7 +23,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function Home({ navigation, route }) {
   const currentUser = auth.currentUser // 현재 접속한 user
-  const myId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
+  const currentUserId = currentUser.email.split('@')[0] // 현재 접속한 user의 id
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
@@ -32,18 +32,17 @@ export default function Home({ navigation, route }) {
   const [allowDateNotice, setAllowDateNotice] = useState("");
   const [facility, setFacility] = useState();
 
-  const q = query(collection(db, "User"), where("id", "==", myId))
+  const q = query(collection(db, "User"), where("id", "==", currentUserId))
   onSnapshot(q, (snapshot) => {
     var refresh = 0
     snapshot.forEach((doc) => {
       refresh = 1;
-     
+
     })
 
     if (refresh === 1) {
       refresh = 0;
       ReadUser();
-      console.log("Dddddd")
     }
   });
 
@@ -52,7 +51,7 @@ export default function Home({ navigation, route }) {
   // User 1명 정보 가져오기
   const ReadUser = () => {
     // doc(db, 컬렉션 이름, 문서 ID)
-    const docRef = doc(db, "User", myId)
+    const docRef = doc(db, "User", currentUserId)
     let result
     getDoc(docRef)
       .then((snapshot) => {
@@ -87,7 +86,7 @@ export default function Home({ navigation, route }) {
   // 혹시 다른 기기로 다시 로그인했을 수도 있기 때문에, home화면에 
   const UpdateUser = (token) => {
 
-    const docRef = doc(db, "User", myId)
+    const docRef = doc(db, "User", currentUserId)
 
     getDoc(docRef)
       // Handling Promises
@@ -186,17 +185,17 @@ export default function Home({ navigation, route }) {
             {
               allowDateNotice === "" ? (
                 <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyInfoManagement') }}>
-                <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
-                <Text style={styles.text}>수정</Text>
-              </TouchableOpacity>
+                  <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
+                  <Text style={styles.text}>수정</Text>
+                </TouchableOpacity>
               ) : (
-                <TouchableOpacity style={{...styles.btn, backgroundColor: 'grey' }} >
-                <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
-                <Text style={styles.text}>수정</Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={{ ...styles.btn, backgroundColor: 'grey' }} >
+                  <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>회원 정보</Text>
+                  <Text style={styles.text}>수정</Text>
+                </TouchableOpacity>
               )
             }
-           
+
             <TouchableOpacity style={styles.btn} onPress={() => { navigation.navigate('MyLastBookingList') }}>
               <Text style={{ ...styles.text, marginTop: SCREEN_HEIGHT * 0.065 }}>지난</Text>
               <Text style={styles.text}>예약 내역</Text>
