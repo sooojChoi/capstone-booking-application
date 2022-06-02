@@ -283,6 +283,27 @@ export default function DetailUserManagement({ route, navigation }) {
 
   }
 
+  const sendNotificationWithCancelAllowDate = async (token) => {
+    const message = {
+      to: token,
+      sound: 'default',
+      title: '예약 금지일이 해제되었습니다. ',
+      body: '시설 예약이 가능합니다. ',
+      data: { data: 'goes here' },
+    };
+
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message)
+    })
+
+  }
+
 
   // //setDoc(docRef, docData, { merge: merge })
   // updateDoc(docRef, docData)
@@ -344,7 +365,12 @@ export default function DetailUserManagement({ route, navigation }) {
           .then((snapshot) => {
             if (snapshot.exists) {
               const result = snapshot.data().token
-              sendNotificationWithAllowDate(result)
+              if(docData.allowDate !== "permission"){
+                sendNotificationWithAllowDate(result)
+              }else{
+                sendNotificationWithCancelAllowDate(result)
+              }
+              
               console.log(result)
             }
             else {
@@ -367,6 +393,7 @@ export default function DetailUserManagement({ route, navigation }) {
       showDateIsNullToast();
       return;
     }
+   
     const dateForString = new Date(selectedDate);
     const year = dateForString.getFullYear();
     const month = dateForString.getMonth() + 1;
@@ -374,6 +401,7 @@ export default function DetailUserManagement({ route, navigation }) {
     const string = year + "년 " + month + "월" + date + "일"
     const result = year + '-' + (month >= 10 ? month : '0' + month) + '-' + (date >= 10 ? date : '0' + date);
 
+    
     Alert.alert("예약 금지일을 부여하시겠습니까?", string, [
       { text: "취소" },
       {
@@ -402,6 +430,29 @@ export default function DetailUserManagement({ route, navigation }) {
             phone: realPhone,
             registerDate: userInfo.registerDate,
             allowDate: result,
+            adminId: currentAdminId
+          }
+          UpdateUser(userData);
+        },
+      },
+    ]);
+  }
+
+  // 예약 부여일을 없애는 함수
+  const cancelAllowDate = () => {
+    Alert.alert("예약 금지일을 해제하시겠습니까?", "", [
+      { text: "취소" },
+      {
+        text: "확인", onPress: () => {
+          
+          const realPhone = userInfo.phone.substring(0, 3) + userInfo.phone.substring(4, 8) +
+            userInfo.phone.substring(9, 13);
+          const userData = {
+            id: userInfo.userId,
+            name: userInfo.name,
+            phone: realPhone,
+            registerDate: userInfo.registerDate,
+            allowDate: "permission",
             adminId: currentAdminId
           }
           UpdateUser(userData);
@@ -469,7 +520,9 @@ export default function DetailUserManagement({ route, navigation }) {
           <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#a6a6a6', marginLeft: 5, marginRight: 5 }}>
             <Text style={{ fontSize: 18, margin: 10, marginLeft: 10 }}>
               예약 금지
-            </Text>{
+            </Text>
+            <View style={{flexDirection:'row'}}>
+            {
               selectedDate === null ? (
                 <TouchableOpacity style={{ ...styles.smallButtonStyle2, marginTop: 8, marginBottom: 5 }}
                   onPress={() => changeUserAllowDate()} disabled={true}>
@@ -489,13 +542,35 @@ export default function DetailUserManagement({ route, navigation }) {
                   </Text>
                 </TouchableOpacity>
               )}
+              {
+                userInfo.allowDate === "permission" ? (
+                  <TouchableOpacity style={{ ...styles.smallButtonStyle2, marginTop: 8, marginBottom: 5 }}
+                  disabled={true}>
+                  <Text style={{ fontSize: 15, color: "white" }}>
+                    해제하기
+
+                  </Text>
+                </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={{ ...styles.smallButtonStyle2,
+                    backgroundColor: '#3262d4', borderColor: '#3262d4', marginTop: 8, marginBottom: 5 }}
+                  onPress={() => cancelAllowDate()} disabled={false}>
+                  <Text style={{ fontSize: 15, color: "white" }}>
+                    해제하기
+
+                  </Text>
+                </TouchableOpacity>
+                )
+              }
+            </View>
+          
           </View>
 
           <View>
             <Text style={styles.infoTextStyle}>
               {allowDateInfo}
             </Text>{
-              userInfo.allowDate === null ? (
+              userInfo.allowDate === null || userInfo.allowDate === "permission" ? (
                 <CalendarPicker
                   todayBackgroundColor='white'
                   width={SCREEN_WIDTH * 0.93}
