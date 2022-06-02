@@ -6,7 +6,7 @@ import { AllocationTable } from '../Table/AllocationTable';
 import { FacilityTable } from '../Table/FacilityTable';
 import Modal from "react-native-modal";
 import { auth, db } from '../Core/Config';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, addDoc } from 'firebase/firestore';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -34,7 +34,7 @@ export default function GenerateAllocation() {
   const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const now = new Date();
-  const temp = new Date(now.setDate(now.getDate() + 21));
+  const temp = new Date(now.setDate(now.getDate() + 1));
 
   //2022-06-03의 포맷
   const ThatDay = temp.getFullYear() + "-" + ((temp.getMonth() + 1) > 9 ? (temp.getMonth() + 1).toString() : "0" + (temp.getMonth() + 1)) + "-" + (temp.getDate() > 9 ? temp.getDate().toString() : "0" + temp.getDate().toString());
@@ -211,15 +211,15 @@ export default function GenerateAllocation() {
         usingTime: elem.usingTime
       }
       //console.log(docData,"데이터")
-      // addDoc(docRef, docData)
-      //   // Handling Promises
-      //   .then(() => {
-      //     //alert("Document Created!")
-      //     console.log("데이터추가 성공")
-      //   })
-      //   .catch((error) => {
-      //     alert(error.message)
-      //   })
+      addDoc(docRef, docData)
+        // Handling Promises
+        .then(() => {
+          //alert("Document Created!")
+          console.log("데이터추가 성공")
+        })
+        .catch((error) => {
+          alert(error.message)
+        })
     })
     makeAlert();
 

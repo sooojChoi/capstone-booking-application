@@ -477,8 +477,16 @@ export default function AdminBooking({ navigation }) {
     if (array) {
       //console.log("selectedAllo:",array)
       array.map((elem) => {//선택된 시설의 개설된 모든 객체를 돌면서 시간만 비교한다.
+        let m,da;
+        const month=d.getMonth() + 1
+        const day=d.getDate()
+        month >= 10 ? (m = month) : (m = '0' + month)//08과 같이 앞에 0붙이기
+        day >= 10 ? (da = day) : (da = '0' + day)//08과 같이 앞에 0붙이기
+       
+        console.log(elem.usingTime,"-----------elem.usingTime")
+         console.log(d.getFullYear() + '-' + m + "-" + da,"----달력날짜")
         // console.log(elem.usingTime,"-----------")
-        if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + 0 + (d.getMonth() + 1) + "-" + d.getDate()) {
+        if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + m + "-" + da) {
           todayAvail.push(elem)
         }
       });
@@ -749,7 +757,6 @@ export default function AdminBooking({ navigation }) {
                   minDate={minDate}
                   previousTitle="<"
                   nextTitle=">"
-                  disabledDates={[minDate, new Date(2022, 5, 1)]}
                 />
                 {/*disableDates는 쉬는날 설정하는거~*/}
                 {/* <Text>SELECTED DATE:{ startDate }</Text> */}

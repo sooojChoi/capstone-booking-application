@@ -604,7 +604,6 @@ export default function BookingFacilityHome({ navigation, route }) {
               maxDate={maxDate}
               previousTitle="<"
               nextTitle=">"
-              disabledDates={[minDate, new Date(2022, 3, 15)]}
             />
           </View>{
             (selectedStartDate === null || value === null) ? (
