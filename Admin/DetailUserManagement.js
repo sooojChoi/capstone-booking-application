@@ -357,7 +357,13 @@ export default function DetailUserManagement({ route, navigation }) {
         }
 
         setUserInfo(temp);
-        setAllowDateInfo([..."예약 금지일: " + docData.allowDate]);
+        if(docData.allowDate === "permission")
+        {
+          setAllowDateInfo("예약 금지일이 설정되지 않았습니다.");
+        }else{
+          setAllowDateInfo([..."예약 금지일: " + docData.allowDate]);
+        }
+        
         setDateForAllow(...[new Date(selectedDate)]);
 
         // 사용자의 토큰을 얻어서 사용자에게 푸시 알림을 보냄.

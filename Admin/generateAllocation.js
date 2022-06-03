@@ -34,8 +34,7 @@ export default function GenerateAllocation() {
   const currentAdminId = currentAdmin.email.split('@')[0] // 현재 접속한 admin의 id
 
   const now = new Date();
-
-  const temp = new Date(now.setDate(now.getDate() + 21));
+  const temp = new Date(now.setDate(now.getDate() + 22));
 
   //2022-06-03의 포맷
   const ThatDay = temp.getFullYear() + "-" + ((temp.getMonth() + 1) > 9 ? (temp.getMonth() + 1).toString() : "0" + (temp.getMonth() + 1)) + "-" + (temp.getDate() > 9 ? temp.getDate().toString() : "0" + temp.getDate().toString());
