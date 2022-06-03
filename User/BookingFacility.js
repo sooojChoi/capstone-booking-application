@@ -271,18 +271,20 @@ export default function BookingFacilityHome({ navigation, route }) {
   //최대 limit일 뒤에 예약 가능
   var now = new Date();
   var bookinglimit = new Date(now.setDate(now.getDate() + limit));
-  const maxDate = new Date(bookinglimit);
+  let maxDate = new Date(bookinglimit);
+  if (!value){
+    maxDate=new Date();
+  }
 
   // console.log(bookinglimit, "thisis bookinglimit")
 
   //날짜 선택했는지 안했는지 확인하는 부분
   const [selectedStartDate, onDateChange] = useState(null);
   const startDate = selectedStartDate ? selectedStartDate.toString() : '';
-
   //날짜와 시설이 모두 선택된 상황에서만 시간선택 할 수 있도록 한다.
   let showTimeSelect = selectedStartDate && value;
 
-  const [data, setData] = useState();
+ // const [data, setData] = useState();
 
   //const data=[]
   // let todayAvail = []//이게 push되기 전에 null이어야한다. 데이타가 바뀌면 전에거에 계속 추가가 됨. 교체되어야 하는데
@@ -592,6 +594,7 @@ export default function BookingFacilityHome({ navigation, route }) {
               maxDate={maxDate}
               previousTitle="<"
               nextTitle=">"
+           
             />
           </View>{
             (selectedStartDate === null || value === null) ? (
@@ -613,7 +616,7 @@ export default function BookingFacilityHome({ navigation, route }) {
               <Text style={styles.SelectionTitle}>시간 선택</Text>
               <TouchableOpacity style={{ marginStart: 20 }}
                 onPress={() => { navigation.navigate('BookingfacilityDetail', { value: value, d: d, gradeCost: gradeCost, minPlayers: minPlayers, maxPlayers: maxPlayers,adminId:adminId }) }}>
-                <Text style={{ color: 'blue' }}>  {'>'} </Text>
+                <Text style={{ color: 'blue',fontSize:25 }}>  {'>'} </Text>
               </TouchableOpacity>
             </View>
 

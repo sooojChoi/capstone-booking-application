@@ -119,8 +119,8 @@ export default function BookingFacilityDetail({ route, navigation }) {
         month >= 10 ? (m = month) : (m = '0' + month)//08과 같이 앞에 0붙이기
         day >= 10 ? (da = day) : (da = '0' + day)//08과 같이 앞에 0붙이기
 
-         console.log(elem.usingTime,"-----------elem.usingTime")
-         console.log(d.getFullYear() + '-' + m + "-" + da,"----달력날짜")
+         //console.log(elem.usingTime,"-----------elem.usingTime")
+         //console.log(d.getFullYear() + '-' + m + "-" + da,"----달력날짜")
         if (elem.usingTime.split('T')[0] == d.getFullYear() + '-' + m + "-" + da) {
           
           todayAvail.push(elem)
@@ -133,7 +133,7 @@ export default function BookingFacilityDetail({ route, navigation }) {
       if (elem.available === true) { // 선택된 날짜에 개설된 시간들중에 available이 true인거
        
       
-          console.log("here dcList=--------------",dcList)
+         // console.log("here dcList=--------------",dcList)
           if (dcList.length == 0) { // 할인되는 시간이 없을경우
             calcCost = gradeCost;
           } else {

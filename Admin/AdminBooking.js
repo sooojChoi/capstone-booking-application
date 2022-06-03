@@ -501,7 +501,7 @@ export default function AdminBooking({ navigation }) {
       if (elem.available === true) { // 선택된 날짜에 개설된 시간들중에 available이 true인거
        
       
-          console.log("here dcList=--------------",dcList)
+       //   console.log("here dcList=--------------",dcList)
           if (dcList.length == 0) { // 할인되는 시간이 없을경우
             calcCost = gradeCost;
           } else {
@@ -787,7 +787,7 @@ export default function AdminBooking({ navigation }) {
                   <TouchableOpacity
                     style={{ marginStart: 20 }}
                     onPress={toggleTimeModal}
-                  ><Text style={{ color: 'blue' }}>  {'>'} </Text></TouchableOpacity>
+                  ><Text style={{ color: 'blue',fontSize:25 }}>  {'>'} </Text></TouchableOpacity>
                 </View>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
