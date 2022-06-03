@@ -39,7 +39,16 @@ export default function MyInfoManagement({ navigation }) {
           getDocs(perData)
             .then((querySnapshot) => {
               querySnapshot.forEach((doc) => {
-                setUserGrade(doc.data().grade.toString())
+                const grade = doc.data().grade
+                var gradeText = ""
+                if(grade === 0){
+                  gradeText = "A등급"
+                }else if(grade === 1){
+                  gradeText = "B등급"
+                }else if(grade === 2){
+                  gradeText = "C등급"
+                }
+                setUserGrade(gradeText)
               })
             })
             .catch((error) => {

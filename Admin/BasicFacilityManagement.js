@@ -172,7 +172,7 @@ export default function BasicFacilityManagement({ route, navigation }) {
 
   // Storage 이미지 업로드
   const uploadImage = async (value, name) => {
-    const imgRef = ref(storageDb, currentAdminId + '/image' + name + '.png')
+    const imgRef = ref(storageDb, currentAdminId + '/image' + name + '.jpg')
 
     const img = await fetch(value)
     const bytes = await img.blob()
