@@ -2,6 +2,9 @@
 
 ![panel](https://user-images.githubusercontent.com/75026933/171328115-9f32cb2a-d2ec-4648-a86f-69f8fa79f64a.jpg)
 
+### 시연영상
+https://youtu.be/4xWv-As5N2I
+
 ### 공유 시설 예약 애플리케이션
 1971144 최수진, 1971048 노혜림, 1971220 박수빈, 1971063 배유진
 
